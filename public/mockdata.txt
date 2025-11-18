@@ -1,0 +1,1607 @@
+
+{
+    "data": [
+        {
+            "ship_uid": "fbdd5ddb2ea84c3a977690518023f399",
+            "location_history": [
+                {
+                    "long": 105.94466400146484,
+                    "lat": 19.435279846191406,
+                    "course": 132,
+                    "speed": 6.0,
+                    "time": 1763444940000,
+                    "heading": 132,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 10.430 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 148.465 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 151.363 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 152.713 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.87797546386719,
+                    "lat": 19.506698608398438,
+                    "course": 144,
+                    "speed": 6.0,
+                    "time": 1763441340000,
+                    "heading": 143,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 12.195 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 153.853 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 157.065 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 158.265 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.80572509765625,
+                    "lat": 19.584150314331055,
+                    "course": 171,
+                    "speed": 7.0,
+                    "time": 1763437740000,
+                    "heading": 169,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 16.296 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 159.720 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 163.245 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 164.293 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.8120346069336,
+                    "lat": 19.6216983795166,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763434140000,
+                    "heading": 3,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.533 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.640 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.691 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.335 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.8120346069336,
+                    "lat": 19.621681213378906,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763430540000,
+                    "heading": -4,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.532 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.639 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.691 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.335 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.8120346069336,
+                    "lat": 19.621679306030273,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763426940000,
+                    "heading": -5,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.532 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.639 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.691 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.335 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81201934814453,
+                    "lat": 19.62166976928711,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763423340000,
+                    "heading": 6,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.531 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.639 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.691 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.335 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81206512451172,
+                    "lat": 19.62167739868164,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763419740000,
+                    "heading": -7,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.532 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.638 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.689 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.333 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81205749511719,
+                    "lat": 19.621679306030273,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763416140000,
+                    "heading": -8,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.532 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.638 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.690 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.334 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204986572266,
+                    "lat": 19.621667861938477,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763412540000,
+                    "heading": 9,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.531 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.638 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.689 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.333 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204986572266,
+                    "lat": 19.62166976928711,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763408940000,
+                    "heading": 0,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.531 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.638 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.690 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.334 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81206512451172,
+                    "lat": 19.621692657470703,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763405340000,
+                    "heading": -1,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.533 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.639 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.690 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.334 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204223632812,
+                    "lat": 19.621706008911133,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763401740000,
+                    "heading": 2,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.533 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.640 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.691 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.335 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81205749511719,
+                    "lat": 19.621702194213867,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763398140000,
+                    "heading": -3,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.533 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.639 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.691 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.334 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204986572266,
+                    "lat": 19.6217041015625,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763394540000,
+                    "heading": -4,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.533 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.640 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.691 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.335 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204223632812,
+                    "lat": 19.621721267700195,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763390940000,
+                    "heading": 5,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.534 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.641 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.692 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.336 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204223632812,
+                    "lat": 19.62173843383789,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763387340000,
+                    "heading": -6,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.535 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.642 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.693 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.336 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204986572266,
+                    "lat": 19.621749877929688,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763383740000,
+                    "heading": -7,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.536 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.642 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.693 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.336 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81205749511719,
+                    "lat": 19.621723175048828,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763380140000,
+                    "heading": 8,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.534 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.641 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.692 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.335 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204223632812,
+                    "lat": 19.621732711791992,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763376540000,
+                    "heading": -9,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.535 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.641 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.693 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.336 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204986572266,
+                    "lat": 19.621732711791992,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763372940000,
+                    "heading": 0,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.535 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.641 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.692 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.336 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204223632812,
+                    "lat": 19.621715545654297,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763369340000,
+                    "heading": 1,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.534 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.641 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.692 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.336 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81204986572266,
+                    "lat": 19.6217041015625,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763365740000,
+                    "heading": -2,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.533 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.640 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.691 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.335 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.81207275390625,
+                    "lat": 19.6217098236084,
+                    "course": 0,
+                    "speed": 0.0,
+                    "time": 1763362140000,
+                    "heading": -3,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 18.534 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 161.640 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 164.690 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 165.334 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                }
+            ],
+            "time": 0,
+            "speed": 0.0,
+            "course": 0,
+            "status": 0,
+            "weather": null,
+            "ship_name": "TH-90603-TS",
+            "country_code": null,
+            "mmsi_code": null,
+            "port_histories": [
+                {
+                    "place": "Không có thông tin",
+                    "duration": 0,
+                    "status": false,
+                    "action_time": 1763362140000,
+                    "nearest_location": "NGHI SON",
+                    "nearest_location_radius": "NGHI SON - 34.48 km",
+                    "nearest_location_details": "NGHI SON - 34.48 km",
+                    "in_port": false,
+                    "out_port": false,
+                    "next_action_time": 1763362140000,
+                    "from_port": "Không có thông tin"
+                }
+            ]
+        },
+        {
+            "ship_uid": "15e0ce6098ec4d32a985bf62becd0290",
+            "location_history": [
+                {
+                    "long": 106.6074447631836,
+                    "lat": 19.75004005432129,
+                    "course": 52,
+                    "speed": 3.0,
+                    "time": 1763443195000,
+                    "heading": 52,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "b1a6dfe1fff24506a10bb5bf0e0abc78",
+                        "name": "NAM DINH",
+                        "status": "Cách cảng [NAM DINH] 46.594 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 157.547 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 146.246 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 137.925 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.60537719726562,
+                    "lat": 19.751121520996094,
+                    "course": 13,
+                    "speed": 4.0,
+                    "time": 1763442600000,
+                    "heading": 12,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "b1a6dfe1fff24506a10bb5bf0e0abc78",
+                        "name": "NAM DINH",
+                        "status": "Cách cảng [NAM DINH] 46.477 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 157.625 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 146.355 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 138.049 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.549072265625,
+                    "lat": 19.70863151550293,
+                    "course": 53,
+                    "speed": 3.0,
+                    "time": 1763437795000,
+                    "heading": 51,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "b1a6dfe1fff24506a10bb5bf0e0abc78",
+                        "name": "NAM DINH",
+                        "status": "Cách cảng [NAM DINH] 47.121 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 155.499 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 145.483 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 138.153 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.5238265991211,
+                    "lat": 19.693260192871094,
+                    "course": 7,
+                    "speed": 4.0,
+                    "time": 1763435760000,
+                    "heading": 10,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 46.205 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 154.790 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 145.323 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 138.404 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.48576354980469,
+                    "lat": 19.664709091186523,
+                    "course": 51,
+                    "speed": 4.0,
+                    "time": 1763432395000,
+                    "heading": 47,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 43.491 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 153.432 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 144.838 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 138.585 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.4408950805664,
+                    "lat": 19.630146026611328,
+                    "course": 8,
+                    "speed": 3.0,
+                    "time": 1763428860000,
+                    "heading": 3,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 40.272 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 151.828 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 144.286 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 138.830 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.419677734375,
+                    "lat": 19.615720748901367,
+                    "course": 60,
+                    "speed": 2.0,
+                    "time": 1763426995000,
+                    "heading": 66,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 38.806 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 151.201 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 144.149 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 139.055 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.35350799560547,
+                    "lat": 19.58043670654297,
+                    "course": 13,
+                    "speed": 4.0,
+                    "time": 1763421960000,
+                    "heading": 6,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 34.507 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 149.891 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 144.309 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 140.255 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.34856414794922,
+                    "lat": 19.578500747680664,
+                    "course": 57,
+                    "speed": 5.0,
+                    "time": 1763421596000,
+                    "heading": 49,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 34.205 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 149.839 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 144.362 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 140.378 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.27268981933594,
+                    "lat": 19.53227996826172,
+                    "course": 58,
+                    "speed": 5.0,
+                    "time": 1763416134000,
+                    "heading": 67,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 29.118 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 148.154 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 144.432 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 141.685 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.25628662109375,
+                    "lat": 19.524520874023438,
+                    "course": 12,
+                    "speed": 4.0,
+                    "time": 1763415060000,
+                    "heading": 12,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 28.079 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 147.939 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 144.581 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 142.078 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.1902847290039,
+                    "lat": 19.4852294921875,
+                    "course": 54,
+                    "speed": 3.0,
+                    "time": 1763410734000,
+                    "heading": 53,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 23.684 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 146.687 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 144.867 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 143.421 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.14541625976562,
+                    "lat": 19.45405387878418,
+                    "course": 10,
+                    "speed": 5.0,
+                    "time": 1763408160000,
+                    "heading": 12,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 20.589 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 145.652 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 144.929 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 144.240 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.09257507324219,
+                    "lat": 19.420080184936523,
+                    "course": 51,
+                    "speed": 5.0,
+                    "time": 1763405303000,
+                    "heading": 48,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 17.033 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 144.669 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 145.217 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 145.385 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 106.01447296142578,
+                    "lat": 19.361398696899414,
+                    "course": 7,
+                    "speed": 6.0,
+                    "time": 1763401380000,
+                    "heading": 3,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 11.707 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 142.901 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 145.432 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 146.941 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.98946380615234,
+                    "lat": 19.343481063842773,
+                    "course": 52,
+                    "speed": 5.0,
+                    "time": 1763399934000,
+                    "heading": 57,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 10.086 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 142.426 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 145.586 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 147.511 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.88204956054688,
+                    "lat": 19.26576042175293,
+                    "course": 70,
+                    "speed": 5.0,
+                    "time": 1763394535000,
+                    "heading": 64,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 4.695 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 140.588 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 146.508 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 150.155 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.87687683105469,
+                    "lat": 19.26420783996582,
+                    "course": 5,
+                    "speed": 6.0,
+                    "time": 1763394360000,
+                    "heading": -2,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 4.518 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 140.628 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 146.663 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 150.358 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.75579833984375,
+                    "lat": 19.223730087280273,
+                    "course": 150,
+                    "speed": 5.0,
+                    "time": 1763389135000,
+                    "heading": 158,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 6.235 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 141.540 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 150.139 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 155.105 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.75010681152344,
+                    "lat": 19.2330379486084,
+                    "course": 15,
+                    "speed": 0.0,
+                    "time": 1763388060000,
+                    "heading": 6,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 5.967 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 142.183 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 150.753 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 155.658 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.75019073486328,
+                    "lat": 19.23307991027832,
+                    "course": 6,
+                    "speed": 1.0,
+                    "time": 1763383735000,
+                    "heading": 6,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 5.962 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 142.183 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 150.751 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 155.655 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.75018310546875,
+                    "lat": 19.232999801635742,
+                    "course": 293,
+                    "speed": 1.0,
+                    "time": 1763378336000,
+                    "heading": 294,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 5.966 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 142.179 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 150.748 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 155.653 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.75029754638672,
+                    "lat": 19.23295021057129,
+                    "course": 89,
+                    "speed": 1.0,
+                    "time": 1763372876000,
+                    "heading": 87,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 5.964 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 142.173 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 150.741 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 155.646 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.7502212524414,
+                    "lat": 19.23295021057129,
+                    "course": 305,
+                    "speed": 1.0,
+                    "time": 1763367477000,
+                    "heading": 302,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 5.967 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 142.175 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 150.744 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 155.649 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                },
+                {
+                    "long": 105.75025177001953,
+                    "lat": 19.23293113708496,
+                    "course": 223,
+                    "speed": 1.0,
+                    "time": 1763362077000,
+                    "heading": 227,
+                    "source_type": 3,
+                    "port": {
+                        "uid": "97dd5dd8b45b4d4281288fb0822ecfb9",
+                        "name": "NGHI SON",
+                        "status": "Cách cảng [NGHI SON] 5.967 hải lý"
+                    },
+                    "internal_sea": {
+                        "uid": "99bf52bb88b242d69ed44601a931f5aa",
+                        "name": "Vùng nội thuỷ",
+                        "status": "Cách đường phân định 142.174 hải lý"
+                    },
+                    "territorial_sea": {
+                        "uid": "67919277874c4178859442ae73852846",
+                        "name": "Vùng lãnh hải",
+                        "status": "Cách đường phân định 150.742 hải lý"
+                    },
+                    "exclusive_sea": {
+                        "uid": "494ffdea7ad14116a6d2314bf722d09d",
+                        "name": "Vùng đặc quyền kinh tế",
+                        "status": "Cách đường phân định 155.647 hải lý"
+                    },
+                    "first_area_time": null,
+                    "last_area_time": null
+                }
+            ],
+            "time": 0,
+            "speed": 0.0,
+            "course": 0,
+            "status": 0,
+            "weather": null,
+            "ship_name": "NA-90368-TS",
+            "country_code": null,
+            "mmsi_code": null,
+            "port_histories": [
+                {
+                    "place": "Không có thông tin",
+                    "duration": 0,
+                    "status": false,
+                    "action_time": 1763362077000,
+                    "nearest_location": "NGHI SON",
+                    "nearest_location_radius": "NGHI SON - 11.08 km",
+                    "nearest_location_details": "NGHI SON - 11.08 km",
+                    "in_port": false,
+                    "out_port": false,
+                    "next_action_time": 1763362077000,
+                    "from_port": "Không có thông tin"
+                },
+                {
+                    "place": "Không có thông tin",
+                    "duration": 0,
+                    "status": false,
+                    "action_time": 1763394360000,
+                    "nearest_location": "NGHI SON",
+                    "nearest_location_radius": "NGHI SON",
+                    "nearest_location_details": "NGHI SON",
+                    "in_port": false,
+                    "out_port": false,
+                    "next_action_time": 1763394360000,
+                    "from_port": "Không có thông tin"
+                },
+                {
+                    "place": "Không có thông tin",
+                    "duration": 0,
+                    "status": false,
+                    "action_time": 1763399934000,
+                    "nearest_location": "NGHI SON",
+                    "nearest_location_radius": "NGHI SON - 18.66 km",
+                    "nearest_location_details": "NGHI SON - 18.66 km",
+                    "in_port": false,
+                    "out_port": false,
+                    "next_action_time": 1763399934000,
+                    "from_port": "Không có thông tin"
+                }
+            ]
+        }
+    ],
+    "status": 200
+}

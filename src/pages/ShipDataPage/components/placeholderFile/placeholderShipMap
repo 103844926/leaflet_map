@@ -1,0 +1,48 @@
+import React from 'react';
+import "leaflet/dist/leaflet.css"
+import { LayersControl, LayerGroup, Marker, Popup, Polyline } from 'react-leaflet';
+
+export function ShipMap({ ships }) {
+    return (
+        <>
+            <LayersControl position="bottomright">
+                {ships.map((ship, index) => {
+                    const polyline = ship.locations.map(loc => [loc.lat, loc.long]);
+
+                    return (
+                        <LayersControl.Overlay
+                            checked
+                            key={ship.ship_uid}
+                            name={`Ship ${ship.ship_uid}`}
+                        >
+                            <LayerGroup>
+
+                                {polyline.map((position, i) => (
+                                    <Marker key={i} position={position}>
+                                        <Popup>
+                                            Ship {ship.ship_uid} - Point {i + 1}<br />
+                                            Coordinates: {position[0]}, {position[1]}
+                                        </Popup>
+                                    </Marker>
+                                ))}
+
+                                <Polyline
+                                    pathOptions={{
+                                        color: getShipColor(index),
+                                        weight: 3
+                                    }}
+                                    positions={polyline}
+                                />
+                            </LayerGroup>
+                        </LayersControl.Overlay>
+                    );
+                })}
+            </LayersControl>
+        </>
+    );
+}
+
+function getShipColor(index) {
+    const colors = ['lime', 'blue', 'red', 'orange', 'purple', 'cyan', 'magenta', 'yellow'];
+    return colors[index % colors.length];
+}
