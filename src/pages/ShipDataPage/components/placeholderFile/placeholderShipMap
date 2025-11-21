@@ -1,48 +1,174 @@
-import React from 'react';
-import "leaflet/dist/leaflet.css"
-import { LayersControl, LayerGroup, Marker, Popup, Polyline } from 'react-leaflet';
+import { React } from "react";
+import "leaflet/dist/leaflet.css";
+import { LayerGroup, Marker, Polyline, useMap } from "react-leaflet";
+import {
+    Box,
+    Paper,
+    Typography,
+    FormControlLabel,
+    Checkbox,
+    Stack,
+} from "@mui/material";
+import { useShipVisible, useShipAnimation, useLeafletControl } from "@/hooks";
 
-export function ShipMap({ ships }) {
+export function ShipMapUI({ ships }) {
+    const paperControl = useLeafletControl();
+    const boxControl = useLeafletControl();
+
+    const map = useMap();
+
+    const { visibleShips, handleShipToggle } = useShipVisible(ships, map);
+
+    const {
+        shipPositions,
+        selectedShipIndex,
+        setSelectedShipIndex,
+        animateShip,
+        returnToStart,
+    } = useShipAnimation(ships);
+
     return (
-        <>
-            <LayersControl position="bottomright">
-                {ships.map((ship, index) => {
-                    const polyline = ship.locations.map(loc => [loc.lat, loc.long]);
-
-                    return (
-                        <LayersControl.Overlay
-                            checked
+        <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
+            {/* Custom Layer Control Panel */}
+            <Paper
+                ref={paperControl}
+                sx={{
+                    position: "absolute",
+                    bottom: 20,
+                    left: 20,
+                    width: "auto",
+                    maxHeight: "80vh",
+                    overflowY: "auto",
+                    backgroundColor: "white",
+                    padding: "15px",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                    zIndex: 1000,
+                }}
+            >
+                <Stack sx={{ display: "flex", flexDirection: "column" }}>
+                    <Typography
+                        variant="h6"
+                        sx={{ marginBottom: 2, fontSize: "16px", fontWeight: "bold" }}
+                    >
+                        Ships
+                    </Typography>
+                    {ships.map((ship, index) => (
+                        <FormControlLabel
                             key={ship.ship_uid}
-                            name={`Ship ${ship.ship_uid}`}
-                        >
-                            <LayerGroup>
-
-                                {polyline.map((position, i) => (
-                                    <Marker key={i} position={position}>
-                                        <Popup>
-                                            Ship {ship.ship_uid} - Point {i + 1}<br />
-                                            Coordinates: {position[0]}, {position[1]}
-                                        </Popup>
-                                    </Marker>
-                                ))}
-
-                                <Polyline
-                                    pathOptions={{
+                            control={
+                                <Checkbox
+                                    checked={visibleShips[index]}
+                                    onChange={() => handleShipToggle(index)}
+                                    sx={{
                                         color: getShipColor(index),
-                                        weight: 3
+                                        "&.Mui-checked": {
+                                            color: getShipColor(index),
+                                        },
                                     }}
-                                    positions={polyline}
                                 />
-                            </LayerGroup>
-                        </LayersControl.Overlay>
-                    );
-                })}
-            </LayersControl>
-        </>
+                            }
+                            label={
+                                <Stack
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        gap: "2px",
+                                    }}
+                                >
+                                    <Typography sx={{ fontSize: "12px" }}>
+                                        {ship.ship_uid}
+                                    </Typography>
+                                </Stack>
+                            }
+                            sx={{ width: "auto", margin: "4px 0" }}
+                        />
+                    ))}
+                </Stack>
+            </Paper>
+
+            {/* Render visible ships */}
+            {ships.map((ship, index) => {
+                if (!visibleShips[index]) return null;
+
+                const polyline = ship.locations.map((loc) => [loc.lat, loc.long]);
+                const currentPos = polyline[shipPositions[index]];
+
+                return (
+                    <LayerGroup key={ship.ship_uid}>
+                        <Marker
+                            position={currentPos}
+                            eventHandlers={{
+                                click: () => setSelectedShipIndex(index),
+                            }}
+                        />
+                        <Polyline
+                            pathOptions={{
+                                color: getShipColor(index),
+                                weight: 3,
+                            }}
+                            positions={polyline}
+                        />
+                    </LayerGroup>
+                );
+            })}
+
+            {/* Ship Info Box */}
+            {selectedShipIndex !== null && (
+                <Box
+                    ref={boxControl}
+                    sx={{
+                        position: "absolute",
+                        bottom: 20,
+                        right: 20,
+                        width: "auto",
+                        backgroundColor: "white",
+                        padding: "15px",
+                        border: "1px solid #ccc",
+                        borderRadius: "8px",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                        zIndex: 1000,
+                    }}
+                >
+                    <Typography variant="body1" sx={{ marginBottom: 1 }}>
+                        Ship {ships[selectedShipIndex].ship_uid}
+                    </Typography>
+                    <Typography variant="body2" sx={{ marginBottom: 2 }}>
+                        Coordinates:{" "}
+                        {ships[selectedShipIndex].locations[
+                            shipPositions[selectedShipIndex]
+                        ].lat.toFixed(4)}
+                        ,{" "}
+                        {ships[selectedShipIndex].locations[
+                            shipPositions[selectedShipIndex]
+                        ].long.toFixed(4)}
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                        <button onClick={() => animateShip(selectedShipIndex)}>
+                            Animate
+                        </button>
+                        <button onClick={() => returnToStart(selectedShipIndex)}>
+                            Reset
+                        </button>
+                        <button onClick={() => setSelectedShipIndex(null)}>Close</button>
+                    </Box>
+                </Box>
+            )}
+        </Box>
     );
 }
 
 function getShipColor(index) {
-    const colors = ['lime', 'blue', 'red', 'orange', 'purple', 'cyan', 'magenta', 'yellow'];
+    const colors = [
+        "lime",
+        "blue",
+        "red",
+        "orange",
+        "purple",
+        "cyan",
+        "magenta",
+        "yellow",
+    ];
     return colors[index % colors.length];
 }

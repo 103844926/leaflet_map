@@ -1,7 +1,13 @@
 // src/components/MiniMap.js
 import React, { useMemo, useState, useCallback } from "react";
 import { Box } from "@mui/material";
-import { MapContainer, TileLayer, useMap, useMapEvent, Rectangle } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  useMap,
+  useMapEvent,
+  Rectangle,
+} from "react-leaflet";
 import { useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 
@@ -14,7 +20,7 @@ function MinimapBounds({ parentMap, zoom }) {
     (e) => {
       parentMap.setView(e.latlng, parentMap.getZoom());
     },
-    [parentMap]
+    [parentMap],
   );
   useMapEvent("click", onClick);
 
@@ -28,7 +34,7 @@ function MinimapBounds({ parentMap, zoom }) {
   // Listen to events on the parent map
   const handlers = useMemo(
     () => ({ move: onChange, zoom: onChange }),
-    [onChange]
+    [onChange],
   );
 
   useEffect(() => {
@@ -50,7 +56,17 @@ export function MiniMapControl({ position, zoom }) {
   const center = parentMap.getCenter();
 
   return (
-    <Box sx={{ position: "absolute", top: 10, right: 10, zIndex: 1000, border: 2, borderColor: "#000", overflow: "hidden", }}>
+    <Box
+      sx={{
+        position: "absolute",
+        top: 10,
+        right: 10,
+        zIndex: 1000,
+        border: 2,
+        borderColor: "#000",
+        overflow: "hidden",
+      }}
+    >
       <MapContainer
         center={center}
         zoom={mapZoom}
