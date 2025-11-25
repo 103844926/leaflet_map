@@ -17,18 +17,28 @@ export function ShipLayer({
   onMarkerClick,
   timeRange,
   isVisible = true,
-  interpolatedPosition, // NEW: receives interpolated position data
-  showPath = true,      // NEW: control path visibility
+  interpolatedPosition,
+  showPath = true,
 }) {
   if (!isVisible || !ship?.locations?.length) return null;
 
-  // Use interpolated position if available, otherwise fall back to first location
   const currentLoc = interpolatedPosition?.position || ship.locations[0];
   const currentPos = [currentLoc.lat, currentLoc.long];
 
-  const polyline = ship.locations.map((loc) => [loc.lat, loc.long]);
+  // Animate path: take all previous positions + current interpolated
+  let animatedPolyline = [];
+  if (interpolatedPosition) {
+    const prevIndex = interpolatedPosition.index || 0;
+    // Add all locations up to prevIndex
+    animatedPolyline = ship.locations
+      .slice(0, prevIndex + 1)
+      .map((loc) => [loc.lat, loc.long]);
+    // Add interpolated current position as the last point
+    animatedPolyline.push([currentLoc.lat, currentLoc.long]);
+  } else {
+    animatedPolyline = ship.locations.map((loc) => [loc.lat, loc.long]);
+  }
 
-  // Create custom boat icon
   const boatIcon = L.divIcon({
     html: renderToStaticMarkup(
       <DirectionsBoat
@@ -57,9 +67,9 @@ export function ShipLayer({
           pathOptions={{
             color: getShipColor(index),
             weight: 2,
-            opacity: 0.5,  // Add opacity - adjust between 0.3 to 0.7 as needed
+            opacity: 0.5,
           }}
-          positions={polyline}
+          positions={animatedPolyline}
         />
       )}
     </LayerGroup>
