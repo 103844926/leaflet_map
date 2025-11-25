@@ -8,6 +8,7 @@ export function ShipMapLayer({
   shipPositions,
   onMarkerClick,
   timeRange,
+  showPaths,
 }) {
   return (
     <>
@@ -16,10 +17,11 @@ export function ShipMapLayer({
           key={ship.ship_uid}
           ship={filteredShips[i]}
           index={i}
-          currentPositionIndex={shipPositions[i]}
+          interpolatedPosition={shipPositions[i]} // Pass the interpolated position data
           onMarkerClick={() => onMarkerClick(i)}
           timeRange={timeRange}
-          isVisible={visibleShips[i]} // <-- pass visibility here
+          isVisible={visibleShips[i]}
+          showPath={showPaths}
         />
       ))}
     </>

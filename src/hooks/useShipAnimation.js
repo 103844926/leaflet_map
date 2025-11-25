@@ -1,123 +1,106 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
+import { useSliderAnimation } from './useSliderAnimation';
 
-export function useShipAnimation(ships) {
-  const [shipPositions, setShipPositions] = useState(ships.map(() => 0));
+// Linearly interpolate between two positions
+function interpolatePosition(pos1, pos2, progress) {
+  return {
+    lat: pos1.lat + (pos2.lat - pos1.lat) * progress,
+    long: pos1.long + (pos2.long - pos1.long) * progress,
+    course: pos2.course, // Use the target course
+    speed: pos1.speed + (pos2.speed - pos1.speed) * progress,
+  };
+}
+
+export function useShipAnimation(ships, selectedTime) {
   const [selectedShipIndex, setSelectedShipIndex] = useState(null);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
-  const [isAnimatingAll, setIsAnimatingAll] = useState(false);
-  const [currentAnimationIndex, setCurrentAnimationIndex] = useState(null);
-  const [currentSimulatedTime, setCurrentSimulatedTime] = useState(null);
+  const { isAnimating, animate, stopAnimation } = useSliderAnimation(playbackSpeed);
 
-  const animationRef = useRef(null);
-  const startTimeRef = useRef(null);
+  // Calculate interpolated ship positions based on current time
+  const getShipPositionsAtTime = useCallback((currentTime) => {
+    if (!currentTime) return ships.map(() => ({ index: 0, position: null }));
 
-  // ⚡ SPEED MULTIPLIER (adjust here)
-  // Example: 960 = 24 hours simulated → 3 seconds real time
-  const SPEED = 960;
-
-  // Reset when ship data changes
-  useEffect(() => {
-    setShipPositions(ships.map(() => 0));
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
-    }
-    setIsAnimatingAll(false);
-    setCurrentAnimationIndex(null);
-    setCurrentSimulatedTime(null);
-  }, [ships]);
-
-  const animateAll = useCallback(
-    (availableTimes, onRangeChange, startTime = null) => {
-      // Toggle off
-      if (isAnimatingAll) {
-        cancelAnimationFrame(animationRef.current);
-        animationRef.current = null;
-        startTimeRef.current = null;
-        setIsAnimatingAll(false);
-        setCurrentAnimationIndex(null);
-        setCurrentSimulatedTime(null);
-        return;
+    return ships.map((ship) => {
+      if (!ship.locations?.length) {
+        return { index: 0, position: null };
       }
 
-      // No data available
-      if (!availableTimes || availableTimes.length === 0) return;
+      // Find the two waypoints to interpolate between
+      let nextIndex = ship.locations.findIndex(loc => loc.time > currentTime);
 
-      const startSimTime = startTime ?? availableTimes[0];
-      const endSimTime = availableTimes[availableTimes.length - 1];
+      // If no future waypoint, ship is at the last position
+      if (nextIndex === -1) {
+        const lastIndex = ship.locations.length - 1;
+        return {
+          index: lastIndex,
+          position: ship.locations[lastIndex]
+        };
+      }
 
-      setIsAnimatingAll(true);
-      startTimeRef.current = performance.now();
+      // If at or before first waypoint
+      if (nextIndex === 0) {
+        return {
+          index: 0,
+          position: ship.locations[0]
+        };
+      }
 
-      const step = (now) => {
-        const elapsed = now - startTimeRef.current;
+      const prevIndex = nextIndex - 1;
+      const prevLoc = ship.locations[prevIndex];
+      const nextLoc = ship.locations[nextIndex];
 
-        // Raw simulated time using stopwatch model
-        const rawSimTime = startSimTime + elapsed * SPEED;
+      // Calculate interpolation progress (0 to 1)
+      const totalTime = nextLoc.time - prevLoc.time;
+      const elapsedTime = currentTime - prevLoc.time;
+      const progress = Math.min(1, Math.max(0, elapsedTime / totalTime));
 
-        // Clamped time to prevent overshoot
-        const clampedSimTime = Math.min(rawSimTime, endSimTime);
+      // Interpolate between the two positions
+      const interpolatedPosition = interpolatePosition(prevLoc, nextLoc, progress);
 
-        // If still within animation duration, update continuously
-        if (rawSimTime < endSimTime) {
-          setCurrentSimulatedTime(clampedSimTime);
-
-          // Update ship positions
-          const newPositions = ships.map((ship) => {
-            const idx = ship.locations.findIndex(
-              (loc) => loc.time > clampedSimTime,
-            );
-            return idx === -1
-              ? ship.locations.length - 1
-              : Math.max(0, idx - 1);
-          });
-          setShipPositions(newPositions);
-
-          // Update time index
-          const closestIdx = availableTimes.findIndex(
-            (t) => t >= clampedSimTime,
-          );
-          setCurrentAnimationIndex(
-            closestIdx === -1 ? availableTimes.length - 1 : closestIdx,
-          );
-
-          // Notify parent of range change
-          if (onRangeChange) onRangeChange([startSimTime, clampedSimTime]);
-
-          animationRef.current = requestAnimationFrame(step);
-          return;
-        }
-
-        // ---- FINAL FRAME ----
-        // We DO NOT use rawSimTime here. Only clamped endSimTime.
-        setCurrentSimulatedTime(endSimTime);
-
-        // Final ship positions
-        setShipPositions(ships.map((ship) => ship.locations.length - 1));
-
-        // Final cleanup
-        animationRef.current = null;
-        startTimeRef.current = null;
-        setIsAnimatingAll(false);
-        setCurrentAnimationIndex(null);
-
-        // Notify parent with final exact time
-        if (onRangeChange) onRangeChange([startSimTime, endSimTime]);
+      return {
+        index: prevIndex,
+        position: interpolatedPosition,
+        nextIndex: nextIndex,
+        progress: progress
       };
+    });
+  }, [ships]);
 
-      animationRef.current = requestAnimationFrame(step);
-    },
-    [isAnimatingAll, ships],
+  const animateShips = useCallback((currentTime, minTime, maxTime, updateTime) => {
+    // Start from current time, but clamp to minTime..maxTime
+    let startTime = currentTime;
+    if (startTime < minTime) startTime = minTime;
+    if (startTime >= maxTime) startTime = minTime;
+
+    animate(
+      startTime,
+      maxTime,
+      (t) => {
+        // Clamp time on every frame (safety)
+        const clamped = Math.min(Math.max(t, minTime), maxTime);
+        updateTime(clamped);
+      },
+      () => {
+        console.log("Animation complete");
+      }
+    );
+  }, [animate]);
+
+  const shipPositions = useMemo(
+    () => getShipPositionsAtTime(selectedTime),
+    [getShipPositionsAtTime, selectedTime]
   );
 
   return {
-    shipPositions,
-    setShipPositions,
     selectedShipIndex,
     setSelectedShipIndex,
-    animateAll,
-    isAnimatingAll,
-    currentAnimationIndex,
-    currentSimulatedTime,
+    getShipPositionsAtTime,
+    shipPositions,
+    isAnimating,
+    animate: animateShips,
+    stopAnimation,
+    playbackSpeed,
+    setPlaybackSpeed,
   };
 }

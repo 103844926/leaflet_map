@@ -1,243 +1,178 @@
-import React, { useState } from "react";
-import {
-  Stack,
-  Button,
-  IconButton,
-  Box,
-  Paper,
-  Typography,
-  Popover,
-  TextField,
-  Collapse,
-} from "@mui/material";
-import { ExpandMore, ExpandLess } from "@mui/icons-material";
-import {
-  LocalizationProvider,
-  DatePicker,
-  MultiSectionDigitalClock,
-} from "@mui/x-date-pickers";
+import React, { useState, useEffect, useRef } from "react";
+import { Box, IconButton, Collapse, Typography, Slider, Paper, Stack, Popover } from "@mui/material";
+import { PlayArrow, Pause, CalendarMonth, Speed, RestartAlt } from "@mui/icons-material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { useShipTime } from "@/hooks";
+import { TimeWindowPicker } from "@/components";
 
 export function ShipTimeControl({
-  ships,
+  selectedTime,
+  minTime,
+  maxTime,
   onTimeChange,
-  controlRef,
-  isAnimating = false,
-  currentSimulatedTime = null,
-  availableTimes: externalAvailableTimes = null,
-  animateAll,
-  isAnimatingAll,
+  isAnimating,
+  playbackSpeed,
+  onAnimate,
+  onPlaybackSpeedChange,
 }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
+  const [windowStart, setWindowStart] = useState(minTime);
+  const [windowEnd, setWindowEnd] = useState(maxTime);
+  const [showRangePicker, setShowRangePicker] = useState(false);
+  const [showPlaybackPicker, setPlaybackPicker] = useState(false);
 
-  const { availableTimes, selectedTime, minTime, maxTime, updateTime } =
-    useShipTime(
-      ships,
-      externalAvailableTimes,
-      isAnimating,
-      currentSimulatedTime,
-      onTimeChange,
-    );
+  // Staging state for the date pickers
+  const [stagingStart, setStagingStart] = useState(minTime);
+  const [stagingEnd, setStagingEnd] = useState(maxTime);
 
-  if (!availableTimes.length) return null;
+  const playbackRef = useRef(null);
+  const onTimeChangeRef = useRef(onTimeChange);
+  const selectedTimeRef = useRef(selectedTime);
+  const atEnd = selectedTime >= windowEnd - 1;
+
+  useEffect(() => {
+    onTimeChangeRef.current = onTimeChange;
+    selectedTimeRef.current = selectedTime;
+  });
+
+  useEffect(() => {
+    setWindowStart(minTime);
+    setWindowEnd(maxTime);
+  }, [minTime, maxTime]);
+
+  // Snap selectedTime to window bounds only when window changes
+  // Only snap if window bounds are valid
+  useEffect(() => {
+    if (windowStart == null) setWindowStart(minTime);
+    if (windowEnd == null) setWindowEnd(maxTime);
+    // Also update staging when props change
+    if (stagingStart == null) setStagingStart(minTime);
+    if (stagingEnd == null) setStagingEnd(maxTime);
+  }, [minTime, maxTime, windowStart, windowEnd, stagingStart, stagingEnd]);
+
+  // Close range picker during animation
+  useEffect(() => {
+    if (isAnimating) setShowRangePicker(false);
+  }, [isAnimating]);
+
+  const formatDateTime = (ts) =>
+    ts
+      ? new Date(ts).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+      : "No data";
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Paper
-        ref={controlRef}
+        elevation={8}
         sx={{
-          position: "absolute",
-          top: 20,
+          position: "fixed",
+          bottom: 32,
           left: "50%",
           transform: "translateX(-50%)",
-          width: 600,
-          backgroundColor: "white",
-          padding: 2,
-          borderRadius: 2,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          pointerEvents: "auto",
+          px: 2,
+          py: 1.5,
+          minWidth: 600,
+          maxWidth: 768,
           zIndex: 1000,
+          borderRadius: 4,
         }}
       >
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ mb: isExpanded ? 2 : 0 }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            Time Clock{" "}
-            {isAnimating && (
-              <span style={{ color: "#1976d2" }}>(Animating...)</span>
-            )}
-          </Typography>
+        <Collapse in={showRangePicker}>
+          <TimeWindowPicker
+            minTime={minTime}
+            maxTime={maxTime}
+            stagingStart={stagingStart}
+            stagingEnd={stagingEnd}
+            setStagingStart={setStagingStart}
+            setStagingEnd={setStagingEnd}
+            setWindowStart={setWindowStart}
+            setWindowEnd={setWindowEnd}
+            selectedTime={selectedTime}
+            onTimeChange={onTimeChange}
+            onClose={() => setShowRangePicker(false)}
+          />
+        </Collapse>
 
-          <IconButton size="small" onClick={() => setIsExpanded(!isExpanded)}>
-            {isExpanded ? <ExpandLess /> : <ExpandMore />}
+        <Stack direction="row" spacing={2} mb={1} width="100%" alignItems="flex-start">
+          <IconButton
+            size="small"
+            onClick={() =>
+              onAnimate(selectedTime, windowStart, windowEnd, onTimeChange)
+            }
+            sx={{
+              color: "white",
+              backgroundColor: "black",
+              "&:hover": { backgroundColor: "grey.800" },
+            }}
+          >
+            {isAnimating
+              ? <Pause />
+              : atEnd
+                ? <RestartAlt />
+                : <PlayArrow />
+            }
+          </IconButton>
+
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={() => setPlaybackPicker((p) => !p)}
+            ref={playbackRef}
+          >
+            <Speed />
+          </IconButton>
+
+          <Box sx={{ flex: 1, mx: 1 }}>
+            <Slider
+              value={selectedTime || windowEnd}
+              min={windowStart}
+              max={windowEnd}
+              onChange={(_, v) => !isAnimating && onTimeChange(v)}
+              step={(windowEnd - windowStart) / 1000}
+              valueLabelDisplay="auto"
+              valueLabelFormat={formatDateTime}
+            />
+            <Typography variant="body2" fontWeight="600" sx={{ fontSize: "0.8rem" }}>
+              {formatDateTime(selectedTime)}
+            </Typography>
+          </Box>
+
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={() => setShowRangePicker(!showRangePicker)}
+            disabled={isAnimating}
+          >
+            <CalendarMonth />
           </IconButton>
         </Stack>
-
-        <Collapse in={isExpanded}>
-          <Box sx={{ px: 2 }}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ marginBottom: isExpanded ? 2 : 0 }}
-            >
-              {/* Time Picker */}
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant="caption"
-                  sx={{ display: "block", mb: 0.5, color: "#666" }}
-                >
-                  Time
-                </Typography>
-
-                <TextField
-                  value={
-                    selectedTime
-                      ? formatTime24(new Date(selectedTime)).split(" ")[1] // Gets only "HH:mm:ss" part
-                      : "--:--:--"
-                  }
-                  onClick={(e) => !isAnimating && setAnchorEl(e.currentTarget)}
-                  readOnly
-                  disabled={isAnimating}
-                  fullWidth
-                  sx={{
-                    cursor: isAnimating ? "default" : "pointer",
-                    "& input": {
-                      textAlign: "center",
-                      fontSize: "1.5rem",
-                      fontFamily: "monospace",
-                    },
-                  }}
-                />
-
-                {/* Popover with MultiSectionDigitalClock */}
-                <Popover
-                  open={open}
-                  anchorEl={anchorEl}
-                  onClose={() => {
-                    // Force blur any focused element inside the popover
-                    if (document.activeElement instanceof HTMLElement) {
-                      document.activeElement.blur();
-                    }
-                    setAnchorEl(null);
-                  }}
-                  anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: "center",
-                  }}
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "center",
-                  }}
-                >
-                  <MultiSectionDigitalClock
-                    value={selectedTime ? new Date(selectedTime) : null}
-                    onChange={(newValue) => {
-                      if (newValue) {
-                        const current = new Date(selectedTime);
-                        current.setHours(newValue.getHours());
-                        current.setMinutes(newValue.getMinutes());
-                        current.setSeconds(newValue.getSeconds());
-                        updateTime(current.getTime());
-                      }
-                      // Optional: close after selection
-                      // setAnchorEl(null);
-                    }}
-                    views={["hours", "minutes", "seconds"]}
-                    timeSteps={{ hours: 1, minutes: 1, seconds: 1 }}
-                    ampm={false}
-                  />
-                </Popover>
-              </Box>
-
-              {/* Date Picker */}
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant="caption"
-                  sx={{ display: "block", mb: 0.5, color: "#666" }}
-                >
-                  Date
-                </Typography>
-                <DatePicker
-                  value={selectedTime ? new Date(selectedTime) : null}
-                  onChange={(newValue) => {
-                    if (newValue) {
-                      // Preserve the time, update only date
-                      const current = new Date(selectedTime);
-                      newValue.setHours(current.getHours());
-                      newValue.setMinutes(current.getMinutes());
-                      newValue.setSeconds(current.getSeconds());
-                      updateTime(newValue.getTime());
-                    }
-                  }}
-                  disabled={isAnimating}
-                  minDate={new Date(minTime)}
-                  maxDate={new Date(maxTime)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      sx: { fontSize: "0.9rem", "& input": { padding: 1 } },
-                    },
-                  }}
-                />
-              </Box>
-            </Stack>
-
-            {/* Show range info */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                mt: 1,
-                fontSize: 12,
-                color: "#666",
-              }}
-            >
-              <span>Min: {formatTime24(minTime)}</span>
-              <span>Max: {formatTime24(maxTime)}</span>
-            </Box>
-
-            <Button
-              variant="contained"
-              onClick={() => {
-                if (!selectedTime || availableTimes.length === 0) return;
-
-                // Clamp selectedTime within available range
-                const clampedTime = Math.max(
-                  minTime,
-                  Math.min(maxTime, selectedTime),
-                );
-
-                // Use animateAll passed from parent
-                animateAll(clampedTime);
-              }}
-              sx={{
-                textTransform: "none",
-                backgroundColor: isAnimatingAll ? "#dc2c29ff" : "#1976d2",
-                "&:hover": {
-                  backgroundColor: isAnimatingAll ? "#931d1bff" : "#1565c0",
-                },
-              }}
-            >
-              {isAnimatingAll ? "Stop All" : "Run All From Current"}
-            </Button>
-          </Box>
-        </Collapse>
       </Paper>
+
+      <Popover
+        open={showPlaybackPicker}
+        anchorEl={playbackRef.current}
+        onClose={() => setPlaybackPicker(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Box sx={{ py: 2.5, px: 1 }}>
+          <Slider
+            orientation="vertical"
+            value={playbackSpeed}
+            min={0.2}
+            max={4}
+            step={0.2}
+            onChange={(_, v) => onPlaybackSpeedChange(v)}
+            sx={{ height: 120, "& .MuiSlider-thumb": { width: 16, height: 16 } }}
+          />
+        </Box>
+      </Popover>
     </LocalizationProvider>
   );
-}
-
-// 24-hour full datetime YYYY-MM-DD HH:mm:ss
-function formatTime24(timestamp) {
-  if (!timestamp) return "--";
-  const d = new Date(timestamp);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
 }

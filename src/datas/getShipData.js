@@ -1,8 +1,7 @@
-// shipDataLoader.js
 let cachedData = null;
 
-export const loadShipData = async () => {
-  if (cachedData) return cachedData;
+export const loadShipData = async (forceRefresh = false) => {
+  if (cachedData && !forceRefresh) return cachedData;
 
   try {
     const response = await fetch("/mockdata.txt");
@@ -15,8 +14,8 @@ export const loadShipData = async () => {
   }
 };
 
-export const getShipData = async () => {
-  const data = await loadShipData();
+export const getShipData = async (forceRefresh = false) => {
+  const data = await loadShipData(forceRefresh);
   if (!data || !data.data) return [];
 
   return data.data.map((ship) => ({
@@ -28,6 +27,7 @@ export const getShipData = async () => {
         lat: loc.lat,
         long: loc.long,
         time: loc.time,
+        course: loc.course,
         timeFormatted: new Date(loc.time).toLocaleString("en-GB", {
           year: "numeric",
           month: "2-digit",

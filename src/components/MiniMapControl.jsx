@@ -48,7 +48,7 @@ function MinimapBounds({ parentMap, zoom }) {
 }
 
 // This component must be used INSIDE a MapContainer
-export function MiniMapControl({ position, zoom }) {
+export function MiniMapControl({ zoom }) {
   const parentMap = useMap();
   const mapZoom = zoom || 0;
 

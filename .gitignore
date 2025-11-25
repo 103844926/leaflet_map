@@ -11,6 +11,9 @@
 # production
 /build
 
+# Backup old code
+src/placeholderFile/
+
 # misc
 .DS_Store
 .env.local

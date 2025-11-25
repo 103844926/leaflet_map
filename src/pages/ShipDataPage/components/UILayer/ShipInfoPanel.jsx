@@ -1,13 +1,35 @@
 import { React } from "react";
 import "leaflet/dist/leaflet.css";
 import { Box, Typography } from "@mui/material";
-import { useCurrentShipPosition } from "@/hooks";
 
 export function ShipInfoPanel({ ship, timeRange, onClose, controlRef }) {
-  const current = useCurrentShipPosition(ship, timeRange);
-  const { location: loc } = current;
+  // Integrated position logic - no need for separate hook
+  const getCurrentPosition = () => {
+    if (!ship?.locations?.length) return null;
+
+    let currentIndex = 0;
+
+    if (timeRange) {
+      const lastVisibleIndex = ship.locations.findIndex(
+        (loc) => loc.time > timeRange[1],
+      );
+      currentIndex =
+        lastVisibleIndex === -1
+          ? ship.locations.length - 1
+          : Math.max(0, lastVisibleIndex - 1);
+    }
+
+    return {
+      index: currentIndex,
+      location: ship.locations[currentIndex],
+    };
+  };
+
+  const current = getCurrentPosition();
 
   if (!current) return null;
+
+  const { location: loc } = current;
 
   return (
     <Box

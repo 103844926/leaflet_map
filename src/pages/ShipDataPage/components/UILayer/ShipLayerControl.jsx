@@ -1,23 +1,14 @@
 import { React, useState } from "react";
 import "leaflet/dist/leaflet.css";
-import {
-  Paper,
-  Typography,
-  FormControlLabel,
-  Checkbox,
-  Stack,
-  IconButton,
-  Collapse,
-  Button,
-  Box,
-} from "@mui/material";
+import { Paper, Typography, FormControlLabel, Checkbox, Stack, IconButton, Divider, Collapse } from "@mui/material";
 import { ExpandMore, ExpandLess } from "@mui/icons-material";
 
 export function ShipLayerControl({
   ships,
   visibleShips,
   onShipToggle,
-  onAnimateAll,
+  showPaths,
+  onPathToggle,
   isAnimatingAll,
   controlRef,
 }) {
@@ -48,7 +39,7 @@ export function ShipLayerControl({
         sx={{ marginBottom: isExpanded ? 2 : 0 }}
       >
         <Typography variant="h6" sx={{ fontSize: "16px", fontWeight: "bold" }}>
-          Ships
+          Ships Control
         </Typography>
         <IconButton
           size="small"
@@ -62,6 +53,26 @@ export function ShipLayerControl({
       {/* Collapsible Ship List */}
       <Collapse in={isExpanded}>
         <Stack sx={{ display: "flex", flexDirection: "column" }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showPaths}
+                onChange={(e) => onPathToggle(e.target.checked)}
+              />
+            }
+            label={
+              <Typography sx={{ fontSize: "14px" }}>
+                Show All Paths
+              </Typography>
+            }
+          />
+
+          <Divider sx={{ my: 1 }} />
+
+          <Typography variant="subtitle2" gutterBottom>
+            Ships
+          </Typography>
+
           {ships.map((ship, index) => (
             <FormControlLabel
               key={ship.ship_uid}
@@ -90,24 +101,6 @@ export function ShipLayerControl({
             />
           ))}
         </Stack>
-
-        {/* Animate All Button */}
-        <Box sx={{ mt: 2, pt: 2, borderTop: "1px solid #e0e0e0" }}>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={onAnimateAll}
-            sx={{
-              textTransform: "none",
-              backgroundColor: isAnimatingAll ? "#dc2c29ff" : "#1976d2",
-              "&:hover": {
-                backgroundColor: isAnimatingAll ? "#931d1bff" : "#1565c0",
-              },
-            }}
-          >
-            {isAnimatingAll ? "Stop All" : "Run All From Start"}
-          </Button>
-        </Box>
       </Collapse>
     </Paper>
   );

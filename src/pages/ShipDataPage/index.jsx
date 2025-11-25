@@ -1,125 +1,72 @@
-import {
-  React,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
+import { React, useState, useCallback, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer } from "react-leaflet";
 import { Box } from "@mui/material";
-import {
-  ShipMapLayer,
-  ShipInfoPanel,
-  ShipLayerControl,
-  ShipTimeControl,
-} from "./components";
+import { ShipMapLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl } from "./components";
 import { MiniMapControl } from "@/components";
-import { getShipData } from "@/datas";
-import { useShipVisible, useShipAnimation, useLeafletControl } from "@/hooks";
-import getCurrentShipPosition from "./getCurrentShipPosition";
+import { useShipAnimation, useShipTime, useShipDataPageLogic, useLeafletControl } from "@/hooks";
 
 export default function ShipDataPage() {
   // --------------------
   // Basic state
   // --------------------
-  const [ships, setShips] = useState([]);
-  const [initialCenter, setInitialCenter] = useState(null);
-  const [timeRange, setTimeRange] = useState(null);
-  const animationIntervalRef = useRef(null);
+  const [showPaths, setShowPaths] = useState(true);
+
   const mapRef = useRef(null);
 
   const paperControl = useLeafletControl();
   const boxControl = useLeafletControl();
-  const timeControl = useLeafletControl();
+
+
+  // --------------------------
+  // Load ships data and filter
+  // --------------------------
+  const {
+    ships,
+    initialCenter,
+    timeRange,
+    setTimeRange,
+    visibleShips,
+    handleShipToggle,
+    filteredShips,
+  } = useShipDataPageLogic();
 
   // --------------------
-  // Ship visibility
+  // Time management (no animation)
   // --------------------
-  const { visibleShips, handleShipToggle } = useShipVisible(ships);
+  const handleTimeChange = useCallback((range) => setTimeRange(range), [setTimeRange]);
+
+  const {
+    availableTimes,
+    selectedTime,
+    minTime,
+    maxTime,
+    updateTime,
+  } = useShipTime(ships, handleTimeChange);
 
   // --------------------
-  // Animation + Selected Ship
+  // Animation + Ship positions
   // --------------------
   const {
-    shipPositions,
     selectedShipIndex,
     setSelectedShipIndex,
-    animateAll,
-    isAnimatingAll,
-    currentSimulatedTime,
-  } = useShipAnimation(ships);
+    shipPositions,
+    isAnimating,
+    animate,
+    stopAnimation,
+    playbackSpeed,
+    setPlaybackSpeed,
+  } = useShipAnimation(ships, selectedTime);
 
-  // --------------------
-  // Available Times
-  // --------------------
-  const availableTimes = useMemo(() => {
-    const timeSet = new Set();
-    ships.forEach((ship) =>
-      ship.locations.forEach((loc) => timeSet.add(loc.time)),
-    );
-    return Array.from(timeSet).sort((a, b) => a - b);
-  }, [ships]);
-
-  const handleTimeChange = useCallback((range) => setTimeRange(range), []);
-
-  // --------------------
-  // Animate All
-  // --------------------
-
-  const handleAnimateAll = () => {
-    animateAll(availableTimes, handleTimeChange);
-  };
-
-  const handleAnimateAllFromTime = (startTime = null) => {
-    animateAll(availableTimes, handleTimeChange, startTime);
-  };
-
-  // --------------------
-  // Filtered Ships
-  // --------------------
-  const filteredShips = useMemo(() => {
-    return ships.map((ship) => {
-      if (!timeRange) return ship;
-
-      const [startTime, currentTime] = timeRange;
-
-      const filtered = ship.locations.filter(
-        (loc) => loc.time <= currentTime, // show all points up to current simulated time
-      );
-
-      return {
-        ...ship,
-        locations: filtered.length ? filtered : [ship.locations[0]],
-      };
-    });
-  }, [ships, timeRange]);
-
-  // --------------------
-  // Load Ship Data
-  // --------------------
-  useEffect(() => {
-    const load = async () => {
-      const data = await getShipData();
-      setShips(data);
-
-      const allLats = data.flatMap((s) => s.locations.map((l) => l.lat));
-      const allLongs = data.flatMap((s) => s.locations.map((l) => l.long));
-      const centerLat = allLats.reduce((a, b) => a + b, 0) / allLats.length;
-      const centerLong = allLongs.reduce((a, b) => a + b, 0) / allLongs.length;
-
-      setInitialCenter([centerLat, centerLong]);
-    };
-    load();
-  }, []);
-
-  useEffect(
-    () => () => {
-      if (animationIntervalRef.current)
-        clearInterval(animationIntervalRef.current);
+  // Wrapper to update time (stops animation if user touches slider)
+  const handleManualTimeUpdate = useCallback(
+    (newTime) => {
+      if (isAnimating) {
+        stopAnimation();
+      }
+      updateTime(newTime);
     },
-    [],
+    [isAnimating, stopAnimation, updateTime],
   );
 
   if (!initialCenter) return <div>Loading map...</div>;
@@ -157,30 +104,24 @@ export default function ShipDataPage() {
           ships={ships}
           visibleShips={visibleShips}
           onShipToggle={(index) => {
-            const willBeVisible = !visibleShips[index];
+            const wasVisible = visibleShips[index];
             handleShipToggle(index);
-            if (!willBeVisible || !mapRef.current) return;
+            if (wasVisible || !mapRef.current) return;
 
-            const ship = ships[index];
-            const current = getCurrentShipPosition(ship, timeRange);
-            if (!current) return;
-
-            const { location: loc } = current;
-            mapRef.current.flyTo(
-              [loc.lat, loc.long],
-              mapRef.current.getZoom(),
-              { duration: 1.5 },
-            );
+            const pos = shipPositions[index]?.position;
+            if (pos) mapRef.current.flyTo([pos.lat, pos.long], mapRef.current.getZoom(), { duration: 1.5 });
           }}
-          onAnimateAll={handleAnimateAll}
-          isAnimatingAll={isAnimatingAll}
+
+          showPaths={showPaths}
+          onPathToggle={setShowPaths}
+          isAnimatingAll={isAnimating}
           controlRef={paperControl}
         />
 
         {selectedShipIndex !== null && filteredShips[selectedShipIndex] && (
           <ShipInfoPanel
             ship={filteredShips[selectedShipIndex]}
-            timeRange={timeRange} // pass timeRange instead
+            timeRange={timeRange}
             onClose={() => setSelectedShipIndex(null)}
             controlRef={boxControl}
           />
@@ -193,20 +134,23 @@ export default function ShipDataPage() {
           shipPositions={shipPositions}
           onMarkerClick={setSelectedShipIndex}
           timeRange={timeRange}
+          showPaths={showPaths}
         />
 
-        <MiniMapControl position={initialCenter} zoom={5} />
+        <MiniMapControl zoom={5} />
       </MapContainer>
 
       <ShipTimeControl
-        ships={ships}
-        onTimeChange={handleTimeChange}
-        controlRef={timeControl}
-        isAnimating={isAnimatingAll}
-        currentSimulatedTime={currentSimulatedTime}
+        selectedTime={selectedTime}
+        minTime={minTime}
+        maxTime={maxTime}
         availableTimes={availableTimes}
-        animateAll={handleAnimateAllFromTime}
-        isAnimatingAll={isAnimatingAll}
+        isAnimating={isAnimating}
+        playbackSpeed={playbackSpeed}
+        onTimeChange={handleManualTimeUpdate}
+        onAnimate={animate}
+        onStop={stopAnimation}
+        onPlaybackSpeedChange={setPlaybackSpeed}
       />
     </Box>
   );
