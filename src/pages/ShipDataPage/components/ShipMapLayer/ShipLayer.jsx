@@ -13,6 +13,7 @@ const getShipColor = (index) => {
 
 export function ShipLayer({
   ship,
+  fullRouteShip, // NEW: unfiltered ship data for full route
   index,
   onMarkerClick,
   timeRange,
@@ -24,6 +25,9 @@ export function ShipLayer({
 
   const currentLoc = interpolatedPosition?.position || ship.locations[0];
   const currentPos = [currentLoc.lat, currentLoc.long];
+
+  // Full route: all locations from the unfiltered ship
+  const fullRoute = fullRouteShip?.locations?.map((loc) => [loc.lat, loc.long]) || [];
 
   // Animate path: take all previous positions + current interpolated
   let animatedPolyline = [];
@@ -63,14 +67,29 @@ export function ShipLayer({
         eventHandlers={{ click: onMarkerClick }}
       />
       {showPath && (
-        <Polyline
-          pathOptions={{
-            color: getShipColor(index),
-            weight: 2,
-            opacity: 0.5,
-          }}
-          positions={animatedPolyline}
-        />
+        <>
+          {/* Full route - dotted line (unfiltered) */}
+          {fullRoute.length > 0 && (
+            <Polyline
+              pathOptions={{
+                color: getShipColor(index),
+                weight: 2,
+                opacity: 0.3,
+                dashArray: "5, 10", // Creates dotted pattern
+              }}
+              positions={fullRoute}
+            />
+          )}
+          {/* Animated path - solid line (filtered) */}
+          <Polyline
+            pathOptions={{
+              color: getShipColor(index),
+              weight: 3,
+              opacity: 0.8,
+            }}
+            positions={animatedPolyline}
+          />
+        </>
       )}
     </LayerGroup>
   );

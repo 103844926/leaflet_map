@@ -1,6 +1,7 @@
+// ShipTimeControl.jsx (Clean + Simplified)
 import React, { useState, useEffect, useRef } from "react";
 import { Box, IconButton, Collapse, Typography, Slider, Paper, Stack, Popover } from "@mui/material";
-import { PlayArrow, Pause, CalendarMonth, Speed, RestartAlt } from "@mui/icons-material";
+import { PlayArrow, Pause, CalendarMonth, Speed, RestartAlt, FiberManualRecord, Stop } from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { TimeWindowPicker } from "@/components";
@@ -14,42 +15,31 @@ export function ShipTimeControl({
   playbackSpeed,
   onAnimate,
   onPlaybackSpeedChange,
+  mapRef,
+  isRecordingActive,
+  onRecordingButtonClick  // ADD THIS PROP
 }) {
   const [windowStart, setWindowStart] = useState(minTime);
   const [windowEnd, setWindowEnd] = useState(maxTime);
   const [showRangePicker, setShowRangePicker] = useState(false);
   const [showPlaybackPicker, setPlaybackPicker] = useState(false);
 
-  // Staging state for the date pickers
+  // Staging for time window picker
   const [stagingStart, setStagingStart] = useState(minTime);
   const [stagingEnd, setStagingEnd] = useState(maxTime);
 
   const playbackRef = useRef(null);
-  const onTimeChangeRef = useRef(onTimeChange);
-  const selectedTimeRef = useRef(selectedTime);
   const atEnd = selectedTime >= windowEnd - 1;
 
-  useEffect(() => {
-    onTimeChangeRef.current = onTimeChange;
-    selectedTimeRef.current = selectedTime;
-  });
-
+  // --- Sync when min/max changes ---
   useEffect(() => {
     setWindowStart(minTime);
     setWindowEnd(maxTime);
+    setStagingStart(minTime);
+    setStagingEnd(maxTime);
   }, [minTime, maxTime]);
 
-  // Snap selectedTime to window bounds only when window changes
-  // Only snap if window bounds are valid
-  useEffect(() => {
-    if (windowStart == null) setWindowStart(minTime);
-    if (windowEnd == null) setWindowEnd(maxTime);
-    // Also update staging when props change
-    if (stagingStart == null) setStagingStart(minTime);
-    if (stagingEnd == null) setStagingEnd(maxTime);
-  }, [minTime, maxTime, windowStart, windowEnd, stagingStart, stagingEnd]);
-
-  // Close range picker during animation
+  // --- Close range picker when animating ---
   useEffect(() => {
     if (isAnimating) setShowRangePicker(false);
   }, [isAnimating]);
@@ -62,7 +52,7 @@ export function ShipTimeControl({
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-        hour12: false,
+        hour12: false
       })
       : "No data";
 
@@ -80,9 +70,10 @@ export function ShipTimeControl({
           minWidth: 600,
           maxWidth: 768,
           zIndex: 1000,
-          borderRadius: 4,
+          borderRadius: 4
         }}
       >
+        {/* RANGE PICKER */}
         <Collapse in={showRangePicker}>
           <TimeWindowPicker
             minTime={minTime}
@@ -100,34 +91,61 @@ export function ShipTimeControl({
         </Collapse>
 
         <Stack direction="row" spacing={2} mb={1} width="100%" alignItems="flex-start">
+          {/* PLAY / PAUSE / RESTART */}
+          {!isRecordingActive && (
+            <IconButton
+              size="small"
+              onClick={() =>
+                onAnimate(selectedTime, windowStart, windowEnd, onTimeChange)
+              }
+              sx={{
+                color: "white",
+                backgroundColor: "black",
+                "&:hover": { backgroundColor: "grey.800" }
+              }}
+            >
+              {isAnimating ? (
+                <Pause />
+              ) : atEnd ? (
+                <RestartAlt />
+              ) : (
+                <PlayArrow />
+              )}
+            </IconButton>
+          )}
+
+          {/* RECORDING BUTTON - stays here for easy access */}
           <IconButton
             size="small"
-            onClick={() =>
-              onAnimate(selectedTime, windowStart, windowEnd, onTimeChange)
-            }
+            onClick={onRecordingButtonClick}
             sx={{
               color: "white",
-              backgroundColor: "black",
-              "&:hover": { backgroundColor: "grey.800" },
+              backgroundColor: isRecordingActive ? "error.main" : "success.main",
+              "&:hover": { backgroundColor: isRecordingActive ? "error.dark" : "success.dark" }
             }}
           >
-            {isAnimating
-              ? <Pause />
-              : atEnd
-                ? <RestartAlt />
-                : <PlayArrow />
-            }
+            {isRecordingActive ? <Stop /> : <FiberManualRecord />}
           </IconButton>
 
-          <IconButton
-            size="small"
-            color="inherit"
-            onClick={() => setPlaybackPicker((p) => !p)}
-            ref={playbackRef}
-          >
-            <Speed />
-          </IconButton>
+          {(isRecordingActive) && (
+            <Typography sx={{ ml: 2, fontWeight: "bold", color: "error.main" }}>
+              RECORDING
+            </Typography>
+          )}
 
+          {/* PLAYBACK SPEED POPOVER BUTTON */}
+          {!isRecordingActive && (
+            <IconButton
+              size="small"
+              color="inherit"
+              onClick={() => setPlaybackPicker((p) => !p)}
+              ref={playbackRef}
+            >
+              <Speed />
+            </IconButton>
+          )}
+
+          {/* SLIDER */}
           <Box sx={{ flex: 1, mx: 1 }}>
             <Slider
               value={selectedTime || windowEnd}
@@ -137,23 +155,35 @@ export function ShipTimeControl({
               step={(windowEnd - windowStart) / 1000}
               valueLabelDisplay="auto"
               valueLabelFormat={formatDateTime}
+              disabled={isRecordingActive}
             />
-            <Typography variant="body2" fontWeight="600" sx={{ fontSize: "0.8rem" }}>
+
+            <Typography
+              variant="body2"
+              fontWeight="600"
+              sx={{ fontSize: "0.8rem" }}
+            >
               {formatDateTime(selectedTime)}
             </Typography>
           </Box>
 
-          <IconButton
-            size="small"
-            color="inherit"
-            onClick={() => setShowRangePicker(!showRangePicker)}
-            disabled={isAnimating}
-          >
-            <CalendarMonth />
-          </IconButton>
+
+          {/* RANGE PICKER BUTTON */}
+          {!isRecordingActive && (
+            < IconButton
+              size="small"
+              color="inherit"
+              onClick={() => setShowRangePicker((v) => !v)}
+              disabled={isAnimating}
+            >
+              <CalendarMonth />
+            </IconButton>
+          )}
+
         </Stack>
       </Paper>
 
+      {/* PLAYBACK SPEED POPOVER */}
       <Popover
         open={showPlaybackPicker}
         anchorEl={playbackRef.current}
@@ -169,10 +199,10 @@ export function ShipTimeControl({
             max={4}
             step={0.2}
             onChange={(_, v) => onPlaybackSpeedChange(v)}
-            sx={{ height: 120, "& .MuiSlider-thumb": { width: 16, height: 16 } }}
+            sx={{ height: 120 }}
           />
         </Box>
       </Popover>
-    </LocalizationProvider>
+    </LocalizationProvider >
   );
 }

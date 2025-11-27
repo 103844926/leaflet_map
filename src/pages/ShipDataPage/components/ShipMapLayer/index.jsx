@@ -15,9 +15,10 @@ export function ShipMapLayer({
       {ships.map((ship, i) => (
         <ShipLayer
           key={ship.ship_uid}
-          ship={filteredShips[i]}
+          ship={filteredShips[i]} // For animated path
+          fullRouteShip={ships[i]} // For complete dotted path
           index={i}
-          interpolatedPosition={shipPositions[i]} // Pass the interpolated position data
+          interpolatedPosition={shipPositions[i]}
           onMarkerClick={() => onMarkerClick(i)}
           timeRange={timeRange}
           isVisible={visibleShips[i]}

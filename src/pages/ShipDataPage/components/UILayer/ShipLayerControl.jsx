@@ -18,9 +18,9 @@ export function ShipLayerControl({
     <Paper
       ref={controlRef}
       sx={{
-        position: "absolute",
-        bottom: 20,
-        left: 20,
+        position: "fixed",
+        bottom: 32,
+        left: 32,
         width: "auto",
         maxHeight: "80vh",
         overflowY: "auto",
