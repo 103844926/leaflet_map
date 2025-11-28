@@ -7,6 +7,7 @@ import { MiniMapControl, RecordingControl } from "@/components";
 import { useShipAnimation, useShipTime, useShipDataPageLogic, useLeafletControl } from "@/hooks";
 
 export default function ShipDataPage() {
+
   // --------------------
   // Basic state
   // --------------------
@@ -21,7 +22,7 @@ export default function ShipDataPage() {
   const [isRecordingActive, setIsRecordingActive] = useState(false);
   const [showRecordingDialog, setShowRecordingDialog] = useState(false);
   const [shouldStopRecording, setShouldStopRecording] = useState(false);
-
+  const [recordingShipIndex, setRecordingShipIndex] = useState(null);
 
   // --------------------------
   // Load ships data and filter
@@ -34,6 +35,7 @@ export default function ShipDataPage() {
     visibleShips,
     handleShipToggle,
     filteredShips,
+    movementMarks,
   } = useShipDataPageLogic();
 
   // --------------------
@@ -62,6 +64,7 @@ export default function ShipDataPage() {
     playbackSpeed,
     setPlaybackSpeed,
   } = useShipAnimation(ships, selectedTime);
+
 
   // Wrapper to update time (stops animation if user touches slider)
   const handleManualTimeUpdate = useCallback(
@@ -150,6 +153,7 @@ export default function ShipDataPage() {
           onMarkerClick={setSelectedShipIndex}
           timeRange={timeRange}
           showPaths={showPaths}
+          recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
         />
 
         <MiniMapControl zoom={5} />
@@ -226,6 +230,9 @@ export default function ShipDataPage() {
         onStartAnimation={(start, end) => animate(start, start, end, updateTime)}
         onStopAnimation={stopAnimation}
         mapRef={mapRef}
+        ships={ships}
+        selectedRecordingShip={recordingShipIndex}
+        onRecordingShipChange={setRecordingShipIndex}
         minTime={minTime}
         maxTime={maxTime}
         selectedTime={selectedTime}
@@ -251,7 +258,8 @@ export default function ShipDataPage() {
         onStop={stopAnimation}
         onPlaybackSpeedChange={setPlaybackSpeed}
         mapRef={mapRef}
-        isRecordingActive={isRecordingActive} // ADD 
+        isRecordingActive={isRecordingActive}
+        movementMarks={movementMarks}
         onRecordingButtonClick={() => {
           if (isRecordingActive) {
             // Stop recording
@@ -261,7 +269,7 @@ export default function ShipDataPage() {
             setShowRecordingDialog(true);
             setShouldStopRecording(false);
           }
-        }} // ADD
+        }}
       />
     </Box>
   );

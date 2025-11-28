@@ -1,6 +1,6 @@
 // ShipTimeControl.jsx (Clean + Simplified)
 import React, { useState, useEffect, useRef } from "react";
-import { Box, IconButton, Collapse, Typography, Slider, Paper, Stack, Popover } from "@mui/material";
+import { Box, IconButton, Collapse, Typography, Slider, Paper, Stack, Popover, Tooltip } from "@mui/material";
 import { PlayArrow, Pause, CalendarMonth, Speed, RestartAlt, FiberManualRecord, Stop } from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -17,7 +17,8 @@ export function ShipTimeControl({
   onPlaybackSpeedChange,
   mapRef,
   isRecordingActive,
-  onRecordingButtonClick  // ADD THIS PROP
+  onRecordingButtonClick,
+  movementMarks = [],  // ADD THIS PROP
 }) {
   const [windowStart, setWindowStart] = useState(minTime);
   const [windowEnd, setWindowEnd] = useState(maxTime);
@@ -156,6 +157,35 @@ export function ShipTimeControl({
               valueLabelDisplay="auto"
               valueLabelFormat={formatDateTime}
               disabled={isRecordingActive}
+              marks={movementMarks
+                .filter(mark => mark.time >= windowStart && mark.time <= windowEnd)
+                .map(mark => ({
+                  value: mark.time,
+                  label: (
+                    <Tooltip
+                      title={
+                        <div><strong>Ship:</strong> {mark.shipUid}</div>
+                      }
+                      arrow
+                      placement="top"
+                    >
+                      <span style={{ cursor: 'pointer' }}>🚢</span>
+                    </Tooltip>
+                  )
+                }))}
+              sx={{
+                '& .MuiSlider-mark': {
+                  backgroundColor: '#4caf50',
+                  width: 3,
+                  height: 12,
+                  borderRadius: 1,
+                },
+                '& .MuiSlider-markLabel': {
+                  fontSize: '1.2rem',
+                  top: -24,
+                  cursor: 'pointer',
+                }
+              }}
             />
 
             <Typography

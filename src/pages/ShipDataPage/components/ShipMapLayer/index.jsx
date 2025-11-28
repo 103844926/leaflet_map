@@ -9,22 +9,39 @@ export function ShipMapLayer({
   onMarkerClick,
   timeRange,
   showPaths,
+  recordingShipIndex,
 }) {
+
+  // ------------------------
+  // Determine ships to render
+  // ------------------------
+  const shipsToRender =
+    recordingShipIndex !== null
+      ? [filteredShips[recordingShipIndex]]
+      : filteredShips;
+
   return (
     <>
-      {ships.map((ship, i) => (
-        <ShipLayer
-          key={ship.ship_uid}
-          ship={filteredShips[i]} // For animated path
-          fullRouteShip={ships[i]} // For complete dotted path
-          index={i}
-          interpolatedPosition={shipPositions[i]}
-          onMarkerClick={() => onMarkerClick(i)}
-          timeRange={timeRange}
-          isVisible={visibleShips[i]}
-          showPath={showPaths}
-        />
-      ))}
+      {shipsToRender.map((ship) => {
+        const i = ship.index;   // <-- ALWAYS correct index from original ships[]
+
+        // Skip broken / missing ships
+        if (!ships[i] || !filteredShips[i]) return null;
+
+        return (
+          <ShipLayer
+            key={ship.ship_uid}
+            ship={filteredShips[i]} // For animated path
+            fullRouteShip={ships[i]} // For complete dotted path
+            index={i}
+            interpolatedPosition={shipPositions[i]}
+            onMarkerClick={() => onMarkerClick(i)}
+            timeRange={timeRange}
+            isVisible={visibleShips[i]}
+            showPath={showPaths}
+          />
+        );
+      })}
     </>
   );
 }

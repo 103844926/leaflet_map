@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { getShipData } from "@/datas";
 import { useShipVisible } from "./useShipVisible";
+import { detectShipMovementStartsDetailed } from "@/utils";
 
 export function useShipDataPageLogic() {
     const [ships, setShips] = useState([]);
@@ -45,14 +46,30 @@ export function useShipDataPageLogic() {
     const filteredShips = useMemo(() => {
         if (!timeRange) return ships;
         const current = timeRange[1];
-        return ships.map((ship) => {
+        return ships.map((ship, i) => {
             const filtered = ship.locations.filter((loc) => loc.time <= current);
+
             return {
                 ...ship,
+                index: i,                        // <-- THIS LINE: permanent original index
                 locations: filtered.length ? filtered : [ship.locations[0]],
             };
         });
+
     }, [ships, timeRange]);
+
+    // --------------------
+    // Detect movement starts
+    // --------------------
+    const movementMarks = useMemo(() => {
+        if (!ships || ships.length === 0) return [];
+        // Only calculate for visible ships
+        const shipsToAnalyze = visibleShips
+            ? ships.filter((_, idx) => visibleShips[idx])
+            : ships;
+        return detectShipMovementStartsDetailed(shipsToAnalyze, 50); // 50m threshold
+    }, [ships, visibleShips]);
+
 
     return {
         ships,
@@ -63,5 +80,6 @@ export function useShipDataPageLogic() {
         handleShipToggle,
         filteredShips,
         isAnimatingRef,
+        movementMarks,
     };
 }
