@@ -1,10 +1,10 @@
 import { React, useState, useCallback, useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
-import { Box, Paper, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { ShipMapLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl } from "./components";
 import { MiniMapControl, RecordingControl } from "@/components";
-import { useShipAnimation, useShipTime, useShipDataPageLogic, useLeafletControl } from "@/hooks";
+import { useLeafletControl, useShipAnimation, useShipTime, useShipDataPageLogic, useShipDataPageProps } from "@/hooks";
 
 export default function ShipDataPage() {
 
@@ -23,17 +23,23 @@ export default function ShipDataPage() {
   const [showRecordingDialog, setShowRecordingDialog] = useState(false);
   const [shouldStopRecording, setShouldStopRecording] = useState(false);
   const [recordingShipIndex, setRecordingShipIndex] = useState(null);
+  const [recordingShipStartTime, setRecordingShipStartTime] = useState(null);
+  const [trackShip, setTrackShip] = useState(false);
+
 
   // --------------------------
   // Load ships data and filter
   // --------------------------
   const {
     ships,
+    currentShips,
     initialCenter,
     timeRange,
     setTimeRange,
     visibleShips,
     handleShipToggle,
+    showBackgroundShips, // ADD THIS
+    toggleBackgroundShips, // ADD THIS
     filteredShips,
     movementMarks,
   } = useShipDataPageLogic();
@@ -50,6 +56,12 @@ export default function ShipDataPage() {
     maxTime,
     updateTime,
   } = useShipTime(ships, handleTimeChange);
+
+  const selectedTimeRef = useRef(selectedTime);
+
+  useEffect(() => {
+    selectedTimeRef.current = selectedTime;
+  }, [selectedTime]);
 
   // --------------------
   // Animation + Ship positions
@@ -76,6 +88,78 @@ export default function ShipDataPage() {
     },
     [isAnimating, stopAnimation, updateTime],
   );
+
+  // ------------------------
+  // Props grouping via custom hook
+  // ------------------------
+  const {
+    recordingProps,
+    timeControlProps,
+    shipLayerControlProps,
+    infoPanelProps,
+  } = useShipDataPageProps({
+    ships,
+    filteredShips,
+    visibleShips,
+    shipPositions,
+    timeRange,
+    showBackgroundShips,
+    toggleBackgroundShips,
+
+    mapRef,
+    paperControl,
+    boxControl,
+
+    shouldStopRecording,
+    isRecordingActive,
+    showRecordingDialog,
+    recordingShipIndex,
+    minTime,
+    maxTime,
+    selectedTime,
+    selectedTimeRef,
+    recordingShipStartTime,
+    trackShip,
+    setTrackShip,
+
+    setRecordingShipIndex,
+    setIsRecordingActive,
+    setShowRecordingDialog,
+    setShowPaths,
+    handleShipToggle,
+    handleManualTimeUpdate,
+    setShouldStopRecording,
+    setRecordingShipStartTime,
+
+    isAnimating,
+    animate,
+    stopAnimation,
+    playbackSpeed,
+    setPlaybackSpeed,
+
+    availableTimes,
+    updateTime,
+    movementMarks,
+    showPaths,
+    setSelectedShipIndex,
+    selectedShipIndex,
+  });
+
+
+  // Track selected ship on map during recording
+  useEffect(() => {
+    if (!isRecordingActive || !trackShip || recordingShipIndex === null) return;
+
+    const map = mapRef.current;
+    if (!map) return;
+
+    const shipPos = shipPositions[recordingShipIndex];
+    if (!shipPos) return;
+
+    // Move map view to ship's current position
+    map.setView([shipPos.lat, shipPos.long], map.getZoom(), { animate: true });
+  }, [isRecordingActive, trackShip, recordingShipIndex, shipPositions]);
+
 
   function MapInstanceCapture({ mapRef }) {
     const map = useMap();
@@ -130,23 +214,22 @@ export default function ShipDataPage() {
 
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; OpenStreetMap contributors"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          subdomains="abc"
+          crossOrigin="anonymous"
           maxZoom={19}
           tileSize={512}
           zoomOffset={-1}
         />
 
         {selectedShipIndex !== null && filteredShips[selectedShipIndex] && (
-          <ShipInfoPanel
-            ship={filteredShips[selectedShipIndex]}
-            timeRange={timeRange}
-            onClose={() => setSelectedShipIndex(null)}
-            controlRef={boxControl}
-          />
+          <ShipInfoPanel {...infoPanelProps} />
         )}
 
         <ShipMapLayer
           ships={ships}
+          currentShips={currentShips}
+          showBackgroundShips={showBackgroundShips}
           filteredShips={filteredShips}
           visibleShips={visibleShips}
           shipPositions={shipPositions}
@@ -154,37 +237,10 @@ export default function ShipDataPage() {
           timeRange={timeRange}
           showPaths={showPaths}
           recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
+          isRecording={isRecordingActive}  // ADD THIS LINE
         />
 
         <MiniMapControl zoom={5} />
-
-        {/* TIME DISPLAY - Bottom Left Corner During Recording */}
-        {isRecordingActive && (
-          <Paper
-            elevation={8}
-            sx={{
-              position: "fixed",
-              bottom: 32,
-              left: 32,
-              px: 3,
-              py: 2,
-              zIndex: 1001,
-              borderRadius: 2,
-              backgroundColor: "rgba(0, 0, 0, 0.8)",
-            }}
-          >
-            <Typography
-              variant="h4"
-              fontWeight="600"
-              sx={{
-                fontSize: "1rem",
-                color: "white",
-              }}
-            >
-              {formatDateTime(selectedTime)}
-            </Typography>
-          </Paper>
-        )}
 
       </MapContainer>
 
@@ -204,73 +260,13 @@ export default function ShipDataPage() {
       )}
 
       {!isRecordingActive && (
-        <ShipLayerControl
-          ships={ships}
-          visibleShips={visibleShips}
-          onShipToggle={(index) => {
-            const wasVisible = visibleShips[index];
-            handleShipToggle(index);
-            if (wasVisible || !mapRef.current) return;
-
-            const pos = shipPositions[index]?.position;
-            if (pos) mapRef.current.flyTo([pos.lat, pos.long], mapRef.current.getZoom(), { duration: 1.5 });
-          }}
-
-          showPaths={showPaths}
-          onPathToggle={setShowPaths}
-          isAnimatingAll={isAnimating}
-          controlRef={paperControl}
-        />
+        <ShipLayerControl {...shipLayerControlProps} />
       )}
 
       {/* ADD RecordingControl HERE - Now at ShipDataPage level */}
-      <RecordingControl
-        shouldStop={shouldStopRecording}
-        isAnimating={isAnimating}
-        onStartAnimation={(start, end) => animate(start, start, end, updateTime)}
-        onStopAnimation={stopAnimation}
-        mapRef={mapRef}
-        ships={ships}
-        selectedRecordingShip={recordingShipIndex}
-        onRecordingShipChange={setRecordingShipIndex}
-        minTime={minTime}
-        maxTime={maxTime}
-        selectedTime={selectedTime}
-        onTimeChange={updateTime}
-        windowStart={minTime}
-        windowEnd={maxTime}
-        setWindowStart={() => { }} // dummy since we're not using it here
-        setWindowEnd={() => { }} // dummy since we're not using it here
-        onRecordingStateChange={setIsRecordingActive}
-        showDialog={showRecordingDialog}
-        onDialogChange={setShowRecordingDialog}
-      />
+      <RecordingControl {...recordingProps} />
 
-      <ShipTimeControl
-        selectedTime={selectedTime}
-        minTime={minTime}
-        maxTime={maxTime}
-        availableTimes={availableTimes}
-        isAnimating={isAnimating}
-        playbackSpeed={playbackSpeed}
-        onTimeChange={handleManualTimeUpdate}
-        onAnimate={animate}
-        onStop={stopAnimation}
-        onPlaybackSpeedChange={setPlaybackSpeed}
-        mapRef={mapRef}
-        isRecordingActive={isRecordingActive}
-        movementMarks={movementMarks}
-        onRecordingButtonClick={() => {
-          if (isRecordingActive) {
-            // Stop recording
-            setShouldStopRecording(true);
-          } else {
-            // Start recording (open dialog)
-            setShowRecordingDialog(true);
-            setShouldStopRecording(false);
-          }
-        }}
-      />
+      <ShipTimeControl {...timeControlProps} />
     </Box>
   );
 }

@@ -1,19 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
 
-export function useRecordingTimeWindow({ minTime, maxTime }) {
+export function useRecordingTimeWindow({ minTime, maxTime, initialStartTime, showDialog }) {
   const [stagingStart, setStagingStart] = useState(minTime);
   const [stagingEnd, setStagingEnd] = useState(maxTime);
 
-  // Sync staging with min/max changes
+  // First apply min/max
   useEffect(() => {
     setStagingStart(minTime);
     setStagingEnd(maxTime);
   }, [minTime, maxTime]);
 
+  // THEN override using initialStartTime AFTER dialog opens
+  useEffect(() => {
+    if (showDialog && initialStartTime != null) {
+      setStagingStart(initialStartTime);
+    }
+  }, [initialStartTime, showDialog]);
+
+  // Reset function
   const resetTimeWindow = useCallback(() => {
-    setStagingStart(minTime);
+    setStagingStart(initialStartTime ?? minTime);
     setStagingEnd(maxTime);
-  }, [minTime, maxTime]);
+  }, [minTime, maxTime, initialStartTime]);
 
   return {
     stagingStart,

@@ -1,7 +1,7 @@
 // ShipTimeControl.jsx (Clean + Simplified)
 import React, { useState, useEffect, useRef } from "react";
 import { Box, IconButton, Collapse, Typography, Slider, Paper, Stack, Popover, Tooltip } from "@mui/material";
-import { PlayArrow, Pause, CalendarMonth, Speed, RestartAlt, FiberManualRecord, Stop } from "@mui/icons-material";
+import { PlayArrow, Pause, CalendarMonth, Speed, RestartAlt, FiberManualRecord, Stop, DirectionsBoat } from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { TimeWindowPicker } from "@/components";
@@ -169,7 +169,11 @@ export function ShipTimeControl({
                       arrow
                       placement="top"
                     >
-                      <span style={{ cursor: 'pointer' }}>🚢</span>
+                      <span style={{ cursor: 'pointer' }}>
+                        <DirectionsBoat
+                          style={{ fontSize: "20px" }}
+                        />
+                      </span>
                     </Tooltip>
                   )
                 }))}

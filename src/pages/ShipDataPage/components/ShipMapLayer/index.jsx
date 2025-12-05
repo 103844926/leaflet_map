@@ -1,8 +1,11 @@
-import { React } from "react";
-import { ShipLayer } from "./ShipLayer";
+// ShipMapLayer.jsx
+import React, { useMemo } from "react";
+import { UnifiedShipLayer } from "./UnifiedShipLayer";
 
-export function ShipMapLayer({
+export const ShipMapLayer = React.memo(function ShipMapLayer({
   ships,
+  currentShips,
+  showBackgroundShips,
   filteredShips,
   visibleShips,
   shipPositions,
@@ -10,38 +13,31 @@ export function ShipMapLayer({
   timeRange,
   showPaths,
   recordingShipIndex,
+  isRecording,
 }) {
-
-  // ------------------------
-  // Determine ships to render
-  // ------------------------
-  const shipsToRender =
-    recordingShipIndex !== null
+  const shipsToRender = useMemo(() => {
+    return recordingShipIndex !== null
       ? [filteredShips[recordingShipIndex]]
       : filteredShips;
+  }, [recordingShipIndex, filteredShips]);
 
   return (
-    <>
-      {shipsToRender.map((ship) => {
-        const i = ship.index;   // <-- ALWAYS correct index from original ships[]
+    <UnifiedShipLayer
+      // Main ships
+      ships={ships}
+      filteredShips={filteredShips}
+      shipsToRender={shipsToRender}
+      visibleShips={visibleShips}
+      shipPositions={shipPositions}
+      onMarkerClick={onMarkerClick}
+      showPaths={showPaths}
+      recordingShipIndex={recordingShipIndex}
+      isRecording={isRecording}
 
-        // Skip broken / missing ships
-        if (!ships[i] || !filteredShips[i]) return null;
-
-        return (
-          <ShipLayer
-            key={ship.ship_uid}
-            ship={filteredShips[i]} // For animated path
-            fullRouteShip={ships[i]} // For complete dotted path
-            index={i}
-            interpolatedPosition={shipPositions[i]}
-            onMarkerClick={() => onMarkerClick(i)}
-            timeRange={timeRange}
-            isVisible={visibleShips[i]}
-            showPath={showPaths}
-          />
-        );
-      })}
-    </>
+      // Background ships
+      backgroundShips={currentShips}
+      showBackgroundShips={showBackgroundShips}
+      backgroundShipColor={0x888888}
+    />
   );
-}
+});

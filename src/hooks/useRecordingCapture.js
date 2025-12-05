@@ -1,0 +1,120 @@
+// In useRecordingCapture.js
+import { useRef, useCallback } from "react";
+import { useRecordingMapTiles } from "./useRecordingMapTiles";
+import { useRecordingPixi } from "./useRecordingPixi";
+import { useRecordingTimestamp } from "./useRecordingTimestamp"; // ← ADD THIS
+
+export function useRecordingCapture() {
+    const recorderRef = useRef(null);
+    const chunksRef = useRef([]);
+    const compositeCanvasRef = useRef(null);
+    const rafRef = useRef(null);
+    const capturingRef = useRef(false);
+    const lastFrameRef = useRef(0);
+
+    const { capture: captureTiles } = useRecordingMapTiles();
+    const { capture: capturePixi } = useRecordingPixi();
+    const { drawTimestamp } = useRecordingTimestamp(); // ← ADD THIS
+
+    const startRecording = useCallback(async (mapInstance, {
+        fps = 24,
+        scale = 1,
+        videoBitsPerSecond = 8_000_000,
+        getCurrentTime // ← ADD THIS PARAMETER
+    } = {}) => {
+        const mapContainer = mapInstance?.getContainer();
+        if (!mapContainer) { console.error("Map container not found"); return null; }
+
+        const rect = mapContainer.getBoundingClientRect();
+        const outW = Math.round(rect.width * scale);
+        const outH = Math.round(rect.height * scale);
+
+        // create composite canvas
+        const compositeCanvas = document.createElement("canvas");
+        compositeCanvas.width = outW;
+        compositeCanvas.height = outH;
+        compositeCanvasRef.current = compositeCanvas;
+        const ctx = compositeCanvas.getContext("2d", { alpha: false, desynchronized: true });
+
+        // init background
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, outW, outH);
+
+        chunksRef.current = [];
+
+        // Start MediaRecorder on composite canvas stream
+        const stream = compositeCanvas.captureStream(fps);
+        const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9", videoBitsPerSecond });
+        recorder.ondataavailable = (e) => { if (e.data?.size) chunksRef.current.push(e.data); };
+        recorder.start(200);
+        recorderRef.current = recorder;
+
+        capturingRef.current = true;
+
+        // Frame loop (synchronized capture)
+        const minFrameDelta = 1000 / fps;
+        let lastTs = performance.now();
+
+        const frameLoop = async (ts) => {
+            if (!capturingRef.current) return;
+
+            if (ts - lastTs < minFrameDelta) {
+                rafRef.current = requestAnimationFrame(frameLoop);
+                return;
+            }
+            lastTs = ts;
+
+            // 1) draw tiles into composite ctx
+            const tilesOk = await captureTiles(mapInstance, ctx, outW, outH, scale);
+
+            // 2) draw pixi on top
+            const pixiOk = await capturePixi(mapInstance, ctx, outW, outH, scale);
+
+            // 3) ← ADD THIS: Draw timestamp overlay
+            if (getCurrentTime) {
+                const currentTime = getCurrentTime();
+                drawTimestamp(ctx, currentTime, outW, outH, scale);
+            } else {
+                console.warn("⚠️ Frame capture - getCurrentTime is undefined!");
+            }
+
+
+            if (!tilesOk || !pixiOk) {
+                console.warn("Frame capture had issues (CORS / missing canvases).");
+            }
+
+            // Next frame
+            rafRef.current = requestAnimationFrame(frameLoop);
+        };
+
+        rafRef.current = requestAnimationFrame(frameLoop);
+
+        return stream;
+    }, [captureTiles, capturePixi, drawTimestamp]); // ← Add drawTimestamp to deps
+
+    const stopRecording = useCallback(() => {
+        return new Promise((resolve) => {
+            capturingRef.current = false;
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+            setTimeout(() => {
+                const recorder = recorderRef.current;
+                if (!recorder || recorder.state === "inactive") {
+                    resolve(null);
+                    return;
+                }
+
+                recorder.onstop = () => {
+                    const blob = new Blob(chunksRef.current, { type: "video/webm" });
+                    compositeCanvasRef.current = null;
+                    chunksRef.current = [];
+                    resolve(blob);
+                };
+
+                recorder.stop();
+            }, 300);
+        });
+    }, []);
+
+    return { startRecording, stopRecording, getCompositeCanvas: () => compositeCanvasRef.current };
+}

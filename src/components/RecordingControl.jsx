@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Slider, Stack, Box, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Slider, Stack, Box, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from "@mui/x-date-pickers";
@@ -15,7 +15,7 @@ export function RecordingControl({
     onRecordingShipChange,
     minTime,
     maxTime,
-    selectedTime,
+    selectedTime,  // ← Receives this prop
     onTimeChange,
     windowStart,
     windowEnd,
@@ -23,7 +23,12 @@ export function RecordingControl({
     setWindowEnd,
     onRecordingStateChange,
     showDialog,
-    onDialogChange
+    onDialogChange,
+    initialStartTime,
+    showBackgroundShips,
+    onShowBackgroundShipsChange,
+    trackShip,
+    onTrackShipChange,
 }) {
     // Time window management
     const {
@@ -32,10 +37,14 @@ export function RecordingControl({
         setStagingStart,
         setStagingEnd,
         resetTimeWindow
-    } = useRecordingTimeWindow({ minTime, maxTime });
+    } = useRecordingTimeWindow({
+        minTime,
+        maxTime,
+        initialStartTime,
+        showDialog
+    });
 
-    // Recording logic - now uses stagingStart/stagingEnd directly
-    /* eslint-disable */
+    // Recording logic - FIXED: Now passes selectedTime
     const {
         isRecording,
         isProcessing,
@@ -49,12 +58,12 @@ export function RecordingControl({
         isAnimating,
         onStartAnimation,
         shouldStop,
-        recordingStartTime: stagingStart,  // ← Pass staging values
-        recordingEndTime: stagingEnd,      // ← Pass staging values
+        recordingStartTime: stagingStart,
+        recordingEndTime: stagingEnd,
         onTimeChange,
-        onRecordingStateChange
+        onRecordingStateChange,
+        selectedTime  // ← CRITICAL FIX: Pass selectedTime to useRecording
     });
-    /* eslint-enable */
 
     // Reset all settings to defaults
     const resetToDefaults = useCallback(() => {
@@ -70,10 +79,20 @@ export function RecordingControl({
 
     // Start recording with window updates
     const handleStartRecording = useCallback(() => {
+        // DEBUG: Log the recording time range
+        console.log("🔍 Recording times:", {
+            start: new Date(stagingStart).toLocaleString(),
+            end: new Date(stagingEnd).toLocaleString(),
+            duration: ((stagingEnd - stagingStart) / 1000 / 60).toFixed(1) + " minutes",
+            startTimestamp: stagingStart,
+            endTimestamp: stagingEnd,
+            isValid: stagingEnd > stagingStart
+        });
+
         onDialogChange(false);
-        setWindowStart(stagingStart);  // Update for display purposes
-        setWindowEnd(stagingEnd);      // Update for display purposes
-        startRecordingHook();          // Hook now uses stagingStart/stagingEnd internally
+        setWindowStart(stagingStart);
+        setWindowEnd(stagingEnd);
+        startRecordingHook();
     }, [onDialogChange, setWindowStart, setWindowEnd, stagingStart, stagingEnd, startRecordingHook]);
 
     return (
@@ -108,6 +127,27 @@ export function RecordingControl({
                             )}
                         </FormControl>
 
+                        {/* SHOW BACKGROUND SHIPS CHECKBOX */}
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={showBackgroundShips}
+                                    onChange={(e) => onShowBackgroundShipsChange(e.target.checked)}
+                                />
+                            }
+                            label="Show other ships (may reduce performance)"
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={trackShip}
+                                    onChange={(e) => onTrackShipChange(e.target.checked)}
+                                />
+                            }
+                            label="Track this ship during recording"
+                        />
+
                         <Box>
                             <Typography variant="caption">Recording Speed: {recordingSpeed}x</Typography>
                             <Slider
@@ -121,6 +161,7 @@ export function RecordingControl({
 
                         <Stack direction="row" spacing={2}>
                             <DateTimePicker
+                                key={stagingStart}
                                 label="Start Time"
                                 value={new Date(stagingStart)}
                                 onChange={(v) => setStagingStart(v?.getTime() || minTime)}
@@ -129,6 +170,7 @@ export function RecordingControl({
                                 ampm={false}
                                 slotProps={{ textField: { fullWidth: true, size: "small" } }}
                             />
+
                             <DateTimePicker
                                 label="End Time"
                                 value={new Date(stagingEnd)}

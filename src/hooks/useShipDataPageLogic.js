@@ -1,31 +1,43 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { getShipData } from "@/datas";
+import { getShipData, getCurrentShipData } from "@/datas";
 import { useShipVisible } from "./useShipVisible";
 import { detectShipMovementStartsDetailed } from "@/utils";
 
 export function useShipDataPageLogic() {
     const [ships, setShips] = useState([]);
+    const [currentShips, setCurrentShips] = useState([]);
     const [initialCenter, setInitialCenter] = useState(null);
     const [timeRange, setTimeRange] = useState(null);
 
     const isAnimatingRef = useRef(false);
 
     // Ship visibility logic stays the same
-    const { visibleShips, handleShipToggle } = useShipVisible(ships);
+    const {
+        visibleShips,
+        handleShipToggle,
+        showBackgroundShips,
+        toggleBackgroundShips
+    } = useShipVisible(ships, currentShips);
 
     // --------------------------
-    // Load Ships + Compute Center
+    // Load Ships + Current Ships + Compute Center
     // --------------------------
     useEffect(() => {
         const load = async (forceRefresh = false) => {
             if (isAnimatingRef.current && forceRefresh) return;
 
-            const data = await getShipData(forceRefresh);
-            setShips(data);
+            const [historicalData, currentData] = await Promise.all([
+                getShipData(forceRefresh),
+                getCurrentShipData(forceRefresh)
+            ]);
 
-            if (!initialCenter && data.length) {
-                const allLats = data.flatMap((s) => s.locations.map((l) => l.lat));
-                const allLongs = data.flatMap((s) => s.locations.map((l) => l.long));
+            setShips(historicalData);
+            setCurrentShips(currentData);
+
+            // ONLY use historical ships for initial center
+            if (!initialCenter && historicalData.length) {
+                const allLats = historicalData.flatMap((s) => s.locations.map((l) => l.lat));
+                const allLongs = historicalData.flatMap((s) => s.locations.map((l) => l.long));
 
                 setInitialCenter([
                     allLats.reduce((a, b) => a + b, 0) / allLats.length,
@@ -73,11 +85,14 @@ export function useShipDataPageLogic() {
 
     return {
         ships,
+        currentShips,
         initialCenter,
         timeRange,
         setTimeRange,
         visibleShips,
         handleShipToggle,
+        showBackgroundShips,
+        toggleBackgroundShips,
         filteredShips,
         isAnimatingRef,
         movementMarks,

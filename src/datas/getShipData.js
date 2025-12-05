@@ -1,4 +1,5 @@
 let cachedData = null;
+let cachedCurrentData = null;
 
 export const loadShipData = async (forceRefresh = false) => {
   if (cachedData && !forceRefresh) return cachedData;
@@ -10,6 +11,20 @@ export const loadShipData = async (forceRefresh = false) => {
     return cachedData;
   } catch (error) {
     console.error("Error loading ship data:", error);
+    return null;
+  }
+};
+
+export const loadCurrentShipData = async (forceRefresh = false) => {
+  if (cachedCurrentData && !forceRefresh) return cachedCurrentData;
+
+  try {
+    const response = await fetch("/ship_on_map.txt");
+    const text = await response.text();
+    cachedCurrentData = JSON.parse(text);
+    return cachedCurrentData;
+  } catch (error) {
+    console.error("Error loading current ship data:", error);
     return null;
   }
 };
@@ -38,6 +53,20 @@ export const getShipData = async (forceRefresh = false) => {
           hour12: false,
         }),
       })),
+  }));
+};
+
+// NEW: Get current ship positions
+export const getCurrentShipData = async (forceRefresh = false) => {
+  const data = await loadCurrentShipData(forceRefresh);
+  if (!data) return [];
+
+  return data.map((ship) => ({
+    ship_uid: ship.ship_uid,
+    lat: ship.ship_lat,
+    long: ship.ship_long,
+    course: ship.course,
+    isCurrentPosition: true, // Flag to identify these ships
   }));
 };
 
