@@ -1,18 +1,23 @@
 // drawMarkers.js
-import { getShipColor, createShipTexture, getSprite, getLabel, resetPool, isInViewport } from "@/utils";
+import { getShipColor, createShipTexture, getSprite, resetPool, isInViewport } from "@/utils";
 
 export function drawMarkers({
     container, project, scale, bounds, renderer,
     shipsToRender, filteredShips, visibleShips, shipPositions,
-    onMarkerClick, recordingShipIndex, isRecording, resources
+    onMarkerClick, recordingShipIndex, isRecording, resources,
+    movementStartMap, // Pass the movement start map from detectShipMovementStartsDetailed
+    currentTime // Current timeline time
 }) {
-    const texture = createShipTexture(renderer, resources, true);
-    if (!texture) return;
+    // Create both textures using the integrated function
+    const triangleTexture = createShipTexture(renderer, resources, 'triangle', true);
+    const circleTexture = createShipTexture(renderer, resources, 'circle');
+
+    if (!triangleTexture || !circleTexture) return;
 
     const pool = resources.spritePool;
     resetPool(pool);
 
-    const showLabels = scale > 1;
+    resources.visibleMarkers = {};
 
     shipsToRender.forEach(ship => {
         const i = ship.index;
@@ -42,11 +47,21 @@ export function drawMarkers({
 
         if (lat == null || long == null || !isInViewport(lat, long, bounds)) return;
 
+        // Marker is in viewport --> remember it
+        resources.visibleMarkers[i] = true;
+
         const pt = project([lat, long]);
         if (!pt) return;
 
         const color = getShipColor(i);
         const isRecordingShip = isRecording && recordingShipIndex === i;
+
+        // Determine if ship has started moving
+        const movementStart = movementStartMap?.get(ship.ship_uid);
+        const hasStartedMoving = movementStart && currentTime >= movementStart.time;
+
+        // Choose texture based on movement status
+        const texture = hasStartedMoving ? triangleTexture : circleTexture;
 
         // Create sprite
         const sprite = getSprite(pool, texture);
@@ -54,30 +69,21 @@ export function drawMarkers({
 
         sprite.x = pt.x;
         sprite.y = pt.y;
-        sprite.rotation = (course * Math.PI) / 180;
+
+        // Only apply rotation to triangle
+        sprite.rotation = hasStartedMoving ? (course * Math.PI) / 180 : 0;
+
         sprite.tint = color;
         sprite.alpha = isRecordingShip ? 1 : 0.9;
-        sprite.scale.set((isRecordingShip ? 0.75 : 0.625) / scale);
+
+        const baseScale = 0.625;
+        sprite.scale.set((isRecordingShip ? baseScale * 1.2 : baseScale) / scale);
+
         sprite.eventMode = "static";
         sprite.cursor = "pointer";
         sprite.removeAllListeners();
         sprite.on("pointertap", () => onMarkerClick?.(i));
 
         container.addChild(sprite);
-
-        // Labels (LOD)
-        if (showLabels) {
-            const name = filteredShips[i]?.shipName || filteredShips[i]?.mmsi;
-            if (name) {
-                const label = getLabel(pool);
-                if (label) {
-                    label.text = name;
-                    label.x = pt.x;
-                    label.y = pt.y + (10 / scale);
-                    label.scale.set(1 / scale);
-                    container.addChild(label);
-                }
-            }
-        }
     });
 }

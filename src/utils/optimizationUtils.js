@@ -6,34 +6,52 @@ export const getShipColor = (i) => {
     return colors[i % colors.length];
 };
 
-export const createShipTexture = (renderer, resources, withBorder = true) => {
-    // Use different cache keys for bordered vs non-bordered textures
-    const cacheKey = withBorder ? 'shipTexture' : 'shipTextureNoBorder';
+/**
+ * Create ship or circle texture
+ * @param {PIXI.Renderer} renderer 
+ * @param {Object} resources - Resource cache object
+ * @param {string} shape - 'triangle' or 'circle'
+ * @param {boolean} withBorder - Add border (only applies to triangle)
+ * @returns {PIXI.Texture}
+ */
+// optimizationUtils.js - patched createShipTexture
+export const createShipTexture = (renderer, resources, shape = 'triangle', withBorder = true) => {
+    // Generate cache key based on shape and border
+    const cacheKey = shape === 'circle'
+        ? 'circleTexture'
+        : (withBorder ? 'shipTexture' : 'shipTextureNoBorder');
 
-    // Check if existing texture is still valid
+    // Return if cached and valid
     if (resources[cacheKey] && resources[cacheKey].valid) {
         return resources[cacheKey];
     }
 
-    // Destroy invalid texture
+    // Destroy existing cached texture if present
     if (resources[cacheKey]) {
-        resources[cacheKey].destroy(true);
+        try { resources[cacheKey].destroy(true); } catch (e) { }
         resources[cacheKey] = null;
     }
 
     const g = new PIXI.Graphics();
+
+    // Fill white so tint will work; add a thin black border for visibility
     g.beginFill(0xFFFFFF);
 
-    // Add white border only if withBorder is true
-    if (withBorder) {
-        g.lineStyle(2, 0x000000, 2);
+    if (shape === 'circle') {
+        g.drawCircle(0, 0, 8);
+    } else {
+        // Draw triangle (ship)
+        if (withBorder) {
+            // alpha must be 0..1
+            g.lineStyle(2, 0x000000, 1);
+        }
+        const size = 16, half = size * 0.5, height = size * 1.3;
+        g.moveTo(0, -height / 2);
+        g.lineTo(-half, height / 2);
+        g.lineTo(half, height / 2);
+        g.lineTo(0, -height / 2);
     }
 
-    const size = 16, half = size * 0.5, height = size * 1.3;
-    g.moveTo(0, -height / 2);
-    g.lineTo(-half, height / 2);
-    g.lineTo(half, height / 2);
-    g.lineTo(0, -height / 2);
     g.endFill();
 
     try {
@@ -45,7 +63,7 @@ export const createShipTexture = (renderer, resources, withBorder = true) => {
         resources[cacheKey] = texture;
         return texture;
     } catch (error) {
-        console.error("Failed to generate ship texture:", error);
+        console.error(`Failed to generate ${shape} texture:`, error);
         return null;
     }
 };
@@ -68,32 +86,6 @@ export const getSprite = (pool, texture) => {
     pool.sprites.push(sprite);
     pool.inUse++;
     return sprite;
-};
-
-export const getLabel = (pool) => {
-    if (!pool.labels) {
-        pool.labels = [];
-        pool.labelInUse = 0;
-    }
-
-    if (pool.labelInUse < pool.labels.length) {
-        const label = pool.labels[pool.labelInUse];
-        label.visible = true;
-        pool.labelInUse++;
-        return label;
-    }
-
-    const label = new PIXI.Text("", {
-        fontSize: 12,
-        fill: 0xffffff,
-        stroke: 0x000000,
-        strokeThickness: 3,
-        fontWeight: "bold"
-    });
-    label.anchor.set(0.5, 0);
-    pool.labels.push(label);
-    pool.labelInUse++;
-    return label;
 };
 
 export const resetPool = (pool) => {

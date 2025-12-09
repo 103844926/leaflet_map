@@ -74,14 +74,14 @@ export function useShipDataPageLogic() {
     // Detect movement starts
     // --------------------
     const movementMarks = useMemo(() => {
-        if (!ships || ships.length === 0) return [];
-        // Only calculate for visible ships
+        if (!ships || ships.length === 0) return new Map();
+
         const shipsToAnalyze = visibleShips
             ? ships.filter((_, idx) => visibleShips[idx])
             : ships;
-        return detectShipMovementStartsDetailed(shipsToAnalyze, 50); // 50m threshold
-    }, [ships, visibleShips]);
 
+        return detectShipMovementStartsDetailed(shipsToAnalyze, 50);
+    }, [ships, visibleShips]);
 
     return {
         ships,

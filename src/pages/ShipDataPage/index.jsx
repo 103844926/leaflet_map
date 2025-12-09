@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
 import { ShipMapLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl } from "./components";
 import { MiniMapControl, RecordingControl } from "@/components";
-import { useLeafletControl, useShipAnimation, useShipTime, useShipDataPageLogic, useShipDataPageProps } from "@/hooks";
+import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps } from "@/hooks";
 
 export default function ShipDataPage() {
 
@@ -147,18 +147,13 @@ export default function ShipDataPage() {
 
 
   // Track selected ship on map during recording
-  useEffect(() => {
-    if (!isRecordingActive || !trackShip || recordingShipIndex === null) return;
-
-    const map = mapRef.current;
-    if (!map) return;
-
-    const shipPos = shipPositions[recordingShipIndex];
-    if (!shipPos) return;
-
-    // Move map view to ship's current position
-    map.setView([shipPos.lat, shipPos.long], map.getZoom(), { animate: true });
-  }, [isRecordingActive, trackShip, recordingShipIndex, shipPositions]);
+  useShipTracking({
+    mapRef,
+    isRecordingActive,
+    trackShip,
+    recordingShipIndex,
+    shipPositions
+  });
 
 
   function MapInstanceCapture({ mapRef }) {
@@ -172,18 +167,6 @@ export default function ShipDataPage() {
 
     return null;
   }
-
-  const formatDateTime = (ts) =>
-    ts
-      ? new Date(ts).toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false
-      })
-      : "No data";
 
   if (!initialCenter) return <div>Loading map...</div>;
 
@@ -208,6 +191,7 @@ export default function ShipDataPage() {
         scrollWheelZoom
         preferCanvas={true}
         style={{ height: "100%", width: "100%" }}
+        zoomControl={false}
       >
         {/* ADD THIS COMPONENT RIGHT AFTER MapContainer opens */}
         <MapInstanceCapture mapRef={mapRef} />
@@ -237,7 +221,8 @@ export default function ShipDataPage() {
           timeRange={timeRange}
           showPaths={showPaths}
           recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
-          isRecording={isRecordingActive}  // ADD THIS LINE
+          isRecording={isRecordingActive}
+          selectedTime={selectedTime}  // ADD THIS LINE
         />
 
         <MiniMapControl zoom={5} />

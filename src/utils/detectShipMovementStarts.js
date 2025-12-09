@@ -72,7 +72,7 @@ export function detectShipMovementStarts(ships, threshold = 50) {
  * @returns {Array} Array of objects with time, ship_uid, distance info
  */
 export function detectShipMovementStartsDetailed(ships, threshold = 50) {
-  const movements = [];
+  const movementMap = new Map();
 
   ships.forEach(ship => {
     if (!ship.locations || ship.locations.length < 2) return;
@@ -91,14 +91,14 @@ export function detectShipMovementStartsDetailed(ships, threshold = 50) {
       );
 
       if (distance >= threshold) {
-        movements.push({
+        movementMap.set(ship.ship_uid, {
           time: prev.time,
           timeFormatted: prev.timeFormatted,
           shipUid: ship.ship_uid,
           distance: Math.round(distance),
           fromCoords: { lat: prev.lat, lon: prev.long },
           toCoords: { lat: curr.lat, lon: curr.long },
-          timeDiff: (curr.time - prev.time) / 1000 / 60, // minutes
+          timeDiff: (curr.time - prev.time) / 1000 / 60,
           course: curr.course
         });
         break;
@@ -106,7 +106,21 @@ export function detectShipMovementStartsDetailed(ships, threshold = 50) {
     }
   });
 
-  return movements.sort((a, b) => a.time - b.time);
+  return movementMap;
+}
+
+/**
+ * Helper: Convert Map to sorted array (for timeline marks)
+ */
+export function movementMapToArray(movementMap) {
+  return Array.from(movementMap.values()).sort((a, b) => a.time - b.time);
+}
+
+/**
+ * Helper: Get start time for a specific ship
+ */
+export function getShipStartTime(movementMap, shipUid) {
+  return movementMap.get(shipUid)?.time ?? null;
 }
 
 /**

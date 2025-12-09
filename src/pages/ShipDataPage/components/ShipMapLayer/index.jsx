@@ -14,6 +14,7 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
   showPaths,
   recordingShipIndex,
   isRecording,
+  selectedTime,
 }) {
   const shipsToRender = useMemo(() => {
     return recordingShipIndex !== null
@@ -33,6 +34,7 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
       showPaths={showPaths}
       recordingShipIndex={recordingShipIndex}
       isRecording={isRecording}
+      currentTime={selectedTime}
 
       // Background ships
       backgroundShips={currentShips}

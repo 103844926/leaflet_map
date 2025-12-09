@@ -16,8 +16,20 @@ export function ShipLayerMenu({
     onDialogChange,
 }) {
     const handleStartTime = () => {
-        const mark = movementMarks.find((m) => m.shipUid === ship.ship_uid);
-        if (mark) onJumpToStartTime(index, mark.time);
+        const startTime = movementMarks.get(ship.ship_uid)?.time;
+        if (startTime) {
+            onJumpToStartTime(index, startTime);
+        }
+        onClose();
+    };
+
+    const handleRecordShip = () => {
+        onRecordingShipChange(index);
+
+        // Direct O(1) lookup by ship_uid
+        const startTime = movementMarks.get(ship.ship_uid)?.time;
+
+        onDialogChange(true, startTime);
         onClose();
     };
 
@@ -65,18 +77,7 @@ export function ShipLayerMenu({
             </MenuItem>
 
             {/* RECORD THIS SHIP */}
-            <MenuItem
-                disabled={!isVisible}
-                onClick={() => {
-                    onRecordingShipChange(index);
-
-                    // Find this ship's movement start time
-                    const mark = movementMarks.find((m) => m.shipUid === ship.ship_uid);
-
-                    onDialogChange(true, mark?.time); // Pass the start time
-                    onClose();
-                }}
-            >
+            <MenuItem disabled={!isVisible} onClick={handleRecordShip}>
                 <ListItemIcon>
                     <FiberManualRecord fontSize="small" color="error" />
                 </ListItemIcon>

@@ -148,6 +148,7 @@ export function useShipDataPageProps({
 
                 mapRef,
                 ships,
+                visibleShips,
                 selectedRecordingShip: recordingShipIndex,
                 onRecordingShipChange: setRecordingShipIndex,
 
@@ -180,6 +181,7 @@ export function useShipDataPageProps({
                 onShowBackgroundShipsChange: toggleBackgroundShips,
                 trackShip,
                 onTrackShipChange: setTrackShip,
+                movementMarks,
             };
         },
         [
@@ -205,6 +207,8 @@ export function useShipDataPageProps({
             toggleBackgroundShips,
             trackShip,
             setTrackShip,
+            movementMarks,
+            visibleShips,
         ]
     );
 
@@ -225,7 +229,7 @@ export function useShipDataPageProps({
             onPlaybackSpeedChange: setPlaybackSpeed,
             mapRef,
             isRecordingActive,
-            movementMarks,
+            movementMarks: Array.from(movementMarks.values()).sort((a, b) => a.time - b.time),
 
             onRecordingButtonClick: () => {
                 if (isRecordingActive) {

@@ -7,7 +7,7 @@ export function drawBackground({
 }) {
     if (!showBackgroundShips || !backgroundShips?.length) return;
 
-    const texture = createShipTexture(renderer, resources, false);
+    const texture = createShipTexture(renderer, resources, 'triangle', false);
     if (!texture) return;
 
     const pool = resources.bgSpritePool;

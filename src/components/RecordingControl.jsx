@@ -11,11 +11,12 @@ export function RecordingControl({
     onStartAnimation,
     mapRef,
     ships,
+    visibleShips,
     selectedRecordingShip,
     onRecordingShipChange,
     minTime,
     maxTime,
-    selectedTime,  // ← Receives this prop
+    selectedTime,
     onTimeChange,
     windowStart,
     windowEnd,
@@ -29,7 +30,9 @@ export function RecordingControl({
     onShowBackgroundShipsChange,
     trackShip,
     onTrackShipChange,
+    movementMarks,
 }) {
+
     // Time window management
     const {
         stagingStart,
@@ -44,13 +47,16 @@ export function RecordingControl({
         showDialog
     });
 
-    // Recording logic - FIXED: Now passes selectedTime
+    // Recording logic
     const {
+        // eslint-disable-next-line
         isRecording,
+        // eslint-disable-next-line
         isProcessing,
         recordingSpeed,
         setRecordingSpeed,
         startRecording: startRecordingHook,
+        // eslint-disable-next-line
         stopRecording,
         resetRecordingSpeed
     } = useRecording({
@@ -62,8 +68,27 @@ export function RecordingControl({
         recordingEndTime: stagingEnd,
         onTimeChange,
         onRecordingStateChange,
-        selectedTime  // ← CRITICAL FIX: Pass selectedTime to useRecording
+        selectedTime
     });
+
+    // When ship selection changes, update start time automatically
+    const handleShipChange = useCallback((shipIndex) => {
+        onRecordingShipChange(shipIndex);
+
+        // Only auto-set start time if a specific ship is selected (not null)
+        if (shipIndex !== null) {
+            // Get the ship_uid for this index
+            const selectedShip = ships[shipIndex];
+            if (selectedShip) {
+                const startTime = movementMarks.get(selectedShip.ship_uid)?.time;
+                if (startTime) {
+                    console.log(`🚢 Ship ${selectedShip.ship_uid} start time:`, new Date(startTime).toLocaleString());
+                    // Update the staging start time directly
+                    setStagingStart(startTime);
+                }
+            }
+        }
+    }, [onRecordingShipChange, ships, movementMarks, setStagingStart]);
 
     // Reset all settings to defaults
     const resetToDefaults = useCallback(() => {
@@ -80,20 +105,21 @@ export function RecordingControl({
     // Start recording with window updates
     const handleStartRecording = useCallback(() => {
         // DEBUG: Log the recording time range
-        console.log("🔍 Recording times:", {
+        console.log("📹 Recording times:", {
             start: new Date(stagingStart).toLocaleString(),
             end: new Date(stagingEnd).toLocaleString(),
             duration: ((stagingEnd - stagingStart) / 1000 / 60).toFixed(1) + " minutes",
             startTimestamp: stagingStart,
             endTimestamp: stagingEnd,
-            isValid: stagingEnd > stagingStart
+            isValid: stagingEnd > stagingStart,
+            focusShip: ships[selectedRecordingShip]?.ship_uid
         });
 
         onDialogChange(false);
         setWindowStart(stagingStart);
         setWindowEnd(stagingEnd);
         startRecordingHook();
-    }, [onDialogChange, setWindowStart, setWindowEnd, stagingStart, stagingEnd, startRecordingHook]);
+    }, [onDialogChange, setWindowStart, setWindowEnd, stagingStart, stagingEnd, startRecordingHook, selectedRecordingShip, ships]);
 
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -102,26 +128,36 @@ export function RecordingControl({
                 <DialogContent dividers>
                     <Stack spacing={2}>
                         <Typography variant="body2">
-                            Your map animation will be recorded into a .webm video.
+                            Your map animation will be recorded into a .webm video. All visible ships on screen will be recorded.
                         </Typography>
 
-                        {/* SHIPS DROPDOWN */}
+                        {/* SHIPS DROPDOWN - For focus/tracking only */}
                         <FormControl fullWidth size="small">
-                            <InputLabel>Select Ship</InputLabel>
+                            <InputLabel>Choose Ship</InputLabel>
                             {ships.length > 0 ? (
                                 <Select
-                                    label="Select Ship"
-                                    value={selectedRecordingShip ?? 0}
-                                    onChange={(e) => onRecordingShipChange(e.target.value)}
+                                    label="Choose Ship"
+                                    value={selectedRecordingShip ?? null}
+                                    onChange={(e) => handleShipChange(e.target.value)}
                                 >
+                                    {/* ALL SHIPS OPTION - FIRST */}
+                                    <MenuItem value={null}>
+                                        <strong>All Ships</strong>
+                                    </MenuItem>
+
+                                    {/* INDIVIDUAL SHIPS */}
                                     {ships.map((ship, index) => (
-                                        <MenuItem key={ship.ship_uid} value={index}>
-                                            {ship.ship_uid}
+                                        <MenuItem
+                                            key={ship.ship_uid}
+                                            value={index}
+                                            disabled={!visibleShips[index]}
+                                        >
+                                            {ship.ship_uid} {!visibleShips[index] && "(hidden)"}
                                         </MenuItem>
                                     ))}
                                 </Select>
                             ) : (
-                                <Select label="Select Ship" value="" disabled>
+                                <Select label="Choose Ship" value="" disabled>
                                     <MenuItem value="">No ship found</MenuItem>
                                 </Select>
                             )}
@@ -138,15 +174,18 @@ export function RecordingControl({
                             label="Show other ships (may reduce performance)"
                         />
 
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={trackShip}
-                                    onChange={(e) => onTrackShipChange(e.target.checked)}
-                                />
-                            }
-                            label="Track this ship during recording"
-                        />
+                        {/* TRACK SHIP CHECKBOX - Only when specific ship selected */}
+                        {selectedRecordingShip !== null && (
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={trackShip}
+                                        onChange={(e) => onTrackShipChange(e.target.checked)}
+                                    />
+                                }
+                                label="Track the focus ship during recording"
+                            />
+                        )}
 
                         <Box>
                             <Typography variant="caption">Recording Speed: {recordingSpeed}x</Typography>

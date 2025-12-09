@@ -1,4 +1,4 @@
-// ShipTimeControl.jsx (Clean + Simplified)
+// ShipTimeControl.jsx (with stop animation fix)
 import React, { useState, useEffect, useRef } from "react";
 import { Box, IconButton, Collapse, Typography, Slider, Paper, Stack, Popover, Tooltip } from "@mui/material";
 import { PlayArrow, Pause, CalendarMonth, Speed, RestartAlt, FiberManualRecord, Stop, DirectionsBoat } from "@mui/icons-material";
@@ -14,11 +14,12 @@ export function ShipTimeControl({
   isAnimating,
   playbackSpeed,
   onAnimate,
+  onStop,  // ← ADD THIS PROP
   onPlaybackSpeedChange,
   mapRef,
   isRecordingActive,
   onRecordingButtonClick,
-  movementMarks = [],  // ADD THIS PROP
+  movementMarks = [],
 }) {
   const [windowStart, setWindowStart] = useState(minTime);
   const [windowEnd, setWindowEnd] = useState(maxTime);
@@ -56,6 +57,15 @@ export function ShipTimeControl({
         hour12: false
       })
       : "No data";
+
+  // ← NEW: Handle recording button click with animation stop
+  const handleRecordingButtonClick = () => {
+    if (isRecordingActive) {
+      // Stop animation when stopping recording
+      onStop();
+    }
+    onRecordingButtonClick();
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -115,10 +125,10 @@ export function ShipTimeControl({
             </IconButton>
           )}
 
-          {/* RECORDING BUTTON - stays here for easy access */}
+          {/* RECORDING BUTTON - NOW STOPS ANIMATION */}
           <IconButton
             size="small"
-            onClick={onRecordingButtonClick}
+            onClick={handleRecordingButtonClick}  // ← CHANGED
             sx={{
               color: "white",
               backgroundColor: isRecordingActive ? "error.main" : "success.main",
@@ -201,10 +211,9 @@ export function ShipTimeControl({
             </Typography>
           </Box>
 
-
           {/* RANGE PICKER BUTTON */}
           {!isRecordingActive && (
-            < IconButton
+            <IconButton
               size="small"
               color="inherit"
               onClick={() => setShowRangePicker((v) => !v)}
@@ -237,6 +246,6 @@ export function ShipTimeControl({
           />
         </Box>
       </Popover>
-    </LocalizationProvider >
+    </LocalizationProvider>
   );
 }

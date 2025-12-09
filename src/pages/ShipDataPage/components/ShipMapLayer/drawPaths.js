@@ -1,6 +1,6 @@
 // drawPaths.js
 import * as PIXI from "pixi.js";
-import { getShipColor, isInViewport } from "@/utils";
+import { getShipColor } from "@/utils";
 
 export function drawPaths({
   container, project, scale, bounds,
@@ -17,15 +17,11 @@ export function drawPaths({
 
   shipsToRender.forEach(ship => {
     const i = ship.index;
-    if (!visibleShips[i] || !ships[i]?.locations) return;
+    if (!ships[i]?.locations) return;
 
-    // Simple viewport check on path endpoints
-    const firstLoc = ships[i].locations[0];
-    const lastLoc = ships[i].locations[ships[i].locations.length - 1];
-    const inView = isInViewport(firstLoc.lat, firstLoc.long, bounds) ||
-      isInViewport(lastLoc.lat, lastLoc.long, bounds);
+    const markerVisible = resources.visibleMarkers?.[i];
 
-    if (!inView) return;
+    if (!markerVisible) return;
 
     const color = getShipColor(i);
 
