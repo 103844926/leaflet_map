@@ -2,19 +2,16 @@ import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet-velocity";
-import { calculateTimeIndex, createWindClickHandler } from "@/utils";
+import { calculateTimeIndex } from "@/utils";
 
 export function WindVelocityLayer({
     windData,
     selectedTime,
     minTime,
     maxTime,
-    options = {},
 }) {
     const map = useMap();
-
     const layerRef = useRef(null);
-    const mountedRef = useRef(false);
     const readyRef = useRef(false);
     const isUpdatingRef = useRef(false);
 
@@ -25,44 +22,26 @@ export function WindVelocityLayer({
         if (!grid) return null;
 
         const { ts, nx, ny, lo1, la1, lo2, la2, u, v } = grid;
+        if (!u?.[tIndex] || !v?.[tIndex]) return null;
 
-        if (
-            !Array.isArray(ts) ||
-            !Array.isArray(u) ||
-            !Array.isArray(v) ||
-            !u[tIndex] ||
-            !v[tIndex]
-        ) {
-            return null;
-        }
-
-        const expectedSize = nx * ny;
-        if (
-            u[tIndex].length !== expectedSize ||
-            v[tIndex].length !== expectedSize
-        ) {
-            console.warn("Wind grid size mismatch");
-            return null;
-        }
-
-        const dx = (lo2 - lo1) / (nx - 1);
-        const dy = (la1 - la2) / (ny - 1);
+        const dx = (lo2 - lo1) / (nx - 1);  // longitude step
+        const dy = (la1 - la2) / (ny - 1);  // latitude step
         const refTime = new Date(ts[tIndex]).toISOString();
 
         return [
             {
                 header: {
                     nx, ny, lo1, la1, lo2, la2, dx, dy, refTime,
-                    parameterCategory: 2,
-                    parameterNumber: 2,
+                    parameterCategory: 2,   // Wind
+                    parameterNumber: 2,     // U-component
                 },
                 data: u[tIndex],
             },
             {
                 header: {
                     nx, ny, lo1, la1, lo2, la2, dx, dy, refTime,
-                    parameterCategory: 2,
-                    parameterNumber: 3,
+                    parameterCategory: 2,   // Wind
+                    parameterNumber: 3,     // V-component
                 },
                 data: v[tIndex],
             },
@@ -73,129 +52,45 @@ export function WindVelocityLayer({
     // Create layer ONCE, after map is ready
     // --------------------------------------------------
     useEffect(() => {
-        if (!map || layerRef.current || !windData) return;
+        if (!map || layerRef.current) return;
 
-        mountedRef.current = true;
-
-        const initLayer = () => {
-            if (!mountedRef.current) return;
-
-            if (!map.getContainer()) {
-                console.warn("Map container not available");
-                return;
-            }
-
-            try {
-                // Calculate initial time index
-                const initialIdx = calculateTimeIndex(
-                    selectedTime,
-                    minTime,
-                    maxTime,
-                    windData.ts.length
-                );
-
-                // Build initial data
-                const initialData = buildVelocityData(windData, initialIdx);
-
-                layerRef.current = L.velocityLayer({
-                    displayValues: true,
-                    displayOptions: {
-                        velocityType: "Wind",
-                        position: "bottomleft",
-                        emptyString: "No wind data",
-                        angleConvention: "bearingCW",
-                        speedUnit: "m/s",
-                        directionString: "Direction"
-                    },
-                    lineWidth: 2,
-                    particleMultiplier: 1 / 300,
-                    particleAge: 90,
-                    velocityScale: 1 / 50,
-                    frameRate: 15,
-                    maxVelocity: 20,
-                    minVelocity: 0,
-                    colorScale: [
-                        "rgb(100,180,220)",
-                        "rgb(120,220,200)",
-                        "rgb(160,230,140)",
-                        "rgb(255,255,100)",
-                        "rgb(255,200,80)",
-                        "rgb(255,100,50)",
-                    ],
-                    pane: "overlayPane",
-                    ...options,
-                    data: initialData, // Set initial data instead of null
-                });
-
-                layerRef.current.addTo(map);
-                readyRef.current = true;
-                console.log("Wind velocity layer created successfully with initial data");
-            } catch (err) {
-                console.error("Failed to create velocity layer:", err);
-                layerRef.current = null;
-                readyRef.current = false;
-            }
-        };
-
-        map.whenReady(() => {
-            setTimeout(initLayer, 100);
+        const layer = L.velocityLayer({
+            displayValues: false,
+            lineWidth: 2,
+            particleMultiplier: 1 / 350,
+            particleAge: 60,
+            velocityScale: 1 / 55,
+            frameRate: 12,
+            maxVelocity: 20,
+            minVelocity: 0,
+            pane: "overlayPane",
         });
 
+        layer.addTo(map);
+        layerRef.current = layer;
+        readyRef.current = true;
+
         return () => {
-            mountedRef.current = false;
             readyRef.current = false;
-            isUpdatingRef.current = false;
-
-            if (layerRef.current) {
-                try {
-                    if (map && map.hasLayer(layerRef.current)) {
-                        map.removeLayer(layerRef.current);
-                    }
-                } catch (err) {
-                    console.warn("Error removing velocity layer:", err);
-                }
-                layerRef.current = null;
-            }
+            if (map.hasLayer(layer)) map.removeLayer(layer);
+            layerRef.current = null;
         };
-    }, [map, windData]);
+    }, [map]);
 
     // --------------------------------------------------
-    // Listen for map clicks to log wind data
-    // --------------------------------------------------
-    useEffect(() => {
-        if (!map || !windData) return;
-
-        const onClick = createWindClickHandler(
-            windData,
-            selectedTime,
-            minTime,
-            maxTime,
-            "WIND VELOCITY LAYER"
-        );
-
-        map.on("click", onClick);
-        return () => map.off("click", onClick);
-    }, [map, windData, selectedTime, minTime, maxTime]);
-
-    // --------------------------------------------------
-    // Update frame (STRICTLY guarded with debouncing)
+    // Update data (Initially and on time changes)
     // --------------------------------------------------
     useEffect(() => {
         if (
-            !mountedRef.current ||
             !readyRef.current ||
             !layerRef.current ||
-            !windData ||
-            !windData.ts ||
-            isUpdatingRef.current
-        ) {
-            return;
-        }
+            !windData?.ts ||
+            minTime == null ||
+            maxTime == null ||
+            selectedTime == null
+        ) return;
 
-        if (!map || !map.getContainer()) {
-            console.warn("Map not available for wind update");
-            return;
-        }
+        if (isUpdatingRef.current) return;
 
         const idx = calculateTimeIndex(
             selectedTime,
@@ -204,33 +99,18 @@ export function WindVelocityLayer({
             windData.ts.length
         );
 
-        const velocityData = buildVelocityData(windData, idx);
-        if (!velocityData) return;
+        const data = buildVelocityData(windData, idx);
+        if (!data) return;
 
         isUpdatingRef.current = true;
 
         requestAnimationFrame(() => {
-            if (
-                !mountedRef.current ||
-                !layerRef.current ||
-                !map ||
-                !map.getContainer()
-            ) {
-                isUpdatingRef.current = false;
-                return;
+            if (layerRef.current) {
+                layerRef.current.setData(data);
             }
-
-            try {
-                layerRef.current.setData(velocityData);
-            } catch (err) {
-                console.error("Velocity update failed:", err);
-            } finally {
-                setTimeout(() => {
-                    isUpdatingRef.current = false;
-                }, 50);
-            }
+            isUpdatingRef.current = false;
         });
-    }, [windData, selectedTime, minTime, maxTime, map]);
+    }, [windData, selectedTime, minTime, maxTime]);
 
     return null;
 }

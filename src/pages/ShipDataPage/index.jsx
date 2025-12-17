@@ -210,16 +210,14 @@ export default function ShipDataPage() {
         />
 
         {/* ADD WIND LAYER HERE */}
-        {windData && (
+        {windData && selectedTime && minTime && maxTime && (
           <WeatherLayer
             windData={windData}
             selectedTime={selectedTime}
             minTime={virtualMinTime}
             maxTime={virtualMaxTime}
           />
-
         )}
-
 
         {selectedShipIndex !== null && filteredShips[selectedShipIndex] && (
           <ShipInfoPanel {...infoPanelProps} />
