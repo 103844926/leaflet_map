@@ -210,7 +210,7 @@ export default function ShipDataPage() {
         />
 
         {/* ADD WIND LAYER HERE */}
-        {windData && selectedTime && minTime && maxTime && (
+        {windData && selectedTime && minTime && maxTime && !isAnimating && (
           <WeatherLayer
             windData={windData}
             selectedTime={selectedTime}

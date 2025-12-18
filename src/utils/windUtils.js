@@ -78,10 +78,6 @@ export function logWindData(label, { lat, lng, u, v, gust, gridIndex, timeIndex,
     if (gridTime) {
         console.log(`Grid Time: ${new Date(gridTime).toISOString()}`);
     }
-    if (gust != null) {
-        const gustKnots = gust * 1.94384;
-        console.log(`Gust: ${gust.toFixed(2)} m/s (${gustKnots.toFixed(1)} kt)`);
-    }
 }
 
 /**
@@ -116,5 +112,41 @@ export function createWindClickHandler(windData, selectedTime, minTime, maxTime,
             console.log(`=== ${label} ===`);
             console.log("No wind data at this location");
         }
+    };
+}
+
+export function velocityOptionsForZoom(zoom) {
+    if (zoom <= 4) {
+        return {
+            particleMultiplier: 1 / 1200,
+            lineWidth: 0.6,
+            velocityScale: 1 / 120,
+            frameRate: 8,
+        };
+    }
+
+    if (zoom <= 6) {
+        return {
+            particleMultiplier: 1 / 800,
+            lineWidth: 0.9,
+            velocityScale: 1 / 90,
+            frameRate: 10,
+        };
+    }
+
+    if (zoom <= 8) {
+        return {
+            particleMultiplier: 1 / 500,
+            lineWidth: 1.2,
+            velocityScale: 1 / 65,
+            frameRate: 12,
+        };
+    }
+
+    return {
+        particleMultiplier: 1 / 300,
+        lineWidth: 1.5,
+        velocityScale: 1 / 50,
+        frameRate: 15,
     };
 }

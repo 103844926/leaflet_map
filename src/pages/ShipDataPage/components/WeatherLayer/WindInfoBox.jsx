@@ -19,14 +19,13 @@ function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime }) {
         );
     }
 
-    const { u, v, gust, gridIndex } = sample;
+    const { u, v, gridIndex } = sample;
     const { speed, speedKnots, meteoAngle, direction } = calculateWindMetrics(u, v);
-    const gustKnots = gust != null ? gust * 1.94384 : null;
 
     logWindData("WIND INFO BOX", {
         lat: latlng.lat,
         lng: latlng.lng,
-        u, v, gust, gridIndex, timeIndex,
+        u, v, gridIndex, timeIndex,
         selectedTime,
         gridTime: grid.ts[timeIndex],
     });
@@ -36,7 +35,6 @@ function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime }) {
             <Typography variant="h6" fontWeight={700} mb={1}>Wind (Open-Meteo)</Typography>
             <Typography variant="body2"><strong>Speed:</strong> {speed.toFixed(1)} m/s ({speedKnots.toFixed(1)} kt)</Typography>
             <Typography variant="body2"><strong>Direction:</strong> {direction} ({meteoAngle.toFixed(0)}°)</Typography>
-            {gust != null && <Typography variant="body2"><strong>Gust:</strong> {gust.toFixed(1)} m/s ({gustKnots.toFixed(1)} kt)</Typography>}
             <Typography variant="body2"><strong>Lat/Lon:</strong> {latlng.lat.toFixed(3)}, {latlng.lng.toFixed(3)}</Typography>
             <Typography variant="body2"><strong>Time:</strong> {new Date(grid.ts[timeIndex]).toLocaleString()}</Typography>
         </Box>
