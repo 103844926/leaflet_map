@@ -6,27 +6,30 @@ import { useRulerHandlers } from "@/hooks";
 
 export function LeafletRulerControl() {
     const map = useMap();
+    const refs = useRef(null);
 
-    const refs = {
-        isActive: useRef(false),
-        hasAnchor: useRef(false),
-        chainStartIndex: useRef(null),
+    if (!refs.current) {
+        refs.current = {
+            isActive: { current: false },
+            hasAnchor: { current: false },
+            chainStartIndex: { current: null },
 
-        points: useRef([]),
-        lines: useRef([]),
-        labels: useRef([]),
+            points: { current: [] },
+            lines: { current: [] },
+            labels: { current: [] },
 
-        fillCircle: useRef(null),
-        ringLayer: useRef(null),
-        ringLabels: useRef(null),
+            fillCircle: { current: null },
+            ringLayer: { current: null },
+            ringLabels: { current: null },
 
-        tempLine: useRef(null),
-        tempLabel: useRef(null),
+            tempLine: { current: null },
+            tempLabel: { current: null },
 
-        button: useRef(null)
-    };
+            button: { current: null }
+        };
+    }
 
-    const handlers = useRulerHandlers(map, refs);
+    const handlers = useRulerHandlers(map, refs.current);
 
     useEffect(() => {
         if (!map) return;
