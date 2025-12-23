@@ -2,7 +2,7 @@ import { React, useState, useCallback, useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
-import { ShipMapLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl } from "./components";
+import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl } from "./components";
 import { MiniMapControl, RecordingControl } from "@/components";
 import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions } from "@/hooks";
 import { defaultShipFilters } from "@/utils";
@@ -43,6 +43,9 @@ export default function ShipDataPage() {
     handleShipToggle,
     filteredShips,
     movementMarks,
+    windData,
+    virtualMinTime,
+    virtualMaxTime,
   } = useShipDataPageLogic();
 
   const filterOptions = useShipFilterOptions(currentShips);
@@ -211,9 +214,20 @@ export default function ShipDataPage() {
           zoomOffset={-1}
         />
 
+        {/* ADD WIND LAYER HERE */}
+        {windData && selectedTime && minTime && maxTime && !isAnimating && (
+          <WeatherLayer
+            windData={windData}
+            selectedTime={selectedTime}
+            minTime={virtualMinTime}
+            maxTime={virtualMaxTime}
+          />
+        )}
+
         {selectedShip && (
           <ShipInfoPanel {...infoPanelProps} />
         )}
+
 
         <ShipMapLayer
           ships={ships}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { getShipData, getCurrentShipData } from "@/datas";
+import { getShipData, getCurrentShipData, getWindyData } from "@/datas";
 import { useShipVisible } from "./useShipVisible";
 import { detectShipMovementStartsDetailed } from "@/utils";
 
@@ -8,7 +8,9 @@ export function useShipDataPageLogic() {
     const [currentShips, setCurrentShips] = useState([]);
     const [initialCenter, setInitialCenter] = useState(null);
     const [timeRange, setTimeRange] = useState(null);
-
+    const [windData, setWindData] = useState(null);
+    const [virtualMinTime, setVirtualMinTime] = useState(null);
+    const [virtualMaxTime, setVirtualMaxTime] = useState(null);
     const isAnimatingRef = useRef(false);
 
     // Ship visibility logic stays the same
@@ -81,6 +83,39 @@ export function useShipDataPageLogic() {
         return detectShipMovementStartsDetailed(shipsToAnalyze, 50);
     }, [ships, visibleShips]);
 
+    // --------------------
+    // Get Windy Data
+    // --------------------
+
+    useEffect(() => {
+        if (!initialCenter) return;
+
+        const [lat, lon] = initialCenter;
+
+        getWindyData({ lat, lon, model: "gfs" })
+            .then((data) => {
+                setWindData(data);
+                console.log("Windy data:", data);
+                // optionally store in state for visualization
+            })
+            .catch(console.error);
+    }, [initialCenter]);
+
+    // --------------------
+    // Sync ship time range with wind data time range
+    // --------------------
+
+    useEffect(() => {
+        if (!ships.length || !windData) return;
+
+        const shipMin = Math.min(...ships.flatMap(s => s.locations.map(l => l.time)));
+        const shipMax = Math.max(...ships.flatMap(s => s.locations.map(l => l.time)));
+
+        // virtual timeline is the SHIP timeline
+        setVirtualMinTime(shipMin);
+        setVirtualMaxTime(shipMax);
+    }, [ships, windData]);
+
     return {
         ships,
         currentShips,
@@ -92,5 +127,8 @@ export function useShipDataPageLogic() {
         filteredShips,
         isAnimatingRef,
         movementMarks,
+        windData,
+        virtualMinTime,
+        virtualMaxTime,
     };
 }
