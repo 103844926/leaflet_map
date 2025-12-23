@@ -42,6 +42,7 @@ export const getShipData = async (forceRefresh = false) => {
         lat: loc.lat,
         long: loc.long,
         time: loc.time,
+        speed: loc.speed,
         course: loc.course,
         timeFormatted: new Date(loc.time).toLocaleString("en-GB", {
           year: "numeric",
@@ -66,6 +67,16 @@ export const getCurrentShipData = async (forceRefresh = false) => {
     lat: ship.ship_lat,
     long: ship.ship_long,
     course: ship.course,
+    ship_type: ship.ship_type,
+    speed: ship.speed,
+    name: ship.name,
+    country_code: ship.country_code,
+    length: ship.length,
+    width: ship.width,
+    crawl_time: ship.crawl_time,
+    status: ship.status,
+    violation_f: ship.violation_f,
+    source_type: ship.source_type,
     isCurrentPosition: true, // Flag to identify these ships
   }));
 };

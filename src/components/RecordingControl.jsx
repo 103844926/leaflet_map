@@ -26,8 +26,6 @@ export function RecordingControl({
     showDialog,
     onDialogChange,
     initialStartTime,
-    showBackgroundShips,
-    onShowBackgroundShipsChange,
     trackShip,
     onTrackShipChange,
     movementMarks,
@@ -162,17 +160,6 @@ export function RecordingControl({
                                 </Select>
                             )}
                         </FormControl>
-
-                        {/* SHOW BACKGROUND SHIPS CHECKBOX */}
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={showBackgroundShips}
-                                    onChange={(e) => onShowBackgroundShipsChange(e.target.checked)}
-                                />
-                            }
-                            label="Show other ships (may reduce performance)"
-                        />
 
                         {/* TRACK SHIP CHECKBOX - Only when specific ship selected */}
                         {selectedRecordingShip !== null && (

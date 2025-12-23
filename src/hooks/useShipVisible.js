@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 
 export function useShipVisible(ships, currentShips) {
   const [visibleShips, setVisibleShips] = useState([]);
-  const [showBackgroundShips, setShowBackgroundShips] = useState(false); // Start hidden
 
   // Initialize visibility when ships array changes
   useEffect(() => {
@@ -17,14 +16,8 @@ export function useShipVisible(ships, currentShips) {
     });
   };
 
-  const toggleBackgroundShips = () => {
-    setShowBackgroundShips((prev) => !prev);
-  };
-
   return {
     visibleShips,
     handleShipToggle,
-    showBackgroundShips,
-    toggleBackgroundShips
   };
 }

@@ -12,7 +12,7 @@ function interpolatePosition(pos1, pos2, progress) {
 }
 
 export function useShipAnimation(ships, selectedTime) {
-  const [selectedShipIndex, setSelectedShipIndex] = useState(null);
+  const [selectedShip, setSelectedShip] = useState(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
   const { isAnimating, animate, stopAnimation } = useSliderAnimation(playbackSpeed);
@@ -93,8 +93,8 @@ export function useShipAnimation(ships, selectedTime) {
   );
 
   return {
-    selectedShipIndex,
-    setSelectedShipIndex,
+    selectedShip,
+    setSelectedShip,
     getShipPositionsAtTime,
     shipPositions,
     isAnimating,

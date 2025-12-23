@@ -1,5 +1,6 @@
 // src/hooks/useShipDataPageProps.js
 import { useMemo } from "react";
+import { defaultShipFilters } from "@/utils";
 
 export function useShipDataPageProps({
     // ---- Shared Data ----
@@ -7,11 +8,13 @@ export function useShipDataPageProps({
     filteredShips,
     visibleShips,
     shipPositions,
-    timeRange,
-    showBackgroundShips,
-    toggleBackgroundShips,
+
+    shipFilters,
+    setShipFilters,
+    filterOptions,
 
     // ---- Map ----
+    timeRange,
     mapRef,
     paperControl,
     boxControl,
@@ -50,24 +53,25 @@ export function useShipDataPageProps({
     updateTime,
     movementMarks,
     showPaths,
-    setSelectedShipIndex,
-    selectedShipIndex,
+    setSelectedShip,
+    selectedShip,
 }) {
     // ------------------------
     // Ship Info Panel Props
     // ------------------------
     const infoPanelProps = useMemo(
         () =>
-            selectedShipIndex !== null && filteredShips[selectedShipIndex]
+            selectedShip
                 ? {
-                    ship: filteredShips[selectedShipIndex],
+                    ship: selectedShip,     // ✅ background OR foreground
                     timeRange,
-                    onClose: () => setSelectedShipIndex(null),
+                    onClose: () => setSelectedShip(null),
                     controlRef: boxControl,
                 }
                 : null,
-        [selectedShipIndex, filteredShips, timeRange, boxControl, setSelectedShipIndex]
+        [selectedShip, timeRange, boxControl]
     );
+
 
     // ------------------------
     // Ship Layer Control Props
@@ -76,28 +80,34 @@ export function useShipDataPageProps({
         () => ({
             ships,
             visibleShips,
+            onShipToggle: handleShipToggle,
             showPaths,
             onPathToggle: setShowPaths,
+
+            shipFilters,
+            filterOptions,
+            onApplyFilters: setShipFilters,
+            onClearFilters: () => setShipFilters(defaultShipFilters),
+
             isAnimatingAll: isAnimating,
             controlRef: paperControl,
-            onShipToggle: handleShipToggle,
             movementMarks,
             selectedTime,
-            showBackgroundShips,
-            onToggleBackgroundShips: toggleBackgroundShips,
+
             onJumpToShip: (index) => {
-                if (mapRef.current) {
-                    const pos = shipPositions[index]?.position;
-                    if (pos) {
-                        mapRef.current.flyTo([pos.lat, pos.long], mapRef.current.getZoom(), {
-                            duration: 1.5,
-                        });
-                    }
+                if (!mapRef.current) return;
+
+                const pos = shipPositions[index]?.position;
+                if (pos) {
+                    mapRef.current.flyTo(
+                        [pos.lat, pos.long],
+                        mapRef.current.getZoom(),
+                        { duration: 1.5 }
+                    );
                 }
             },
 
-            onJumpToStartTime: (index, startTime) => {
-                // Update the time slider
+            onJumpToStartTime: (_, startTime) => {
                 handleManualTimeUpdate(startTime);
             },
 
@@ -105,25 +115,26 @@ export function useShipDataPageProps({
             onDialogChange: (show, shipStartTime) => {
                 setShowRecordingDialog(show);
                 if (shipStartTime !== undefined) {
-                    setRecordingShipStartTime(shipStartTime); // Pass to parent
+                    setRecordingShipStartTime(shipStartTime);
                 }
             },
         }),
         [
             ships,
             visibleShips,
+            filterOptions,
+            handleShipToggle,
             showPaths,
             setShowPaths,
+            shipFilters,
+            setShipFilters,
             isAnimating,
             paperControl,
-            handleShipToggle,
+            movementMarks,
+            selectedTime,
             mapRef,
             shipPositions,
             handleManualTimeUpdate,
-            movementMarks,
-            selectedTime,
-            showBackgroundShips,
-            toggleBackgroundShips,
             setRecordingShipIndex,
             setShowRecordingDialog,
             setRecordingShipStartTime,
@@ -177,8 +188,6 @@ export function useShipDataPageProps({
                     }
                 },
                 initialStartTime: recordingShipStartTime,
-                showBackgroundShips,
-                onShowBackgroundShipsChange: toggleBackgroundShips,
                 trackShip,
                 onTrackShipChange: setTrackShip,
                 movementMarks,
@@ -203,8 +212,6 @@ export function useShipDataPageProps({
             recordingShipStartTime,
             setRecordingShipStartTime,
             setShouldStopRecording,
-            showBackgroundShips,
-            toggleBackgroundShips,
             trackShip,
             setTrackShip,
             movementMarks,
