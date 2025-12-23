@@ -1,26 +1,54 @@
 // ShipMapLayer.jsx
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { UnifiedShipLayer } from "./UnifiedShipLayer";
+import { applyShipFilters } from "@/utils";
 
 export const ShipMapLayer = React.memo(function ShipMapLayer({
   ships,
   currentShips,
-  showBackgroundShips,
+  shipFilters,
   filteredShips,
   visibleShips,
   shipPositions,
-  onMarkerClick,
+  onShipSelect,
   timeRange,
   showPaths,
   recordingShipIndex,
   isRecording,
   selectedTime,
+  selectedShipId,
 }) {
+
+  const backgroundShipsFiltered = useMemo(() => {
+    return currentShips.filter((ship) =>
+      applyShipFilters(ship, shipFilters)
+    );
+  }, [currentShips, shipFilters]);
+
   const shipsToRender = useMemo(() => {
     return recordingShipIndex !== null
       ? [filteredShips[recordingShipIndex]]
       : filteredShips;
   }, [recordingShipIndex, filteredShips]);
+
+  const handleMarkerClick = useCallback(
+    (index) => {
+      const ship = filteredShips[index];
+      if (!ship) return;
+
+      onShipSelect?.(ship);
+    },
+    [filteredShips, onShipSelect]
+  );
+
+
+  const handleBackgroundShipClick = useCallback(
+    (ship) => {
+      onShipSelect?.(ship);
+    },
+    [onShipSelect]
+  );
+
 
   return (
     <UnifiedShipLayer
@@ -30,16 +58,19 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
       shipsToRender={shipsToRender}
       visibleShips={visibleShips}
       shipPositions={shipPositions}
-      onMarkerClick={onMarkerClick}
+      onMarkerClick={handleMarkerClick}
       showPaths={showPaths}
       recordingShipIndex={recordingShipIndex}
       isRecording={isRecording}
       currentTime={selectedTime}
 
       // Background ships
-      backgroundShips={currentShips}
-      showBackgroundShips={showBackgroundShips}
+      backgroundShips={backgroundShipsFiltered}
       backgroundShipColor={0x888888}
+      onBackgroundShipClick={handleBackgroundShipClick}
+
+      // Selected ship
+      selectedShipId={selectedShipId}
     />
   );
 });

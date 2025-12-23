@@ -4,7 +4,8 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
 import { ShipMapLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl } from "./components";
 import { MiniMapControl, RecordingControl } from "@/components";
-import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps } from "@/hooks";
+import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions } from "@/hooks";
+import { defaultShipFilters } from "@/utils";
 
 export default function ShipDataPage() {
 
@@ -26,6 +27,8 @@ export default function ShipDataPage() {
   const [recordingShipStartTime, setRecordingShipStartTime] = useState(null);
   const [trackShip, setTrackShip] = useState(false);
 
+  // Ship filters
+  const [shipFilters, setShipFilters] = useState(defaultShipFilters);
 
   // --------------------------
   // Load ships data and filter
@@ -38,11 +41,11 @@ export default function ShipDataPage() {
     setTimeRange,
     visibleShips,
     handleShipToggle,
-    showBackgroundShips, // ADD THIS
-    toggleBackgroundShips, // ADD THIS
     filteredShips,
     movementMarks,
   } = useShipDataPageLogic();
+
+  const filterOptions = useShipFilterOptions(currentShips);
 
   // --------------------
   // Time management (no animation)
@@ -67,8 +70,8 @@ export default function ShipDataPage() {
   // Animation + Ship positions
   // --------------------
   const {
-    selectedShipIndex,
-    setSelectedShipIndex,
+    selectedShip,
+    setSelectedShip,
     shipPositions,
     isAnimating,
     animate,
@@ -102,10 +105,12 @@ export default function ShipDataPage() {
     filteredShips,
     visibleShips,
     shipPositions,
-    timeRange,
-    showBackgroundShips,
-    toggleBackgroundShips,
 
+    shipFilters,
+    setShipFilters,
+    filterOptions,
+
+    timeRange,
     mapRef,
     paperControl,
     boxControl,
@@ -141,8 +146,8 @@ export default function ShipDataPage() {
     updateTime,
     movementMarks,
     showPaths,
-    setSelectedShipIndex,
-    selectedShipIndex,
+    setSelectedShip,
+    selectedShip,
   });
 
 
@@ -206,26 +211,30 @@ export default function ShipDataPage() {
           zoomOffset={-1}
         />
 
-        {selectedShipIndex !== null && filteredShips[selectedShipIndex] && (
+        {selectedShip && (
           <ShipInfoPanel {...infoPanelProps} />
         )}
 
         <ShipMapLayer
           ships={ships}
           currentShips={currentShips}
-          showBackgroundShips={showBackgroundShips}
+          shipFilters={shipFilters}
           filteredShips={filteredShips}
           visibleShips={visibleShips}
           shipPositions={shipPositions}
-          onMarkerClick={setSelectedShipIndex}
+          onShipSelect={setSelectedShip}   // ✅ ONE handler
           timeRange={timeRange}
           showPaths={showPaths}
           recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
           isRecording={isRecordingActive}
-          selectedTime={selectedTime}  // ADD THIS LINE
+          selectedTime={selectedTime}
+          selectedShipId={
+            selectedShip?.ship_uid ??
+            null
+          }
         />
 
-        <MiniMapControl zoom={5} />
+        {/* <MiniMapControl zoom={5} /> */}
 
       </MapContainer>
 

@@ -15,8 +15,6 @@ export function useShipDataPageLogic() {
     const {
         visibleShips,
         handleShipToggle,
-        showBackgroundShips,
-        toggleBackgroundShips
     } = useShipVisible(ships, currentShips);
 
     // --------------------------
@@ -91,8 +89,6 @@ export function useShipDataPageLogic() {
         setTimeRange,
         visibleShips,
         handleShipToggle,
-        showBackgroundShips,
-        toggleBackgroundShips,
         filteredShips,
         isAnimatingRef,
         movementMarks,

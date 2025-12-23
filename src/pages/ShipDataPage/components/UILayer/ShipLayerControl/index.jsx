@@ -2,13 +2,18 @@
 import { React, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { Paper, Typography, Stack, IconButton, Collapse, TextField, InputAdornment, Button } from "@mui/material";
-import { ExpandMore, ExpandLess, Search, Visibility, VisibilityOff } from "@mui/icons-material";
-
+import { ExpandMore, ExpandLess, Search, FilterAlt } from "@mui/icons-material";
 import { ShipLayerRow } from "./ShipLayerRow";
+import { ShipFilterControl } from "./ShipFilterControl";
+import { applyShipFilters } from "@/utils";
 
 export function ShipLayerControl({
     ships,
     visibleShips,
+    shipFilters,
+    filterOptions,
+    onApplyFilters,
+    onClearFilters,
     onShipToggle,
     showPaths,
     onPathToggle,
@@ -20,14 +25,15 @@ export function ShipLayerControl({
     selectedTime,
     onRecordingShipChange,
     onDialogChange,
-    showBackgroundShips,
-    onToggleBackgroundShips,
 }) {
     const [isExpanded, setIsExpanded] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    const filteredShips = ships.filter((ship) =>
-        ship.ship_uid.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredShips = ships.filter(
+        (ship) =>
+            ship.ship_uid.toLowerCase().includes(searchQuery.toLowerCase()) &&
+            applyShipFilters(ship, shipFilters)
     );
 
     return (
@@ -81,20 +87,15 @@ export function ShipLayerControl({
                         sx={{ width: "100%" }}
                     />
 
-                    {/* TOGGLE BACKGROUND SHIPS */}
+                    {/* TOGGLE BACKGROUND SHIPS FILTERS */}
                     <Button
                         variant="outlined"
                         size="small"
-                        startIcon={showBackgroundShips ? <VisibilityOff /> : <Visibility />}
-                        onClick={onToggleBackgroundShips}
-                        disabled={isAnimatingAll}
-                        sx={{
-                            width: "100%",
-                            borderColor: showBackgroundShips ? "grey.400" : "grey.300",
-                            color: showBackgroundShips ? "grey.700" : "grey.500",
-                        }}
+                        startIcon={<FilterAlt />}
+                        onClick={() => setIsFilterOpen(true)}
+                        sx={{ width: "100%" }}
                     >
-                        {showBackgroundShips ? "Hide Background Ships" : "Show Background Ships"}
+                        Filters
                     </Button>
 
                     {/* SHIP LIST */}
@@ -135,6 +136,19 @@ export function ShipLayerControl({
                     </Stack>
                 </Stack>
             </Collapse>
+
+            <ShipFilterControl
+                open={isFilterOpen}
+                filters={shipFilters}
+                filterOptions={filterOptions}
+                onApply={(filters) => {
+                    onApplyFilters(filters);
+                    setIsFilterOpen(false);
+                }}
+                onClear={onClearFilters}
+                onClose={() => setIsFilterOpen(false)}
+            />
+
         </Paper>
     );
 }

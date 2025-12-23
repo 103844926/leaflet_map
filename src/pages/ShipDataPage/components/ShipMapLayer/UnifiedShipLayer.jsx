@@ -12,7 +12,8 @@ import { detectShipMovementStartsDetailed } from "@/utils";
 export function UnifiedShipLayer({
     ships, filteredShips, shipsToRender, visibleShips, shipPositions,
     onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
-    backgroundShips = [], showBackgroundShips = true, backgroundShipColor = 0x888888,
+    backgroundShips = [], backgroundShipColor = 0x888888,
+    onBackgroundShipClick, selectedShipId
 }) {
     const map = useMap();
     const pixiOverlayRef = useRef(null);
@@ -31,14 +32,17 @@ export function UnifiedShipLayer({
         propsRef.current = {
             ships, filteredShips, shipsToRender, visibleShips, shipPositions,
             onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
-            backgroundShips, showBackgroundShips, backgroundShipColor,
+            backgroundShips, backgroundShipColor, onBackgroundShipClick, selectedShipId
         };
     }, [ships, filteredShips, shipsToRender, visibleShips, shipPositions,
         onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
-        backgroundShips, showBackgroundShips, backgroundShipColor]);
+        backgroundShips, backgroundShipColor, onBackgroundShipClick, selectedShipId]);
 
     useEffect(() => {
         if (!map) return;
+
+        // Capture resources ref at effect creation time
+        const resources = resourcesRef.current;
 
         const pixiContainer = new PIXI.Container();
         const overlay = L.pixiOverlay((utils) => {
@@ -55,15 +59,18 @@ export function UnifiedShipLayer({
 
             container.removeChildren();
             const props = propsRef.current;
-            const resources = resourcesRef.current;
 
             // Draw layers with culling & LOD
+            // Use resourcesRef.current here since we need the latest value
+            const currentResources = resourcesRef.current;
+
             drawBackground({
                 container, project: latLngToLayerPoint, scale, bounds, renderer,
                 backgroundShips: props.backgroundShips,
-                showBackgroundShips: props.showBackgroundShips,
                 backgroundShipColor: props.backgroundShipColor,
-                resources
+                resources: currentResources,
+                onBackgroundShipClick: props.onBackgroundShipClick,
+                selectedShipId: props.selectedShipId
             });
 
             drawPaths({
@@ -73,7 +80,7 @@ export function UnifiedShipLayer({
                 visibleShips: props.visibleShips,
                 shipPositions: props.shipPositions,
                 showPaths: props.showPaths,
-                resources
+                resources: currentResources
             });
 
             drawMarkers({
@@ -85,9 +92,10 @@ export function UnifiedShipLayer({
                 onMarkerClick: props.onMarkerClick,
                 recordingShipIndex: props.recordingShipIndex,
                 isRecording: props.isRecording,
-                resources,
+                resources: currentResources,
                 movementStartMap,
-                currentTime: props.currentTime,  // Add this
+                currentTime: props.currentTime,
+                selectedShipId: props.selectedShipId
             });
 
             renderer.render(container);
@@ -105,9 +113,7 @@ export function UnifiedShipLayer({
             map.removeLayer(overlay);
             if (map.pixiOverlay === overlay) delete map.pixiOverlay;
 
-            // Copy ref to local variable for cleanup
-            // eslint-disable-next-line
-            const resources = resourcesRef.current;
+            // Use the captured resources variable from effect creation
             if (resources.shipTexture) {
                 resources.shipTexture.destroy(true);
             }
@@ -125,7 +131,7 @@ export function UnifiedShipLayer({
         pixiOverlayRef.current?.redraw();
     }, [ships, filteredShips, shipsToRender, visibleShips, shipPositions,
         showPaths, recordingShipIndex, isRecording,
-        backgroundShips, showBackgroundShips, backgroundShipColor]);
+        backgroundShips, backgroundShipColor, selectedShipId]);
 
     return null;
 }
