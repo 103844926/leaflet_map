@@ -89,7 +89,6 @@ export function useShipDataPageLogic() {
 
     useEffect(() => {
         if (!initialCenter) return;
-
         const [lat, lon] = initialCenter;
 
         getWindyData({ lat, lon, model: "gfs" })

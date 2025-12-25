@@ -2,8 +2,8 @@
 const fetch = require("node-fetch");
 
 // ===== CONFIG =====
-const GRID_NX = 9;
-const GRID_NY = 9;
+const GRID_NX = 10;
+const GRID_NY = 12;
 const GRID_SPAN_DEG = 4; // degrees (2° around center)
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
@@ -29,10 +29,10 @@ module.exports = async function getWindGrid(lat, lon) {
 
     // Build grid bounds
     const half = GRID_SPAN_DEG / 2;
-    const la1 = lat + half;
-    const la2 = lat - half;
-    const lo1 = lon - half;
-    const lo2 = lon + half;
+    const la1 = 22;
+    const la2 = 8;
+    const lo1 = 104;
+    const lo2 = 110;
 
     const lats = [];
     const lons = [];

@@ -2,16 +2,31 @@ import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet-velocity";
-import { calculateTimeIndex, velocityOptionsForZoom } from "@/utils";
+import { isValidWindData, calculateTimeIndex, isValidTimeRange, velocityOptionsForZoom } from "@/utils";
 
-export function WindVelocityLayer({
+function getVelocityLayerConfig(zoom) {
+    return {
+        ...velocityOptionsForZoom(zoom),
+        particleAge: 60,
+        maxVelocity: 20,
+        minVelocity: 0,
+        opacity: 0.4,
+        displayValues: false,
+        pane: "overlayPane",
+        colorScale: [
+            "rgba(255, 255, 255, 0.6)",
+        ],
+    };
+}
+
+export function WindParticleLayer({
     windData,
     selectedTime,
     minTime,
     maxTime,
+    visible = true,
 }) {
     const map = useMap();
-
     const layerRef = useRef(null);
     const readyRef = useRef(false);
     const isUpdatingRef = useRef(false);
@@ -20,13 +35,10 @@ export function WindVelocityLayer({
     const lastVelocityDataRef = useRef(null);
     const lastZoomRef = useRef(null);
 
-    // --------------------------------------------------
-    // Convert grid → velocity format
-    // --------------------------------------------------
-    function buildVelocityData(grid, tIndex) {
-        if (!grid) return null;
+    function buildVelocityData(windData, tIndex) {
+        if (!windData) return null;
 
-        const { ts, nx, ny, lo1, la1, lo2, la2, u, v } = grid;
+        const { ts, nx, ny, lo1, la1, lo2, la2, u, v } = windData;
         if (!u?.[tIndex] || !v?.[tIndex]) return null;
 
         const dx = (lo2 - lo1) / (nx - 1);
@@ -53,26 +65,19 @@ export function WindVelocityLayer({
         ];
     }
 
-    // --------------------------------------------------
     // Create layer ONCE (with zoom-aware options)
-    // --------------------------------------------------
     useEffect(() => {
         if (!map || layerRef.current) return;
 
         const zoom = map.getZoom();
         lastZoomRef.current = zoom;
 
-        const layer = L.velocityLayer({
-            ...velocityOptionsForZoom(zoom),
-            particleAge: 60,
-            maxVelocity: 20,
-            minVelocity: 0,
-            opacity: 0.9,
-            displayValues: false,
-            pane: "overlayPane",
-        });
+        const layer = L.velocityLayer(getVelocityLayerConfig(zoom));
 
-        layer.addTo(map);
+        // Only add to map when visible
+        if (visible) {
+            layer.addTo(map);
+        }
         layerRef.current = layer;
         readyRef.current = true;
 
@@ -91,17 +96,13 @@ export function WindVelocityLayer({
         };
     }, [map]);
 
-    // --------------------------------------------------
-    // Update wind data (debounced, time-based)
-    // --------------------------------------------------
+    // Update wind data (debounced, time-based) - same as original
     useEffect(() => {
         if (
             !readyRef.current ||
             !layerRef.current ||
-            !windData?.ts ||
-            minTime == null ||
-            maxTime == null ||
-            selectedTime == null
+            !isValidWindData(windData) ||
+            !isValidTimeRange(minTime, maxTime, selectedTime)
         ) return;
 
         if (debounceTimerRef.current) {
@@ -135,9 +136,22 @@ export function WindVelocityLayer({
 
     }, [windData, selectedTime, minTime, maxTime]);
 
-    // --------------------------------------------------
-    // Recreate layer on zoom change (performance-safe)
-    // --------------------------------------------------
+    // Handle visibility changes
+    useEffect(() => {
+        if (!map || !layerRef.current) return;
+
+        if (visible) {
+            if (!map.hasLayer(layerRef.current)) {
+                layerRef.current.addTo(map);
+            }
+        } else {
+            if (map.hasLayer(layerRef.current)) {
+                map.removeLayer(layerRef.current);
+            }
+        }
+    }, [visible, map]);
+
+    // Recreate layer on zoom change (performance-safe) - same as original
     useEffect(() => {
         if (!map) return;
 
@@ -152,51 +166,19 @@ export function WindVelocityLayer({
 
             map.removeLayer(layerRef.current);
 
-            const newLayer = L.velocityLayer({
-                ...velocityOptionsForZoom(zoom),
-                particleAge: 60,
-                maxVelocity: 20,
-                minVelocity: 0,
-                displayValues: false,
-                pane: "overlayPane",
-            });
+            const newLayer = L.velocityLayer(getVelocityLayerConfig(zoom));
 
             if (data) newLayer.setData(data);
 
-            newLayer.addTo(map);
+            if (visible) {
+                newLayer.addTo(map);
+            }
             layerRef.current = newLayer;
         };
 
         map.on("zoomend", onZoomEnd);
         return () => map.off("zoomend", onZoomEnd);
-    }, [map]);
-
-    // --------------------------------------------------
-    // Hide layer during movement (visual clarity)
-    // --------------------------------------------------
-    useEffect(() => {
-        if (!map || !layerRef.current) return;
-
-        const hide = () => {
-            if (map.hasLayer(layerRef.current)) {
-                map.removeLayer(layerRef.current);
-            }
-        };
-
-        const show = () => {
-            if (!map.hasLayer(layerRef.current)) {
-                layerRef.current.addTo(map);
-            }
-        };
-
-        map.on("movestart", hide);
-        map.on("moveend", show);
-
-        return () => {
-            map.off("movestart", hide);
-            map.off("moveend", show);
-        };
-    }, [map]);
+    }, [map, visible]);
 
     return null;
 }

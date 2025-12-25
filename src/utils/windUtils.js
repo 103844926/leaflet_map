@@ -1,4 +1,15 @@
 /**
+ * Validate wind data structure
+ */
+export function isValidWindData(windData) {
+    return windData &&
+        Array.isArray(windData.ts) &&
+        windData.ts.length > 0 &&
+        windData.nx > 0 &&
+        windData.ny > 0;
+}
+
+/**
  * Calculate time index from selected time and range
  */
 export function calculateTimeIndex(selectedTime, minTime, maxTime, totalTimeSteps) {
@@ -8,6 +19,15 @@ export function calculateTimeIndex(selectedTime, minTime, maxTime, totalTimeStep
 
     const p = (selectedTime - minTime) / (maxTime - minTime);
     return Math.max(0, Math.min(totalTimeSteps - 1, Math.floor(p * totalTimeSteps)));
+}
+
+/**
+ * Validate time range parameters
+ */
+export function isValidTimeRange(minTime, maxTime, selectedTime) {
+    return minTime != null &&
+        maxTime != null &&
+        selectedTime != null;
 }
 
 /**

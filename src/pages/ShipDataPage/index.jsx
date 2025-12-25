@@ -2,9 +2,10 @@ import { React, useState, useCallback, useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
-import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl } from "./components";
+import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
+// eslint-disable-next-line
 import { MiniMapControl, RecordingControl } from "@/components";
-import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions } from "@/hooks";
+import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions, useLayerControl } from "@/hooks";
 import { defaultShipFilters } from "@/utils";
 
 export default function ShipDataPage() {
@@ -18,6 +19,9 @@ export default function ShipDataPage() {
 
   const paperControl = useLeafletControl();
   const boxControl = useLeafletControl();
+  const layerControl = useLeafletControl();
+  const { showWeather, showUI, layerConfigs } = useLayerControl();
+
 
   // Recording state
   const [isRecordingActive, setIsRecordingActive] = useState(false);
@@ -214,17 +218,19 @@ export default function ShipDataPage() {
           zoomOffset={-1}
         />
 
-        {/* ADD WIND LAYER HERE */}
-        {windData && selectedTime && minTime && maxTime && !isAnimating && (
+        {/* WIND LAYER */}
+        {windData && selectedTime && minTime && maxTime && showWeather && (
           <WeatherLayer
             windData={windData}
             selectedTime={selectedTime}
             minTime={virtualMinTime}
             maxTime={virtualMaxTime}
+            isAnimating={isAnimating}
+            isRecordingActive={isRecordingActive}
           />
         )}
 
-        {selectedShip && (
+        {showUI && selectedShip && (
           <ShipInfoPanel {...infoPanelProps} />
         )}
 
@@ -242,10 +248,7 @@ export default function ShipDataPage() {
           recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
           isRecording={isRecordingActive}
           selectedTime={selectedTime}
-          selectedShipId={
-            selectedShip?.ship_uid ??
-            null
-          }
+          selectedShipId={selectedShip?.ship_uid ?? null}
         />
 
         {/* <MiniMapControl zoom={5} /> */}
@@ -268,13 +271,19 @@ export default function ShipDataPage() {
       )}
 
       {!isRecordingActive && (
-        <ShipLayerControl {...shipLayerControlProps} />
+        <LayerControl layers={layerConfigs} control={layerControl} />
       )}
 
-      {/* ADD RecordingControl HERE - Now at ShipDataPage level */}
       <RecordingControl {...recordingProps} />
 
-      <ShipTimeControl {...timeControlProps} />
+      {showUI && (
+        <>
+          {!isRecordingActive && (
+            <ShipLayerControl {...shipLayerControlProps} />
+          )}
+          <ShipTimeControl {...timeControlProps} />
+        </>
+      )}
     </Box>
   );
 }

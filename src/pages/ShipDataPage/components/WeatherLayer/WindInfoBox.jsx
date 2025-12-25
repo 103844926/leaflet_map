@@ -3,10 +3,10 @@ import { useMap } from "react-leaflet";
 import L from "leaflet";
 import { createRoot } from "react-dom/client";
 import { Box, Typography } from "@mui/material";
-import { calculateTimeIndex, sampleWindAtLatLng, calculateWindMetrics, logWindData } from "@/utils";
+import { isValidWindData, calculateTimeIndex, sampleWindAtLatLng, calculateWindMetrics, logWindData } from "@/utils";
 
 function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime }) {
-    if (!grid?.ts || !latlng) return null;
+    if (!isValidWindData(grid) || !latlng) return null;
 
     const timeIndex = calculateTimeIndex(selectedTime, minTime, maxTime, grid.ts.length);
     const sample = sampleWindAtLatLng(grid, latlng.lat, latlng.lng, timeIndex);

@@ -2,7 +2,9 @@
 import { useRef, useCallback } from "react";
 import { useRecordingMapTiles } from "./useRecordingMapTiles";
 import { useRecordingPixi } from "./useRecordingPixi";
-import { useRecordingTimestamp } from "./useRecordingTimestamp"; // ← ADD THIS
+import { useRecordingWindPixi } from "./useRecordingWindPixi";
+import { useRecordingTimestamp } from "./useRecordingTimestamp";
+import { useRecordingWindParticles } from "./useRecordingWindParticles";
 
 export function useRecordingCapture() {
     const recorderRef = useRef(null);
@@ -14,13 +16,15 @@ export function useRecordingCapture() {
 
     const { capture: captureTiles } = useRecordingMapTiles();
     const { capture: capturePixi } = useRecordingPixi();
-    const { drawTimestamp } = useRecordingTimestamp(); // ← ADD THIS
+    const { capture: captureWindPixi } = useRecordingWindPixi();
+    const { capture: captureWindParticles } = useRecordingWindParticles();
+    const { drawTimestamp } = useRecordingTimestamp();
 
     const startRecording = useCallback(async (mapInstance, {
         fps = 24,
         scale = 1,
         videoBitsPerSecond = 8_000_000,
-        getCurrentTime // ← ADD THIS PARAMETER
+        getCurrentTime
     } = {}) => {
         const mapContainer = mapInstance?.getContainer();
         if (!mapContainer) { console.error("Map container not found"); return null; }
@@ -70,7 +74,13 @@ export function useRecordingCapture() {
             // 2) draw pixi on top
             const pixiOk = await capturePixi(mapInstance, ctx, outW, outH, scale);
 
-            // 3) ← ADD THIS: Draw timestamp overlay
+            // 3) draw wind pixi on top
+            const windPixiOk = await captureWindPixi(mapInstance, ctx, outW, outH, scale);
+
+            // 4) draw wind particles on top
+            const windParticlesOk = await captureWindParticles(mapInstance, ctx, outW, outH, scale);
+
+            // 5) draw timestamp overlay
             if (getCurrentTime) {
                 const currentTime = getCurrentTime();
                 drawTimestamp(ctx, currentTime, outW, outH, scale);
@@ -79,7 +89,7 @@ export function useRecordingCapture() {
             }
 
 
-            if (!tilesOk || !pixiOk) {
+            if (!tilesOk || !pixiOk || !windPixiOk || !windParticlesOk) {
                 console.warn("Frame capture had issues (CORS / missing canvases).");
             }
 
@@ -90,7 +100,7 @@ export function useRecordingCapture() {
         rafRef.current = requestAnimationFrame(frameLoop);
 
         return stream;
-    }, [captureTiles, capturePixi, drawTimestamp]); // ← Add drawTimestamp to deps
+    }, [captureTiles, capturePixi, captureWindPixi, captureWindParticles, drawTimestamp]); // ← Remember callbacks
 
     const stopRecording = useCallback(() => {
         return new Promise((resolve) => {
