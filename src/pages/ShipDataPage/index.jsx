@@ -2,8 +2,8 @@ import { React, useState, useCallback, useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
-import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
-// eslint-disable-next-line
+import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipInfoTable, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
+
 import { MiniMapControl, RecordingControl } from "@/components";
 import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions, useLayerControl } from "@/hooks";
 import { defaultShipFilters } from "@/utils";
@@ -24,6 +24,7 @@ export default function ShipDataPage() {
 
   // NEW: Add click position state
   const [shipLatLng, setShipLatLng] = useState(null);
+  const [showShipTable, setShowShipTable] = useState(false);
 
   // Recording state
   const [isRecordingActive, setIsRecordingActive] = useState(false);
@@ -114,11 +115,13 @@ export default function ShipDataPage() {
     timeControlProps,
     shipLayerControlProps,
     infoPanelProps,
+    shipTableProps,
   } = useShipDataPageProps({
     ships,
     filteredShips,
     visibleShips,
     shipPositions,
+    currentShips,
 
     shipFilters,
     setShipFilters,
@@ -160,9 +163,12 @@ export default function ShipDataPage() {
     updateTime,
     movementMarks,
     showPaths,
+    showShipTable,
+    setShowShipTable,
     setSelectedShip,
     selectedShip,
-    shipLatLng, // NEW: Pass click position
+    shipLatLng,
+    setShipLatLng,
   });
 
   // Track selected ship on map during recording
@@ -291,6 +297,10 @@ export default function ShipDataPage() {
           )}
           <ShipTimeControl {...timeControlProps} />
         </>
+      )}
+
+      {showShipTable && (
+        <ShipInfoTable {...shipTableProps} />
       )}
     </Box>
   );

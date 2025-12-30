@@ -124,7 +124,7 @@ export function ShipInfoPanel({
   const lat = loc.lat ?? loc.latitude;
   const lng = loc.long ?? loc.lng ?? loc.longitude;
 
-  const shipId = ship.ship_uid ?? "Unknown";
+  const shipId = ship.name ?? ship.ship_uid ?? "Unknown";
   const shipSpeed =
     loc?.speed ?? ship.speed
       ? `${loc?.speed ?? ship.speed} knots`

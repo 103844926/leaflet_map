@@ -124,7 +124,7 @@ export function UnifiedShipLayer({
                 resources.circleTexture.destroy(true);
             }
         };
-        // eslint-disable-next-line
+
     }, [map]);
 
     useEffect(() => {

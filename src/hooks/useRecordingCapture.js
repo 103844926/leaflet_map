@@ -1,10 +1,6 @@
 // In useRecordingCapture.js
 import { useRef, useCallback } from "react";
-import { useRecordingMapTiles } from "./useRecordingMapTiles";
-import { useRecordingPixi } from "./useRecordingPixi";
-import { useRecordingWindPixi } from "./useRecordingWindPixi";
-import { useRecordingTimestamp } from "./useRecordingTimestamp";
-import { useRecordingWindParticles } from "./useRecordingWindParticles";
+import { useRecordingMapTiles, useRecordingPixi, useRecordingTimestamp, useRecordingWindParticles, useRecordingWindPixi } from "./recordings";
 
 export function useRecordingCapture() {
     const recorderRef = useRef(null);

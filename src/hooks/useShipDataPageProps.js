@@ -8,6 +8,7 @@ export function useShipDataPageProps({
     filteredShips,
     visibleShips,
     shipPositions,
+    currentShips,
 
     shipFilters,
     setShipFilters,
@@ -53,9 +54,12 @@ export function useShipDataPageProps({
     updateTime,
     movementMarks,
     showPaths,
+    showShipTable,
+    setShowShipTable,
     setSelectedShip,
     selectedShip,
     shipLatLng,
+    setShipLatLng, // ✅ NEW: Need this setter
 }) {
     // ------------------------
     // Ship Info Panel Props
@@ -66,14 +70,15 @@ export function useShipDataPageProps({
                 ? {
                     ship: selectedShip,
                     timeRange,
-                    onClose: () => setSelectedShip(null),
+                    onClose: () => {
+                        setSelectedShip(null);
+                        setShipLatLng(null); // ✅ Clear both states
+                    },
                     controlRef: boxControl,
-
-                    // ✅ NEW
                     map: mapRef.current,
                 }
                 : null,
-        [selectedShip, shipLatLng, timeRange, boxControl, mapRef, setSelectedShip]
+        [selectedShip, shipLatLng, timeRange, boxControl, mapRef, setSelectedShip, setShipLatLng]
     );
 
 
@@ -122,6 +127,10 @@ export function useShipDataPageProps({
                     setRecordingShipStartTime(shipStartTime);
                 }
             },
+
+            showShipTable,
+            onToggleShipTable: () =>
+                setShowShipTable((v) => !v),
         }),
         [
             ships,
@@ -142,6 +151,8 @@ export function useShipDataPageProps({
             setRecordingShipIndex,
             setShowRecordingDialog,
             setRecordingShipStartTime,
+            showShipTable,
+            setShowShipTable,
         ]
     );
 
@@ -169,8 +180,8 @@ export function useShipDataPageProps({
 
                 minTime,
                 maxTime,
-                selectedTime,  // Still pass this for initial value
-                selectedTimeRef,  // NEW: Pass a ref that updates
+                selectedTime,
+                selectedTimeRef,
                 onTimeChange: updateTime,
 
                 windowStart: minTime,
@@ -209,7 +220,7 @@ export function useShipDataPageProps({
             setRecordingShipIndex,
             minTime,
             maxTime,
-            selectedTime,  // IMPORTANT: Keep this in dependencies
+            selectedTime,
             setIsRecordingActive,
             showRecordingDialog,
             setShowRecordingDialog,
@@ -272,10 +283,49 @@ export function useShipDataPageProps({
         ]
     );
 
+    // ------------------------
+    // Ship Table Props
+    // ------------------------
+    const shipTableProps = useMemo(
+        () => ({
+            ships: currentShips || [],
+            selectedShip,
+
+            onSelectShip: (ship) => {
+                setSelectedShip(ship);
+
+                // ✅ NEW: Set shipLatLng when jumping from table
+                if (ship?.lat != null && ship?.long != null) {
+                    setShipLatLng({ lat: ship.lat, lng: ship.long });
+                }
+
+                if (!mapRef.current || !ship) return;
+
+                // Fly to the ship's position
+                mapRef.current.flyTo(
+                    [ship.lat, ship.long],
+                    mapRef.current.getZoom(),
+                    { duration: 1.2 }
+                );
+            },
+
+            onClose: () => setShowShipTable(false),
+        }),
+        [
+            currentShips,
+            selectedShip,
+            setSelectedShip,
+            setShipLatLng, // ✅ Add to dependencies
+            mapRef,
+            setShowShipTable,
+        ]
+    );
+
     return {
         recordingProps,
         timeControlProps,
         shipLayerControlProps,
         infoPanelProps,
+        shipTableProps,
     };
 }

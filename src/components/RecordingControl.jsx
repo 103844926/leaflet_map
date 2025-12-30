@@ -47,14 +47,14 @@ export function RecordingControl({
 
     // Recording logic
     const {
-        // eslint-disable-next-line
+
         isRecording,
-        // eslint-disable-next-line
+
         isProcessing,
         recordingSpeed,
         setRecordingSpeed,
         startRecording: startRecordingHook,
-        // eslint-disable-next-line
+
         stopRecording,
         resetRecordingSpeed
     } = useRecording({

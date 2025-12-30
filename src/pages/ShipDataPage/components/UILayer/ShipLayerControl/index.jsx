@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
-import { Paper, Typography, Stack, IconButton, Collapse, TextField, InputAdornment, Button, Fab, useTheme, useMediaQuery } from "@mui/material";
-import { ExpandMore, ExpandLess, Search, FilterAlt, Menu, Close } from "@mui/icons-material";
+import { Paper, Typography, Stack, IconButton, Collapse, Fab, useTheme, useMediaQuery, } from "@mui/material";
+import { ExpandMore, ExpandLess, Menu, Close, } from "@mui/icons-material";
 
 import { ShipLayerRow } from "./ShipLayerRow";
+import { ShipLayerAction } from "./ShipLayerAction";
 import { ShipFilterControl } from "./ShipFilterControl";
 import { applyShipFilters } from "@/utils";
 
@@ -25,6 +26,8 @@ export function ShipLayerControl({
     selectedTime,
     onRecordingShipChange,
     onDialogChange,
+    showShipTable,
+    onToggleShipTable,
 }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -38,16 +41,82 @@ export function ShipLayerControl({
         setIsOpen(!isMobile);
     }, [isMobile]);
 
+    const filteredShips = useMemo(
+        () =>
+            ships.filter(
+                (ship) =>
+                    ship.ship_uid
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()) &&
+                    applyShipFilters(ship, shipFilters)
+            ),
+        [ships, shipFilters, searchQuery]
+    );
 
-    const filteredShips = ships.filter(
-        (ship) =>
-            ship.ship_uid.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            applyShipFilters(ship, shipFilters)
+    const BodyContent = (
+        <Stack spacing={1.25}>
+            <ShipLayerAction
+                searchQuery={searchQuery}
+                onSearchChange={(e) => setSearchQuery(e.target.value)}
+                onOpenFilter={() => setIsFilterOpen(true)}
+                onToggleTable={onToggleShipTable}
+            />
+
+            <Stack spacing={1}>
+                <Typography
+                    variant="subtitle2"
+                    sx={{
+                        fontSize: isMobile ? "13px" : "14px",
+                        fontWeight: "bold",
+                    }}
+                >
+                    Ships ({filteredShips.length})
+                </Typography>
+
+                {filteredShips.length === 0 ? (
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            fontSize: "12px",
+                            py: 2,
+                            textAlign: "center",
+                        }}
+                    >
+                        No ships found
+                    </Typography>
+                ) : (
+                    filteredShips.map((ship) => {
+                        const index = ships.findIndex(
+                            (s) => s.ship_uid === ship.ship_uid
+                        );
+
+                        return (
+                            <ShipLayerRow
+                                key={ship.ship_uid}
+                                index={index}
+                                ship={ship}
+                                isVisible={visibleShips[index]}
+                                isAnimatingAll={isAnimatingAll}
+                                onShipToggle={onShipToggle}
+                                onJumpToShip={onJumpToShip}
+                                onJumpToStartTime={onJumpToStartTime}
+                                movementMarks={movementMarks}
+                                onRecordingShipChange={onRecordingShipChange}
+                                onDialogChange={(show, shipStartTime) =>
+                                    onDialogChange(show, shipStartTime)
+                                }
+                            />
+                        );
+                    })
+                )}
+            </Stack>
+        </Stack>
     );
 
     return (
         <>
-            {/* 📱 MOBILE FLOATING MENU BUTTON */}
+            {/* 📱 MOBILE OPEN */}
             {isMobile && !isOpen && (
                 <Fab
                     size="small"
@@ -64,7 +133,7 @@ export function ShipLayerControl({
                 </Fab>
             )}
 
-            {/* 📱 MOBILE FLOATING CLOSE BUTTON */}
+            {/* 📱 MOBILE CLOSE */}
             {isMobile && isOpen && (
                 <Fab
                     size="small"
@@ -81,20 +150,17 @@ export function ShipLayerControl({
                 </Fab>
             )}
 
-            {/* MAIN PANEL */}
             <Paper
                 ref={controlRef}
                 sx={{
                     position: "fixed",
                     top: isMobile ? 16 : 20,
                     left: isMobile ? 16 : 20,
-                    width: "auto",
                     maxWidth: isMobile ? "100%" : 280,
                     maxHeight: isMobile ? "70vh" : "80vh",
                     overflowY: "auto",
-                    backgroundColor: "white",
-                    padding: isMobile ? "8px" : "12px",
-                    borderRadius: "12px",
+                    p: isMobile ? 1 : 1.5,
+                    borderRadius: 2,
                     boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
                     zIndex: 1000,
                     display: isMobile && !isOpen ? "none" : "block",
@@ -107,14 +173,17 @@ export function ShipLayerControl({
                     justifyContent="space-between"
                     sx={{ mb: 1 }}
                 >
-                    <Typography variant="h6" sx={{ fontSize: "14px", fontWeight: "bold" }}>
+                    <Typography
+                        variant="h6"
+                        sx={{ fontSize: "14px", fontWeight: "bold" }}
+                    >
                         Ships
                     </Typography>
 
                     {!isMobile && (
                         <IconButton
                             size="small"
-                            onClick={() => setIsExpanded(v => !v)}
+                            onClick={() => setIsExpanded((v) => !v)}
                         >
                             {isExpanded ? <ExpandLess /> : <ExpandMore />}
                         </IconButton>
@@ -123,153 +192,9 @@ export function ShipLayerControl({
 
                 {/* BODY */}
                 {isMobile ? (
-                    <Stack spacing={1.25}>
-                        {/* SEARCH */}
-                        <TextField
-                            size="small"
-                            placeholder="Search ships..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <Search fontSize="small" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                            sx={{ width: "100%" }}
-                        />
-
-                        {/* FILTER BUTTON */}
-                        <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<FilterAlt />}
-                            onClick={() => setIsFilterOpen(true)}
-                            sx={{ width: "100%" }}
-                        >
-                            Filters
-                        </Button>
-
-                        {/* SHIP LIST */}
-                        <Stack spacing={1}>
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ fontSize: "13px", fontWeight: "bold" }}
-                            >
-                                Ships ({filteredShips.length})
-                            </Typography>
-
-                            {filteredShips.length === 0 ? (
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{ fontSize: "12px", py: 2, textAlign: "center" }}
-                                >
-                                    No ships found
-                                </Typography>
-                            ) : (
-                                filteredShips.map((ship) => {
-                                    const index = ships.findIndex(
-                                        (s) => s.ship_uid === ship.ship_uid
-                                    );
-
-                                    return (
-                                        <ShipLayerRow
-                                            key={ship.ship_uid}
-                                            index={index}
-                                            ship={ship}
-                                            isVisible={visibleShips[index]}
-                                            isAnimatingAll={isAnimatingAll}
-                                            onShipToggle={onShipToggle}
-                                            onJumpToShip={onJumpToShip}
-                                            onJumpToStartTime={onJumpToStartTime}
-                                            movementMarks={movementMarks}
-                                            onRecordingShipChange={onRecordingShipChange}
-                                            onDialogChange={(show, shipStartTime) =>
-                                                onDialogChange(show, shipStartTime)
-                                            }
-                                        />
-                                    );
-                                })
-                            )}
-                        </Stack>
-                    </Stack>
+                    BodyContent
                 ) : (
-                    <Collapse in={isExpanded}>
-                        <Stack spacing={1.25}>
-                            {/* SEARCH */}
-                            <TextField
-                                size="small"
-                                placeholder="Search ships..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <Search fontSize="small" />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                                sx={{ width: "100%" }}
-                            />
-
-                            {/* FILTER BUTTON */}
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<FilterAlt />}
-                                onClick={() => setIsFilterOpen(true)}
-                                sx={{ width: "100%" }}
-                            >
-                                Filters
-                            </Button>
-
-                            {/* SHIP LIST */}
-                            <Stack spacing={1}>
-                                <Typography
-                                    variant="subtitle2"
-                                    sx={{ fontSize: "14px", fontWeight: "bold" }}
-                                >
-                                    Ships ({filteredShips.length})
-                                </Typography>
-
-                                {filteredShips.length === 0 ? (
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                        sx={{ fontSize: "12px", py: 2, textAlign: "center" }}
-                                    >
-                                        No ships found
-                                    </Typography>
-                                ) : (
-                                    filteredShips.map((ship) => {
-                                        const index = ships.findIndex(
-                                            (s) => s.ship_uid === ship.ship_uid
-                                        );
-
-                                        return (
-                                            <ShipLayerRow
-                                                key={ship.ship_uid}
-                                                index={index}
-                                                ship={ship}
-                                                isVisible={visibleShips[index]}
-                                                isAnimatingAll={isAnimatingAll}
-                                                onShipToggle={onShipToggle}
-                                                onJumpToShip={onJumpToShip}
-                                                onJumpToStartTime={onJumpToStartTime}
-                                                movementMarks={movementMarks}
-                                                onRecordingShipChange={onRecordingShipChange}
-                                                onDialogChange={(show, shipStartTime) =>
-                                                    onDialogChange(show, shipStartTime)
-                                                }
-                                            />
-                                        );
-                                    })
-                                )}
-                            </Stack>
-                        </Stack>
-                    </Collapse>
+                    <Collapse in={isExpanded}>{BodyContent}</Collapse>
                 )}
 
                 {/* FILTER DIALOG */}

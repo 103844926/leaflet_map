@@ -77,7 +77,7 @@ export const getCurrentShipData = async (forceRefresh = false) => {
     status: ship.status,
     violation_f: ship.violation_f,
     source_type: ship.source_type,
-    isCurrentPosition: true, // Flag to identify these ships
+    isCurrentPosition: true,
   }));
 };
 
