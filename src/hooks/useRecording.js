@@ -5,6 +5,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRecordingCapture } from "./useRecordingCapture";
+import { useRecordingExport } from "./useRecordingExport";
 
 export function useRecording({
     mapRef,
@@ -29,6 +30,8 @@ export function useRecording({
     const selectedTimeRef = useRef(selectedTime);
 
     const { startRecording: startCapture, stopRecording: stopCapture } = useRecordingCapture();
+    const { exportRecording, isExporting, exportError } = useRecordingExport();
+
 
     useEffect(() => { selectedTimeRef.current = selectedTime }, [selectedTime]);
 
@@ -56,20 +59,11 @@ export function useRecording({
             return;
         }
 
-        // Download
-        const url = URL.createObjectURL(finalBlob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `ship-recording-${Date.now()}.webm`;
-        a.click();
-        URL.revokeObjectURL(url);
+        exportRecording(finalBlob);
 
         console.log("✅ Recording complete!");
-    }, [isRecording, stopCapture]);
+    }, [isRecording, stopCapture, exportRecording]);
 
-    // -------------------------------------------------------------------------
-    // START RECORDING
-    // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
     // START RECORDING
     // -------------------------------------------------------------------------
@@ -191,12 +185,13 @@ export function useRecording({
     // -------------------------------------------------------------------------
     return {
         isRecording,
-        isProcessing: false,
+        isProcessing: isExporting,
         recordingSpeed,
         setRecordingSpeed,
         startRecording,
         stopRecording,
         resetRecordingSpeed,
-        mergeProgress: 0
+        mergeProgress: 0,
+        exportError
     };
 }

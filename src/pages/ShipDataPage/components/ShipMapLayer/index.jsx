@@ -1,7 +1,8 @@
 // ShipMapLayer.jsx
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useCallback } from "react";
 import { UnifiedShipLayer } from "./UnifiedShipLayer";
 import { applyShipFilters } from "@/utils";
+import L from "leaflet";
 
 export const ShipMapLayer = React.memo(function ShipMapLayer({
   ships,
@@ -17,6 +18,7 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
   isRecording,
   selectedTime,
   selectedShipId,
+  map,
 }) {
 
   const backgroundShipsFiltered = useMemo(() => {
@@ -31,24 +33,37 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
       : filteredShips;
   }, [recordingShipIndex, filteredShips]);
 
-  const handleMarkerClick = useCallback(
-    (index) => {
-      const ship = filteredShips[index];
-      if (!ship) return;
+  const onPixiShipClick = useCallback(
+    (ship, pixiEvent) => {
+      if (!map || !pixiEvent?.data?.global) return;
 
-      onShipSelect?.(ship);
+      const { x, y } = pixiEvent.data.global;
+
+      // PIXI global → Leaflet container point
+      const containerPoint = L.point(x, y);
+
+      // container point → latlng
+      const latlng = map.containerPointToLatLng(containerPoint);
+
+      onShipSelect?.(ship, { latlng });
     },
-    [filteredShips, onShipSelect]
+    [map, onShipSelect]
   );
 
+  const handleMarkerClick = useCallback(
+    (index, pixiEvent) => {
+      const ship = ships[index];
+      onPixiShipClick(ship, pixiEvent);
+    },
+    [ships, onPixiShipClick]
+  );
 
   const handleBackgroundShipClick = useCallback(
-    (ship) => {
-      onShipSelect?.(ship);
+    (ship, pixiEvent) => {
+      onPixiShipClick(ship, pixiEvent);
     },
-    [onShipSelect]
+    [onPixiShipClick]
   );
-
 
   return (
     <UnifiedShipLayer

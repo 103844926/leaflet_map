@@ -83,7 +83,7 @@ export function drawBackground({
         sprite.eventMode = "static";
         sprite.cursor = "pointer";
         sprite.removeAllListeners();
-        sprite.on("pointertap", () => onBackgroundShipClick?.(ship));
+        sprite.on("pointertap", (event) => onBackgroundShipClick?.(ship, event)); // ✅ Pass the PIXI event
 
         container.addChild(sprite);
 

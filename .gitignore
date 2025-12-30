@@ -10,6 +10,7 @@
 
 # production
 /build
+/server/uploads
 
 # Backup old code
 src/placeholderFile/

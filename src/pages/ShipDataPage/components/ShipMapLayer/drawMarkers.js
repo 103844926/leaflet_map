@@ -85,7 +85,7 @@ export function drawMarkers({
         sprite.eventMode = "static";
         sprite.cursor = "pointer";
         sprite.removeAllListeners();
-        sprite.on("pointertap", () => onMarkerClick?.(i));
+        sprite.on("pointertap", (event) => onMarkerClick?.(i, event)); // ✅ Pass the PIXI event
 
         container.addChild(sprite);
     });

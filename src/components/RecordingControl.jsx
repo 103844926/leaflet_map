@@ -69,9 +69,11 @@ export function RecordingControl({
         selectedTime
     });
 
+    const ALL_SHIPS = -1;
+
     // When ship selection changes, update start time automatically
     const handleShipChange = useCallback((shipIndex) => {
-        onRecordingShipChange(shipIndex);
+        onRecordingShipChange(shipIndex === ALL_SHIPS ? null : shipIndex);
 
         // Only auto-set start time if a specific ship is selected (not null)
         if (shipIndex !== null) {
@@ -86,7 +88,7 @@ export function RecordingControl({
                 }
             }
         }
-    }, [onRecordingShipChange, ships, movementMarks, setStagingStart]);
+    }, [ALL_SHIPS, onRecordingShipChange, ships, movementMarks, setStagingStart]);
 
     // Reset all settings to defaults
     const resetToDefaults = useCallback(() => {
@@ -126,7 +128,7 @@ export function RecordingControl({
                 <DialogContent dividers>
                     <Stack spacing={2}>
                         <Typography variant="body2">
-                            Your map animation will be recorded into a .webm video. All visible ships on screen will be recorded.
+                            Your map animation will be recorded into a video. All visible ships on screen will be recorded.
                         </Typography>
 
                         {/* SHIPS DROPDOWN - For focus/tracking only */}
@@ -135,15 +137,13 @@ export function RecordingControl({
                             {ships.length > 0 ? (
                                 <Select
                                     label="Choose Ship"
-                                    value={selectedRecordingShip ?? null}
+                                    value={selectedRecordingShip ?? ALL_SHIPS}
                                     onChange={(e) => handleShipChange(e.target.value)}
                                 >
-                                    {/* ALL SHIPS OPTION - FIRST */}
-                                    <MenuItem value={null}>
+                                    <MenuItem value={ALL_SHIPS}>
                                         <strong>All Ships</strong>
                                     </MenuItem>
 
-                                    {/* INDIVIDUAL SHIPS */}
                                     {ships.map((ship, index) => (
                                         <MenuItem
                                             key={ship.ship_uid}
@@ -154,6 +154,7 @@ export function RecordingControl({
                                         </MenuItem>
                                     ))}
                                 </Select>
+
                             ) : (
                                 <Select label="Choose Ship" value="" disabled>
                                     <MenuItem value="">No ship found</MenuItem>

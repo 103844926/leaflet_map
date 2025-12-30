@@ -55,21 +55,25 @@ export function useShipDataPageProps({
     showPaths,
     setSelectedShip,
     selectedShip,
+    shipLatLng,
 }) {
     // ------------------------
     // Ship Info Panel Props
     // ------------------------
     const infoPanelProps = useMemo(
         () =>
-            selectedShip
+            selectedShip && shipLatLng
                 ? {
-                    ship: selectedShip,     // ✅ background OR foreground
+                    ship: selectedShip,
                     timeRange,
                     onClose: () => setSelectedShip(null),
                     controlRef: boxControl,
+
+                    // ✅ NEW
+                    map: mapRef.current,
                 }
                 : null,
-        [selectedShip, timeRange, boxControl]
+        [selectedShip, shipLatLng, timeRange, boxControl, mapRef, setSelectedShip]
     );
 
 

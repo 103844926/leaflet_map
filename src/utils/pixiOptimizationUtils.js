@@ -1,4 +1,4 @@
-// optimizationUtils.js - Place this in your @/utils folder
+// pixiOptimizationUtils.js - Place this in your @/utils folder
 import * as PIXI from "pixi.js";
 
 export const getShipColor = (i) => {
@@ -14,7 +14,7 @@ export const getShipColor = (i) => {
  * @param {boolean} withBorder - Add border (only applies to triangle)
  * @returns {PIXI.Texture}
  */
-// optimizationUtils.js - patched createShipTexture
+
 export const createShipTexture = (renderer, resources, shape = 'triangle', withBorder = true) => {
     // Generate cache key based on shape and border
     const cacheKey = shape === 'circle'

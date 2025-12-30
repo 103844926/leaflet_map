@@ -2,6 +2,11 @@
   "name": "leaflet",
   "version": "0.1.0",
   "private": true,
+  "_moduleAliases": {
+    "@services": "server/services",
+    "@routes": "server/routes",
+    "@utils-backend": "server/utils"
+  },
   "dependencies": {
     "@date-io/date-fns": "^3.2.1",
     "@emotion/react": "^11.14.0",
@@ -27,6 +32,8 @@
     "leaflet.heat": "^0.2.0",
     "leaflet.markercluster": "^1.5.3",
     "modern-screenshot": "^4.6.7",
+    "module-alias": "^2.2.3",
+    "multer": "^2.0.2",
     "node-fetch": "^2.7.0",
     "pixi.js": "^7.3.2",
     "react": "^19.0.0-rc.1",

@@ -1,4 +1,4 @@
-// server/windGrid.js
+// server/services/windGrid.service.js
 const fetch = require("node-fetch");
 
 // ===== CONFIG =====
@@ -19,7 +19,7 @@ function speedDirToUV(speed, dirDeg) {
     };
 }
 
-module.exports = async function getWindGrid(lat, lon) {
+async function getWindGrid(lat, lon) {
     const now = Date.now();
 
     // Serve cache
@@ -126,3 +126,5 @@ module.exports = async function getWindGrid(lat, lon) {
 
     return payload;
 };
+
+module.exports = { getWindGrid };

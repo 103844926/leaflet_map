@@ -22,6 +22,8 @@ export default function ShipDataPage() {
   const layerControl = useLeafletControl();
   const { showWeather, showUI, layerConfigs } = useLayerControl();
 
+  // NEW: Add click position state
+  const [shipLatLng, setShipLatLng] = useState(null);
 
   // Recording state
   const [isRecordingActive, setIsRecordingActive] = useState(false);
@@ -87,6 +89,11 @@ export default function ShipDataPage() {
     setPlaybackSpeed,
   } = useShipAnimation(ships, selectedTime);
 
+  // Wrapper to handle ship selection with click position
+  const handleShipSelect = useCallback((ship, event) => {
+    setSelectedShip(ship);
+    setShipLatLng(event.latlng);
+  }, []);
 
   // Wrapper to update time (stops animation if user touches slider)
   const handleManualTimeUpdate = useCallback(
@@ -155,8 +162,8 @@ export default function ShipDataPage() {
     showPaths,
     setSelectedShip,
     selectedShip,
+    shipLatLng, // NEW: Pass click position
   });
-
 
   // Track selected ship on map during recording
   useShipTracking({
@@ -242,13 +249,14 @@ export default function ShipDataPage() {
           filteredShips={filteredShips}
           visibleShips={visibleShips}
           shipPositions={shipPositions}
-          onShipSelect={setSelectedShip}   // ✅ ONE handler
+          onShipSelect={handleShipSelect}   // ✅ Use new handler with click position
           timeRange={timeRange}
           showPaths={showPaths}
           recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
           isRecording={isRecordingActive}
           selectedTime={selectedTime}
           selectedShipId={selectedShip?.ship_uid ?? null}
+          map={mapRef.current}
         />
 
         {/* <MiniMapControl zoom={5} /> */}

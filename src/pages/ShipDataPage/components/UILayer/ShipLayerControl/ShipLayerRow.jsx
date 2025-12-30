@@ -34,11 +34,9 @@ export function ShipLayerRow({
                     borderRadius: "4px",
                     backgroundColor: isVisible ? "rgba(25,118,210,0.08)" : "transparent",
                     borderColor: isVisible ? "primary.main" : "divider",
-                    "&:hover": {
-                        backgroundColor: isVisible
-                            ? "rgba(25,118,210,0.12)"
-                            : "rgba(0, 0, 0, 0.04)",
-                    },
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    textTransform: "none",
                 }}
             >
                 {isVisible ? (
@@ -46,7 +44,21 @@ export function ShipLayerRow({
                 ) : (
                     <VisibilityOff fontSize="small" color="disabled" sx={{ mr: 1 }} />
                 )}
-                {ship.ship_uid}
+
+                {/* Truncated label */}
+                <span
+                    style={{
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        maxWidth: "100%",
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                    }}
+                    title={ship.ship_uid} // native tooltip
+                >
+                    {ship.ship_uid}
+                </span>
             </Button>
 
             <ShipLayerMenu

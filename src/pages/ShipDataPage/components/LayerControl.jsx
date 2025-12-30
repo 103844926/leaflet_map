@@ -1,4 +1,4 @@
-import { Box, IconButton, Tooltip, Paper, Collapse, Stack } from "@mui/material";
+import { IconButton, Tooltip, Paper, Collapse, Stack } from "@mui/material";
 import React, { useState } from "react";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 
@@ -10,17 +10,25 @@ export function LayerControl({ layers, control }) {
             ref={control?.ref}
             sx={{
                 position: "absolute",
-                top: 20,
-                right: 20,
+                p: { xs: 0.5, sm: 1 },
+                right: { xs: 8, sm: 20 },
+                top: { xs: 8, sm: 20 },
                 zIndex: 1000,
                 display: "flex",
                 flexDirection: "column",
-                padding: 1,
-                backgroundColor: "white",
-                boxShadow: 3,
+                backgroundColor: "rgba(0, 0, 0, 0.4)",
+                boxShadow: 1,
+                borderRadius: 2,
             }}
         >
-            <IconButton size="small" onClick={() => setLayerExpanded(!layerExpanded)}>
+            <IconButton
+                size="small"
+                onClick={() => setLayerExpanded(!layerExpanded)}
+                sx={{
+                    width: { xs: 48, sm: 36 },
+                    height: { xs: 48, sm: 36 },
+                    color: "white",
+                }}>
                 {layerExpanded ? <ExpandLess /> : <ExpandMore />}
             </IconButton>
 
@@ -33,6 +41,8 @@ export function LayerControl({ layers, control }) {
                                 sx={{
                                     backgroundColor: layer.isVisible ? "primary.main" : "grey.300",
                                     color: layer.isVisible ? "white" : "grey.600",
+                                    width: { xs: 48, sm: 36 },
+                                    height: { xs: 48, sm: 36 },
                                     "&:hover": {
                                         backgroundColor: layer.isVisible ? "primary.dark" : "grey.400",
                                     },

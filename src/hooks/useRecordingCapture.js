@@ -48,7 +48,7 @@ export function useRecordingCapture() {
 
         // Start MediaRecorder on composite canvas stream
         const stream = compositeCanvas.captureStream(fps);
-        const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9", videoBitsPerSecond });
+        const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp8", videoBitsPerSecond });
         recorder.ondataavailable = (e) => { if (e.data?.size) chunksRef.current.push(e.data); };
         recorder.start(200);
         recorderRef.current = recorder;
