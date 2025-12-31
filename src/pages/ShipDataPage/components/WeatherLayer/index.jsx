@@ -3,7 +3,7 @@ import { WindColorOverlay } from './WindColorOverlay';
 import { WindParticleLayer } from './WindParticleLayer';
 import { WindParticleExportLayer } from './WindParticleExportLayer';
 
-export function WeatherLayer({ windData, selectedTime, minTime, maxTime, isAnimating, isRecordingActive }) {
+export function WeatherLayer({ windData, selectedTime, minTime, maxTime, isAnimating, isRecordingActive, isMobile }) {
     if (!windData) return null;
 
     // Hide particles during animation/recording
@@ -16,6 +16,7 @@ export function WeatherLayer({ windData, selectedTime, minTime, maxTime, isAnima
                 selectedTime={selectedTime}
                 minTime={minTime}
                 maxTime={maxTime}
+                isMobile={isMobile}
             />
 
             {/* Color overlay - always visible */}

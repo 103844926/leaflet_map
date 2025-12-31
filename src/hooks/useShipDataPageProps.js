@@ -4,6 +4,7 @@ import { defaultShipFilters } from "@/utils";
 
 export function useShipDataPageProps({
     // ---- Shared Data ----
+    isMobile,
     ships,
     filteredShips,
     visibleShips,
@@ -16,6 +17,10 @@ export function useShipDataPageProps({
 
     // ---- Map ----
     timeRange,
+    windowStart,
+    windowEnd,
+    setWindowStart,
+    setWindowEnd,
     mapRef,
     paperControl,
     boxControl,
@@ -68,6 +73,7 @@ export function useShipDataPageProps({
         () =>
             selectedShip && shipLatLng
                 ? {
+                    isMobile,
                     ship: selectedShip,
                     timeRange,
                     onClose: () => {
@@ -78,7 +84,7 @@ export function useShipDataPageProps({
                     map: mapRef.current,
                 }
                 : null,
-        [selectedShip, shipLatLng, timeRange, boxControl, mapRef, setSelectedShip, setShipLatLng]
+        [isMobile, selectedShip, shipLatLng, timeRange, boxControl, mapRef, setSelectedShip, setShipLatLng]
     );
 
 
@@ -87,6 +93,7 @@ export function useShipDataPageProps({
     // ------------------------
     const shipLayerControlProps = useMemo(
         () => ({
+            isMobile,
             ships,
             visibleShips,
             onShipToggle: handleShipToggle,
@@ -133,6 +140,7 @@ export function useShipDataPageProps({
                 setShowShipTable((v) => !v),
         }),
         [
+            isMobile,
             ships,
             visibleShips,
             filterOptions,
@@ -186,10 +194,6 @@ export function useShipDataPageProps({
 
                 windowStart: minTime,
                 windowEnd: maxTime,
-
-                setWindowStart: () => { },
-                setWindowEnd: () => { },
-
                 onRecordingStateChange: setIsRecordingActive,
                 showDialog: showRecordingDialog,
 
@@ -206,6 +210,8 @@ export function useShipDataPageProps({
                 trackShip,
                 onTrackShipChange: setTrackShip,
                 movementMarks,
+                setWindowStart,
+                setWindowEnd,
             };
         },
         [
@@ -231,6 +237,10 @@ export function useShipDataPageProps({
             setTrackShip,
             movementMarks,
             visibleShips,
+            windowStart,
+            windowEnd,
+            setWindowStart,
+            setWindowEnd,
         ]
     );
 
@@ -239,9 +249,14 @@ export function useShipDataPageProps({
     // ------------------------
     const timeControlProps = useMemo(
         () => ({
+            isMobile,
             selectedTime,
             minTime,
             maxTime,
+            windowStart,
+            windowEnd,
+            setWindowStart,
+            setWindowEnd,
             availableTimes,
             isAnimating,
             playbackSpeed,
@@ -264,9 +279,14 @@ export function useShipDataPageProps({
             },
         }),
         [
+            isMobile,
             selectedTime,
             minTime,
             maxTime,
+            windowStart,
+            windowEnd,
+            setWindowStart,
+            setWindowEnd,
             availableTimes,
             isAnimating,
             playbackSpeed,
@@ -288,6 +308,7 @@ export function useShipDataPageProps({
     // ------------------------
     const shipTableProps = useMemo(
         () => ({
+            isMobile,
             ships: currentShips || [],
             selectedShip,
 
@@ -304,7 +325,7 @@ export function useShipDataPageProps({
                 // Fly to the ship's position
                 mapRef.current.flyTo(
                     [ship.lat, ship.long],
-                    mapRef.current.getZoom(),
+                    12,
                     { duration: 1.2 }
                 );
             },
@@ -312,6 +333,7 @@ export function useShipDataPageProps({
             onClose: () => setShowShipTable(false),
         }),
         [
+            isMobile,
             currentShips,
             selectedShip,
             setSelectedShip,

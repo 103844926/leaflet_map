@@ -16,7 +16,8 @@ export function useRecording({
     recordingEndTime,
     onTimeChange,
     onRecordingStateChange,
-    selectedTime
+    selectedTime,
+    onResetTimeWindow,
 }) {
     const [isRecording, setIsRecording] = useState(false);
     const [recordingSpeed, setRecordingSpeed] = useState(0.5);
@@ -61,8 +62,13 @@ export function useRecording({
 
         exportRecording(finalBlob);
 
+        // Reset time window after recording completes
+        if (onResetTimeWindow) {
+            onResetTimeWindow();
+        }
+
         console.log("✅ Recording complete!");
-    }, [isRecording, stopCapture, exportRecording]);
+    }, [isRecording, stopCapture, exportRecording, onResetTimeWindow]);
 
     // -------------------------------------------------------------------------
     // START RECORDING

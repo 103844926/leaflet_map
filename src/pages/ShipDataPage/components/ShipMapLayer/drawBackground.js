@@ -83,7 +83,20 @@ export function drawBackground({
         sprite.eventMode = "static";
         sprite.cursor = "pointer";
         sprite.removeAllListeners();
-        sprite.on("pointertap", (event) => onBackgroundShipClick?.(ship, event)); // ✅ Pass the PIXI event
+        sprite.on("pointertap", (event) => onBackgroundShipClick?.(ship, event));
+
+        if (isSelected) {
+            const border = getSprite(pool, texture);
+            if (border) {
+                border.x = pt.x;
+                border.y = pt.y;
+                border.rotation = sprite.rotation;
+                border.tint = 0xFFFFFF;
+                border.alpha = 0.9;
+                border.scale.set(baseSize * selectedBoost * 1.25);
+                container.addChild(border);
+            }
+        }
 
         container.addChild(sprite);
 

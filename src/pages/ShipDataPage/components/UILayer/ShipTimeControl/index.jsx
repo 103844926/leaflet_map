@@ -1,6 +1,5 @@
 // ShipTimeControl/ShipTimeControl.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { useTheme, useMediaQuery } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
@@ -9,21 +8,20 @@ import { ShipTimeControlDesktop } from "./ShipTimeControl.desktop";
 
 export function ShipTimeControl(props) {
     const {
+        isMobile,
         minTime,
         maxTime,
-        selectedTime,
+        windowStart,
+        windowEnd,
+        setWindowStart,
+        setWindowEnd,
         isAnimating,
         isRecordingActive,
         onStop,
         onRecordingButtonClick,
     } = props;
 
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
     // ---- shared state ----
-    const [windowStart, setWindowStart] = useState(minTime);
-    const [windowEnd, setWindowEnd] = useState(maxTime);
     const [showRangePicker, setShowRangePicker] = useState(false);
     const [showPlaybackPicker, setPlaybackPicker] = useState(false);
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
-import { Paper, Typography, Stack, IconButton, Collapse, Fab, useTheme, useMediaQuery, } from "@mui/material";
+import { Paper, Typography, Stack, IconButton, Collapse, Fab, } from "@mui/material";
 import { ExpandMore, ExpandLess, Menu, Close, } from "@mui/icons-material";
 
 import { ShipLayerRow } from "./ShipLayerRow";
@@ -9,6 +9,7 @@ import { ShipFilterControl } from "./ShipFilterControl";
 import { applyShipFilters } from "@/utils";
 
 export function ShipLayerControl({
+    isMobile,
     ships,
     visibleShips,
     shipFilters,
@@ -29,9 +30,6 @@ export function ShipLayerControl({
     showShipTable,
     onToggleShipTable,
 }) {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
     const [isExpanded, setIsExpanded] = useState(true);
     const [isOpen, setIsOpen] = useState(!isMobile);
     const [searchQuery, setSearchQuery] = useState("");

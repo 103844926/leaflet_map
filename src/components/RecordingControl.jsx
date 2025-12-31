@@ -47,15 +47,9 @@ export function RecordingControl({
 
     // Recording logic
     const {
-
-        isRecording,
-
-        isProcessing,
         recordingSpeed,
         setRecordingSpeed,
         startRecording: startRecordingHook,
-
-        stopRecording,
         resetRecordingSpeed
     } = useRecording({
         mapRef,
@@ -66,7 +60,11 @@ export function RecordingControl({
         recordingEndTime: stagingEnd,
         onTimeChange,
         onRecordingStateChange,
-        selectedTime
+        selectedTime,
+        onResetTimeWindow: () => {
+            setWindowStart(minTime);
+            setWindowEnd(maxTime);
+        }
     });
 
     const ALL_SHIPS = -1;

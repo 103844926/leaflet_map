@@ -1,16 +1,16 @@
 import React, { useEffect, useRef } from "react";
 import { Box, Typography } from "@mui/material";
 import L from "leaflet";
-import { isMobileViewport, formatCoordinates, getResponsiveVariant } from "@/utils";
+import { formatCoordinates, getResponsiveVariant } from "@/utils";
 
 export function ShipInfoPanel({
+  isMobile,
   ship,
   timeRange,
   onClose,
   controlRef,
   map
 }) {
-  const isMobile = isMobileViewport();
 
   /* ===============================
      Resolve ship locations

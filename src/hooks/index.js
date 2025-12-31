@@ -15,3 +15,6 @@ export * from "./useRecording";
 export * from "./useRecordingTimeWindow";
 export * from "./useRecordingCapture";
 export * from "./useShipTracking";
+
+// For ShipAdvancedFilters
+export * from "./useShipAdvancedFilters";

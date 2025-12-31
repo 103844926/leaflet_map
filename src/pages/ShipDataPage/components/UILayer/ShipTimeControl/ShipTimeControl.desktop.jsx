@@ -6,7 +6,9 @@ import { TimeWindowPicker } from "@/components";
 export function ShipTimeControlDesktop({
     selectedTime,
     windowStart,
+    setWindowStart,
     windowEnd,
+    setWindowEnd,
     onTimeChange,
     isAnimating,
     onAnimate,
@@ -52,6 +54,7 @@ export function ShipTimeControlDesktop({
                 transform: "translateX(-50%)",
                 width: 600,
                 px: 2,
+                py: 1,
                 borderRadius: 3,
                 zIndex: 1000,
             }}
@@ -60,10 +63,19 @@ export function ShipTimeControlDesktop({
                 <TimeWindowPicker
                     minTime={minTime}
                     maxTime={maxTime}
+
                     stagingStart={stagingStart}
                     stagingEnd={stagingEnd}
                     setStagingStart={setStagingStart}
                     setStagingEnd={setStagingEnd}
+
+                    windowStart={windowStart}
+                    windowEnd={windowEnd}
+                    setWindowStart={setWindowStart}
+                    setWindowEnd={setWindowEnd}
+
+                    selectedTime={selectedTime}
+                    onTimeChange={onTimeChange}
                     onClose={() => setShowRangePicker(false)}
                 />
             </Collapse>
@@ -71,14 +83,20 @@ export function ShipTimeControlDesktop({
             <Stack direction="row" spacing={2} mb={1} alignItems="flex-start">
                 <Stack
                     direction="row"
-                    spacing={1}
+                    spacing={1.5}
                     justifyContent={"flex-start"}
                 >
                     {!isRecordingActive && (
                         <IconButton
+                            size="small"
                             onClick={() =>
                                 onAnimate(selectedTime, windowStart, windowEnd, onTimeChange)
                             }
+                            sx={{
+                                color: "white",
+                                backgroundColor: "grey.800",
+                                "&:hover": { backgroundColor: "grey.600" }
+                            }}
                         >
                             {isAnimating ? (
                                 <Pause />
@@ -91,16 +109,33 @@ export function ShipTimeControlDesktop({
                     )}
 
                     <IconButton
-                        color={isRecordingActive ? "error" : "success"}
+                        size="small"
                         onClick={onRecordingButtonClick}
+                        sx={{
+                            color: "white",
+                            backgroundColor: isRecordingActive ? "error.main" : "success.main",
+                            "&:hover": { backgroundColor: isRecordingActive ? "error.dark" : "success.dark" }
+                        }}
                     >
                         {isRecordingActive ? <Stop /> : <FiberManualRecord />}
                     </IconButton>
 
+                    {(isRecordingActive) && (
+                        <Typography sx={{ ml: 2, fontWeight: "bold", color: "error.main" }}>
+                            RECORDING
+                        </Typography>
+                    )}
+
                     {!isRecordingActive && (
                         <IconButton
+                            size="small"
                             onClick={() => setPlaybackPicker((v) => !v)}
                             ref={playbackRef}
+                            sx={{
+                                color: "white",
+                                backgroundColor: "grey.800",
+                                "&:hover": { backgroundColor: "grey.600" }
+                            }}
                         >
                             <Speed />
                         </IconButton>
@@ -109,7 +144,7 @@ export function ShipTimeControlDesktop({
 
                 <Box sx={{ flex: 1 }}>
                     <Slider
-                        value={selectedTime || windowEnd}
+                        value={selectedTime ?? windowEnd ?? minTime ?? 0}
                         min={windowStart}
                         max={windowEnd}
                         onChange={(_, v) => !isAnimating && onTimeChange(v)}
@@ -132,8 +167,14 @@ export function ShipTimeControlDesktop({
 
                 {!isRecordingActive && (
                     <IconButton
+                        size="small"
                         onClick={() => setShowRangePicker((v) => !v)}
                         disabled={isAnimating}
+                        sx={{
+                            color: "white",
+                            backgroundColor: "grey.800",
+                            "&:hover": { backgroundColor: "grey.600" }
+                        }}
                     >
                         <CalendarMonth />
                     </IconButton>

@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
 import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipInfoTable, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
 
-import { MiniMapControl, RecordingControl } from "@/components";
+import { RecordingControl } from "@/components";
 import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions, useLayerControl } from "@/hooks";
 import { defaultShipFilters } from "@/utils";
 
@@ -34,6 +34,7 @@ export default function ShipDataPage() {
   const [recordingShipStartTime, setRecordingShipStartTime] = useState(null);
   const [trackShip, setTrackShip] = useState(false);
 
+
   // Ship filters
   const [shipFilters, setShipFilters] = useState(defaultShipFilters);
 
@@ -53,6 +54,7 @@ export default function ShipDataPage() {
     windData,
     virtualMinTime,
     virtualMaxTime,
+    isMobile,
   } = useShipDataPageLogic();
 
   const filterOptions = useShipFilterOptions(currentShips);
@@ -76,6 +78,16 @@ export default function ShipDataPage() {
     selectedTimeRef.current = selectedTime;
   }, [selectedTime]);
 
+  // ---- Recording / Time playback window (GLOBAL) ----
+  const [windowStart, setWindowStart] = useState(minTime);
+  const [windowEnd, setWindowEnd] = useState(maxTime);
+
+  // keep window in sync with data range
+  useEffect(() => {
+    setWindowStart(minTime);
+    setWindowEnd(maxTime);
+  }, [minTime, maxTime]);
+
   // --------------------
   // Animation + Ship positions
   // --------------------
@@ -94,7 +106,7 @@ export default function ShipDataPage() {
   const handleShipSelect = useCallback((ship, event) => {
     setSelectedShip(ship);
     setShipLatLng(event.latlng);
-  }, []);
+  }, [setSelectedShip]);
 
   // Wrapper to update time (stops animation if user touches slider)
   const handleManualTimeUpdate = useCallback(
@@ -107,6 +119,15 @@ export default function ShipDataPage() {
     [isAnimating, stopAnimation, updateTime],
   );
 
+  // Track selected ship on map during recording
+  useShipTracking({
+    mapRef,
+    isRecordingActive,
+    trackShip,
+    recordingShipIndex,
+    shipPositions
+  });
+
   // ------------------------
   // Props grouping via custom hook
   // ------------------------
@@ -117,6 +138,7 @@ export default function ShipDataPage() {
     infoPanelProps,
     shipTableProps,
   } = useShipDataPageProps({
+    isMobile,
     ships,
     filteredShips,
     visibleShips,
@@ -128,6 +150,10 @@ export default function ShipDataPage() {
     filterOptions,
 
     timeRange,
+    windowStart,
+    windowEnd,
+    setWindowStart,
+    setWindowEnd,
     mapRef,
     paperControl,
     boxControl,
@@ -170,16 +196,6 @@ export default function ShipDataPage() {
     shipLatLng,
     setShipLatLng,
   });
-
-  // Track selected ship on map during recording
-  useShipTracking({
-    mapRef,
-    isRecordingActive,
-    trackShip,
-    recordingShipIndex,
-    shipPositions
-  });
-
 
   function MapInstanceCapture({ mapRef }) {
     const map = useMap();
@@ -240,6 +256,7 @@ export default function ShipDataPage() {
             maxTime={virtualMaxTime}
             isAnimating={isAnimating}
             isRecordingActive={isRecordingActive}
+            isMobile={isMobile}
           />
         )}
 

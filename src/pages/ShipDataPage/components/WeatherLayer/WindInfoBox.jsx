@@ -2,11 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import { createRoot } from "react-dom/client";
-import { Box, Typography } from "@mui/material";
-import { isValidWindData, calculateTimeIndex, sampleWindAtLatLng, calculateWindMetrics, logWindData, isMobileViewport, getInfoBoxStyles, formatCoordinates, getResponsiveVariant } from "@/utils";
+import { Box, Typography, Stack } from "@mui/material";
+import { isValidWindData, calculateTimeIndex, sampleWindAtLatLng, calculateWindMetrics, getInfoBoxStyles, formatCoordinates, getResponsiveVariant } from "@/utils";
 
-function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime }) {
-    const isMobile = isMobileViewport();
+function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime, isMobile }) {
 
     if (!isValidWindData(grid) || !latlng) return null;
 
@@ -21,28 +20,14 @@ function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime }) {
         );
     }
 
-    const { u, v, gridIndex } = sample;
+    const { u, v } = sample;
     const { speed, speedKnots, meteoAngle, direction } = calculateWindMetrics(u, v);
-
-    logWindData("WIND INFO BOX", {
-        lat: latlng.lat,
-        lng: latlng.lng,
-        u, v, gridIndex, timeIndex,
-        selectedTime,
-        gridTime: grid.ts[timeIndex],
-    });
 
     const styles = getInfoBoxStyles(isMobile);
     const coords = formatCoordinates(latlng.lat, latlng.lng, isMobile);
 
     return (
-        <Box sx={{
-            p: styles.padding,
-            width: styles.width,
-            background: styles.background,
-            borderRadius: styles.borderRadius,
-            boxShadow: styles.boxShadow,
-        }}>
+        <Box sx={{ p: 0, background: "transparent", boxShadow: "none" }}>
             <Typography
                 variant={getResponsiveVariant("h6", isMobile)}
                 fontWeight={700}
@@ -50,121 +35,105 @@ function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime }) {
             >
                 Wind Info
             </Typography>
-            <Typography variant="body2" fontSize={styles.fontSize}>
-                <strong>Speed:</strong> {speed.toFixed(1)} m/s {!isMobile && `(${speedKnots.toFixed(1)} kt)`}
-            </Typography>
-            <Typography variant="body2" fontSize={styles.fontSize}>
-                <strong>Direction:</strong> {direction} ({meteoAngle.toFixed(0)}°)
-            </Typography>
-            <Typography variant="body2" fontSize={styles.fontSize}>
-                <strong>Position:</strong> {coords}
-            </Typography>
-            {!isMobile && (
+            <Stack spacing={0.25}>
                 <Typography variant="body2" fontSize={styles.fontSize}>
-                    <strong>Time:</strong> {new Date(grid.ts[timeIndex]).toLocaleString()}
+                    <strong>Speed:</strong> {speed.toFixed(1)} m/s {!isMobile && `(${speedKnots.toFixed(1)} kt)`}
                 </Typography>
-            )}
+                <Typography variant="body2" fontSize={styles.fontSize}>
+                    <strong>Direction:</strong> {direction} ({meteoAngle.toFixed(0)}°)
+                </Typography>
+                <Typography variant="body2" fontSize={styles.fontSize}>
+                    <strong>Position:</strong> {coords}
+                </Typography>
+                {!isMobile && (
+                    <Typography variant="body2" fontSize={styles.fontSize}>
+                        <strong>Time:</strong> {new Date(grid.ts[timeIndex]).toLocaleString()}
+                    </Typography>
+                )}
+            </Stack>
         </Box>
     );
 }
 
-export function WindInfoBox({ windData, selectedTime, minTime, maxTime, position = "bottomright" }) {
+export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile, position = "bottomright" }) {
     const map = useMap();
-    const controlRef = useRef(null);
+    const popupRef = useRef(null);
     const rootRef = useRef(null);
     const [latlng, setLatlng] = useState(null);
-    const [visible, setVisible] = useState(false);
 
-    // Handle map clicks
+    // Handle map click
     useEffect(() => {
         if (!map) return;
         const onClick = (e) => {
             setLatlng(e.latlng);
-            setVisible(true);
         };
         map.on("click", onClick);
         return () => map.off("click", onClick);
     }, [map]);
 
-    // Update popup position on map move/zoom
+    // Create / update popup
     useEffect(() => {
-        if (!map || !latlng || !controlRef.current) return;
+        if (!map || !latlng || !windData) return;
 
-        const updatePosition = () => {
-            const point = map.latLngToContainerPoint(latlng);
-            const container = controlRef.current.getContainer?.();
-            if (!container || !point) return;
+        // Cleanup previous popup
+        if (popupRef.current) {
+            map.closePopup(popupRef.current);
+            popupRef.current = null;
+        }
 
-            container.style.position = "absolute";
-            container.style.left = `${point.x}px`;
-            container.style.top = `${point.y}px`;
-            container.style.transform = "translate(-50%, -100%)";
-            container.style.marginTop = "-10px";
-        };
+        const container = L.DomUtil.create("div");
+        L.DomEvent.disableClickPropagation(container);
 
-        updatePosition();
+        const root = createRoot(container);
+        rootRef.current = root;
 
-        map.on("move", updatePosition);
-        map.on("zoom", updatePosition);
+        root.render(
+            <WindInfoBoxContent
+                grid={windData}
+                selectedTime={selectedTime}
+                minTime={minTime}
+                maxTime={maxTime}
+                latlng={latlng}
+                isMobile={isMobile}
+            />
+        );
 
-        return () => {
-            map.off("move", updatePosition);
-            map.off("zoom", updatePosition);
-        };
-    }, [map, latlng]);
+        const popup = L.popup({
+            className: "wind-info-popup",
+            minWidth: isMobile ? 150 : 220,
+            maxWidth: isMobile ? 180 : 260,
+            closeButton: true,
+            autoPan: true,
+            autoClose: true,
+            offset: [0, -10],
+        })
+            .setLatLng(latlng)
+            .setContent(container);
 
+        map.openPopup(popup);
+        popupRef.current = popup;
 
-    // Create control
-    useEffect(() => {
-        if (!map || !windData) return;
-
-        const isMobile = isMobileViewport();
-
-        const Control = L.Control.extend({
-            onAdd() {
-                const div = L.DomUtil.create("div");
-                L.DomEvent.disableClickPropagation(div);
-                L.DomEvent.disableScrollPropagation(div);
-                const root = createRoot(div);
-                rootRef.current = root;
-                return div;
-            },
-            onRemove() {
-                if (rootRef.current) {
-                    const rootToUnmount = rootRef.current;
-                    rootRef.current = null;
-                    Promise.resolve().then(() => {
-                        try {
-                            rootToUnmount.unmount();
-                        } catch (err) {
-                            console.warn("WindInfoBox unmount warning:", err);
-                        }
-                    });
-                }
-            }
+        popup.on("remove", () => {
+            try {
+                root.unmount();
+            } catch { }
         });
 
-        const c = new Control({ position: isMobile ? "topleft" : position });
-        c.addTo(map);
-        controlRef.current = c;
-        return () => c.remove();
-    }, [map, windData, position]);
-
-    // Update content
-    useEffect(() => {
-        if (!rootRef.current) return;
-        rootRef.current.render(
-            visible ? (
-                <WindInfoBoxContent
-                    grid={windData}
-                    selectedTime={selectedTime}
-                    minTime={minTime}
-                    maxTime={maxTime}
-                    latlng={latlng}
-                />
-            ) : null
-        );
-    }, [latlng, selectedTime, windData, visible, minTime, maxTime]);
+        return () => {
+            try {
+                root.unmount();
+            } catch { }
+            map.closePopup(popup);
+        };
+    }, [
+        map,
+        latlng,
+        windData,
+        selectedTime,
+        minTime,
+        maxTime,
+        isMobile,
+    ]);
 
     return null;
 }

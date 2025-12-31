@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, } from "react";
+import { useTheme, useMediaQuery } from "@mui/material";
 import { getShipData, getCurrentShipData, getWindyData } from "@/datas";
 import { useShipVisible } from "./useShipVisible";
 import { detectShipMovementStartsDetailed } from "@/utils";
@@ -12,6 +13,10 @@ export function useShipDataPageLogic() {
     const [virtualMinTime, setVirtualMinTime] = useState(null);
     const [virtualMaxTime, setVirtualMaxTime] = useState(null);
     const isAnimatingRef = useRef(false);
+
+    // UI breakpoint
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     // Ship visibility logic stays the same
     const {
@@ -63,7 +68,7 @@ export function useShipDataPageLogic() {
 
             return {
                 ...ship,
-                index: i,                        // <-- THIS LINE: permanent original index
+                index: i,                        // permanent original index
                 locations: filtered.length ? filtered : [ship.locations[0]],
             };
         });
@@ -129,5 +134,6 @@ export function useShipDataPageLogic() {
         windData,
         virtualMinTime,
         virtualMaxTime,
+        isMobile,
     };
 }

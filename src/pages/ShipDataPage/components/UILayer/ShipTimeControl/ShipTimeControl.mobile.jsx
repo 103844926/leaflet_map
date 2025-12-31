@@ -6,7 +6,9 @@ import { TimeWindowPicker } from "@/components";
 export function ShipTimeControlMobile({
     selectedTime,
     windowStart,
+    setWindowStart,
     windowEnd,
+    setWindowEnd,
     onTimeChange,
     isAnimating,
     onAnimate,
@@ -63,10 +65,19 @@ export function ShipTimeControlMobile({
                 <TimeWindowPicker
                     minTime={minTime}
                     maxTime={maxTime}
+
                     stagingStart={stagingStart}
                     stagingEnd={stagingEnd}
                     setStagingStart={setStagingStart}
                     setStagingEnd={setStagingEnd}
+
+                    windowStart={windowStart}
+                    windowEnd={windowEnd}
+                    setWindowStart={setWindowStart}
+                    setWindowEnd={setWindowEnd}
+
+                    selectedTime={selectedTime}
+                    onTimeChange={onTimeChange}
                     onClose={() => setShowRangePicker(false)}
                 />
             </Collapse>
@@ -99,6 +110,12 @@ export function ShipTimeControlMobile({
                         {isRecordingActive ? <Stop /> : <FiberManualRecord />}
                     </IconButton>
 
+                    {(isRecordingActive) && (
+                        <Typography sx={{ ml: 2, fontWeight: "bold", color: "error" }}>
+                            RECORDING
+                        </Typography>
+                    )}
+
                     {!isRecordingActive && (
                         <IconButton
                             size="small"
@@ -122,7 +139,7 @@ export function ShipTimeControlMobile({
                 {/* SLIDER */}
                 <Slider
                     size="small"
-                    value={selectedTime || windowEnd}
+                    value={selectedTime ?? windowEnd ?? minTime ?? 0}
                     min={windowStart}
                     max={windowEnd}
                     onChange={(_, v) => !isAnimating && onTimeChange(v)}
