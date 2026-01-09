@@ -10,7 +10,7 @@ import { drawBackground } from "./drawBackground";
 import { detectShipMovementStartsDetailed } from "@/utils";
 
 export function UnifiedShipLayer({
-    ships, filteredShips, shipsToRender, visibleShips, shipPositions,
+    ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
     onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
     backgroundShips = [], backgroundShipColor = 0x888888,
     onBackgroundShipClick, selectedShipId
@@ -18,7 +18,7 @@ export function UnifiedShipLayer({
     const map = useMap();
     const pixiOverlayRef = useRef(null);
     const propsRef = useRef({});
-    const movementStartMap = detectShipMovementStartsDetailed(ships, 50);
+    const movementStartMapRef = useRef(new Map());
     const resourcesRef = useRef({
         spritePool: { sprites: [], labels: [], inUse: 0, labelInUse: 0 },
         bgSpritePool: { sprites: [], inUse: 0 },
@@ -29,12 +29,18 @@ export function UnifiedShipLayer({
     });
 
     useEffect(() => {
+        movementStartMapRef.current =
+            detectShipMovementStartsDetailed(ships, 50);
+    }, [ships]);
+
+    // Update propsRef when dependancy changes
+    useEffect(() => {
         propsRef.current = {
-            ships, filteredShips, shipsToRender, visibleShips, shipPositions,
+            ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
             onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
             backgroundShips, backgroundShipColor, onBackgroundShipClick, selectedShipId
         };
-    }, [ships, filteredShips, shipsToRender, visibleShips, shipPositions,
+    }, [ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
         onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
         backgroundShips, backgroundShipColor, onBackgroundShipClick, selectedShipId]);
 
@@ -58,6 +64,7 @@ export function UnifiedShipLayer({
             }
 
             container.removeChildren();
+            // Read latest React props for this redraw
             const props = propsRef.current;
 
             // Draw layers with culling & LOD
@@ -86,14 +93,14 @@ export function UnifiedShipLayer({
             drawMarkers({
                 container, project: latLngToLayerPoint, scale, bounds, renderer,
                 shipsToRender: props.shipsToRender,
-                filteredShips: props.filteredShips,
+                timeFilteredShips: props.timeFilteredShips,
                 visibleShips: props.visibleShips,
                 shipPositions: props.shipPositions,
                 onMarkerClick: props.onMarkerClick,
                 recordingShipIndex: props.recordingShipIndex,
                 isRecording: props.isRecording,
                 resources: currentResources,
-                movementStartMap,
+                movementStartMap: movementStartMapRef.current,
                 currentTime: props.currentTime,
                 selectedShipId: props.selectedShipId
             });
@@ -129,7 +136,7 @@ export function UnifiedShipLayer({
 
     useEffect(() => {
         pixiOverlayRef.current?.redraw();
-    }, [ships, filteredShips, shipsToRender, visibleShips, shipPositions,
+    }, [ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
         showPaths, recordingShipIndex, isRecording,
         backgroundShips, backgroundShipColor, selectedShipId]);
 

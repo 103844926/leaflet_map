@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { Box, Typography, Stack } from "@mui/material";
 import { isValidWindData, calculateTimeIndex, sampleWindAtLatLng, calculateWindMetrics, getInfoBoxStyles, formatCoordinates, getResponsiveVariant } from "@/utils";
 
-function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime, isMobile }) {
+function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime, isMobile, visible }) {
 
     if (!isValidWindData(grid) || !latlng) return null;
 
@@ -55,30 +55,42 @@ function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime, isMo
     );
 }
 
-export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile, position = "bottomright" }) {
+export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile, visible, position = "bottomright" }) {
     const map = useMap();
     const popupRef = useRef(null);
     const rootRef = useRef(null);
+    const isMountedRef = useRef(null);
     const [latlng, setLatlng] = useState(null);
 
     // Handle map click
     useEffect(() => {
-        if (!map) return;
+        if (!map || !visible) return;
+
         const onClick = (e) => {
             setLatlng(e.latlng);
         };
+
         map.on("click", onClick);
+
         return () => map.off("click", onClick);
-    }, [map]);
+    }, [map, visible]);
+
+    // Close popup when animating or recording
+    useEffect(() => {
+        if (!visible && popupRef.current) {
+            map.closePopup(popupRef.current);
+            popupRef.current = null;
+            setLatlng(null);
+        }
+    }, [visible, map]);
 
     // Create / update popup
     useEffect(() => {
-        if (!map || !latlng || !windData) return;
+        if (!map || !latlng || !windData || !visible) return;
 
         // Cleanup previous popup
         if (popupRef.current) {
             map.closePopup(popupRef.current);
-            popupRef.current = null;
         }
 
         const container = L.DomUtil.create("div");
@@ -97,6 +109,7 @@ export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile
                 isMobile={isMobile}
             />
         );
+        isMountedRef.current = true;
 
         const popup = L.popup({
             className: "wind-info-popup",
@@ -114,15 +127,13 @@ export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile
         popupRef.current = popup;
 
         popup.on("remove", () => {
-            try {
+            if (isMountedRef.current) {
+                isMountedRef.current = false;
                 root.unmount();
-            } catch { }
+            }
         });
 
         return () => {
-            try {
-                root.unmount();
-            } catch { }
             map.closePopup(popup);
         };
     }, [
@@ -133,6 +144,7 @@ export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile
         minTime,
         maxTime,
         isMobile,
+        visible,
     ]);
 
     return null;

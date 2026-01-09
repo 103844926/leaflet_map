@@ -49,7 +49,7 @@ export default function ShipDataPage() {
     setTimeRange,
     visibleShips,
     handleShipToggle,
-    filteredShips,
+    timeFilteredShips,
     movementMarks,
     windData,
     virtualMinTime,
@@ -119,6 +119,14 @@ export default function ShipDataPage() {
     [isAnimating, stopAnimation, updateTime],
   );
 
+  // Safety effect to make sure shouldStopRecording is cleared
+  useEffect(() => {
+    if (!isRecordingActive) {
+      setShouldStopRecording(false);
+    }
+  }, [isRecordingActive]);
+
+
   // Track selected ship on map during recording
   useShipTracking({
     mapRef,
@@ -140,7 +148,7 @@ export default function ShipDataPage() {
   } = useShipDataPageProps({
     isMobile,
     ships,
-    filteredShips,
+    timeFilteredShips,
     visibleShips,
     shipPositions,
     currentShips,
@@ -269,10 +277,10 @@ export default function ShipDataPage() {
           ships={ships}
           currentShips={currentShips}
           shipFilters={shipFilters}
-          filteredShips={filteredShips}
+          timeFilteredShips={timeFilteredShips}
           visibleShips={visibleShips}
           shipPositions={shipPositions}
-          onShipSelect={handleShipSelect}   // ✅ Use new handler with click position
+          onShipSelect={handleShipSelect}
           timeRange={timeRange}
           showPaths={showPaths}
           recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
@@ -281,9 +289,6 @@ export default function ShipDataPage() {
           selectedShipId={selectedShip?.ship_uid ?? null}
           map={mapRef.current}
         />
-
-        {/* <MiniMapControl zoom={5} /> */}
-
       </MapContainer>
 
       {isRecordingActive && (

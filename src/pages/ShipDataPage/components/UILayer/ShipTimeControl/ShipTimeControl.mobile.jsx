@@ -1,7 +1,7 @@
 // ShipTimeControl/ShipTimeControl.mobile.jsx
 import { Paper, Stack, IconButton, Slider, Popover, Box, Collapse, Typography, } from "@mui/material";
 import { PlayArrow, Pause, RestartAlt, FiberManualRecord, Stop, Speed, CalendarMonth, } from "@mui/icons-material";
-import { TimeWindowPicker } from "@/components";
+import { TimeWindowPicker } from "./TimeWindowPicker";
 
 export function ShipTimeControlMobile({
     selectedTime,
@@ -136,13 +136,14 @@ export function ShipTimeControlMobile({
                     )}
                 </Stack>
 
-                {/* SLIDER */}
+                {/*TIME SLIDER */}
                 <Slider
                     size="small"
-                    value={selectedTime ?? windowEnd ?? minTime ?? 0}
+                    value={selectedTime ?? windowEnd ?? 0}
                     min={windowStart}
                     max={windowEnd}
                     onChange={(_, v) => !isAnimating && onTimeChange(v)}
+                    disabled={isAnimating}
                     step={(windowEnd - windowStart) / 1000}
                     valueLabelDisplay="auto"
                     valueLabelFormat={formatDateTime}
@@ -156,7 +157,7 @@ export function ShipTimeControlMobile({
                 </Typography>
             </Stack>
 
-            {/* SPEED PICKER */}
+            {/* PLAYBACK SPEED SLIDER */}
             <Popover
                 open={showPlaybackPicker}
                 anchorEl={playbackRef.current}

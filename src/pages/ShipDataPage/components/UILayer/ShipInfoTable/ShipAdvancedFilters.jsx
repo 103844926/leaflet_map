@@ -8,7 +8,7 @@ const EMPTY_FILTERS = {
     widthMin: "",
     widthMax: "",
     type: "",
-    status: "",
+    country_code: "",
 };
 
 export function ShipAdvancedFilters({
@@ -17,7 +17,7 @@ export function ShipAdvancedFilters({
     onApply,
     onClear,
     typeOptions = [],
-    statusOptions = [],
+    countryOptions = [],
     isMobile,
 }) {
     // Draft state lives here (UI-only, doesn't need persistence)
@@ -38,6 +38,16 @@ export function ShipAdvancedFilters({
         setDraftFilters(EMPTY_FILTERS);
         onClear();
     };
+
+    const safeTypeValue =
+        typeOptions.includes(draftFilters.type)
+            ? draftFilters.type
+            : "";
+
+    const safeCountryValue =
+        countryOptions.includes(draftFilters.country_code)
+            ? draftFilters.country_code
+            : "";
 
     return (
         <Box sx={{ px: 2, pt: 2, pb: 1 }}>
@@ -76,32 +86,33 @@ export function ShipAdvancedFilters({
             <Collapse in={showAdvanced}>
                 <Stack
                     spacing={2}
-                    direction={isMobile ? "column" : "row"}
+                    direction={"row"}
                     flexWrap="wrap"
                     sx={{ mt: 2, pb: 2 }}
                 >
                     <Autocomplete
                         size="small"
                         options={["", ...typeOptions]}
-                        value={draftFilters.type}
+                        value={safeTypeValue}
                         onChange={(_, v) => handleDraftChange({ type: v || "" })}
                         getOptionLabel={(o) => (o === "" ? "All" : String(o))}
                         renderInput={(p) => <TextField {...p} label="Ship type" />}
-                        freeSolo
                         disablePortal
+                        sx={{ minWidth: 100 }}
                     />
 
                     <Autocomplete
                         size="small"
-                        options={["", ...statusOptions]}
-                        value={draftFilters.status}
-                        onChange={(_, v) => handleDraftChange({ status: v || "" })}
+                        options={["", ...countryOptions]}
+                        value={safeCountryValue}
+                        onChange={(_, v) => handleDraftChange({ country_code: v || "" })}
                         getOptionLabel={(o) => (o === "" ? "All" : String(o))}
-                        renderInput={(p) => <TextField {...p} label="Status" />}
-                        freeSolo
+                        renderInput={(p) => <TextField {...p} label="Country" />}
                         disablePortal
+                        sx={{ minWidth: 100 }}
                     />
 
+                    {/* ---------- LENGTH AND WIDTH FILTER (IGNORE FOR NOW)
                     <Stack direction="row" spacing={2}>
                         <TextField
                             label="Length min"
@@ -143,6 +154,7 @@ export function ShipAdvancedFilters({
                             }
                         />
                     </Stack>
+                    ---------- */}
                 </Stack>
             </Collapse>
         </Box>

@@ -56,7 +56,7 @@ export function useShipTime(ships, onTimeChange) {
     prevMinRef.current = minTime;
   }, [maxTime, minTime, availableTimes.length, onTimeChange, selectedTime]);
 
-  // Manual time update (for slider)
+  // Selected Time update (Important!!)
   const updateTime = useCallback(
     (timestamp) => {
       if (!availableTimes.length || timestamp == null) return;

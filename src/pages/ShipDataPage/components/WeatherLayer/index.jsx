@@ -17,6 +17,7 @@ export function WeatherLayer({ windData, selectedTime, minTime, maxTime, isAnima
                 minTime={minTime}
                 maxTime={maxTime}
                 isMobile={isMobile}
+                visible={showParticles}
             />
 
             {/* Color overlay - always visible */}

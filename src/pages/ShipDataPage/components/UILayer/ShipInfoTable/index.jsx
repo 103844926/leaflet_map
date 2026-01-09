@@ -1,115 +1,35 @@
-import { useState, useMemo, useCallback } from "react";
-import { Box, Paper, Pagination, Typography, IconButton, Stack } from "@mui/material";
+import { Box, Paper, Pagination, Typography, IconButton, Stack, CircularProgress, Select, MenuItem, FormControl } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
 import { ShipAdvancedFilters } from "./ShipAdvancedFilters";
 import { ShipDataTable } from "./ShipDataTable";
-import { useShipAdvancedFilters } from "@/hooks";
+import { useShipAdvancedFilter } from "@/hooks";
 
-const ROWS_PER_PAGE = 10;
-
-// Custom hook to persist state across mount/unmount cycles
-function usePersistedState(key, initialValue) {
-    const [state, setState] = useState(() => {
-        try {
-            const item = sessionStorage.getItem(key);
-            return item ? JSON.parse(item) : initialValue;
-        } catch {
-            return initialValue;
-        }
-    });
-
-    const setPersistedState = useCallback((valueOrUpdater) => {
-        setState((prev) => {
-            const nextValue =
-                typeof valueOrUpdater === "function"
-                    ? valueOrUpdater(prev)
-                    : valueOrUpdater;
-
-            try {
-                sessionStorage.setItem(key, JSON.stringify(nextValue));
-            } catch (error) {
-                console.warn("Failed to save to sessionStorage:", error);
-            }
-
-            return nextValue;
-        });
-    }, [key]);
-
-    return [state, setPersistedState];
-}
-
-const EMPTY_FILTERS = {
-    lengthMin: "",
-    lengthMax: "",
-    widthMin: "",
-    widthMax: "",
-    type: "",
-    status: "",
-};
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]; // Available page sizes
 
 export function ShipInfoTable({
     isMobile,
-    ships,
     selectedShip,
     onSelectShip,
     onClose,
 }) {
-    // Only persist applied state (what's actually filtering the data)
-    const [page, setPage] = usePersistedState('shipTable_page', 1);
-    const [appliedSearch, setAppliedSearch] = usePersistedState('shipTable_search', '');
-    const [appliedFilters, setAppliedFilters] = usePersistedState('shipTable_filters', EMPTY_FILTERS);
 
-    // Get filtered ships from pure hook
-    const filteredShips = useShipAdvancedFilters(ships, appliedSearch, appliedFilters);
-
-    // Extract unique options for filters
-    const typeOptions = useMemo(
-        () =>
-            [...new Set(ships.map((s) => s.ship_type).filter(Boolean))]
-                .sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })),
-        [ships]
-    );
-
-    const statusOptions = useMemo(
-        () =>
-            [...new Set(ships.map((s) => s.status).filter(Boolean))]
-                .sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })),
-        [ships]
-    );
-
-    // Apply filters handler
-    const handleApplyFilters = useCallback((search, filters) => {
-        setAppliedSearch(search);
-        setAppliedFilters(filters);
-        setPage(1); // Reset to first page when filters change
-    }, [setAppliedSearch, setAppliedFilters, setPage]);
-
-    // Clear filters handler
-    const handleClearFilters = useCallback(() => {
-        setAppliedSearch("");
-        setAppliedFilters(EMPTY_FILTERS);
-        setPage(1);
-    }, [setAppliedSearch, setAppliedFilters, setPage]);
-
-    // Adjust page if current page exceeds total pages
-    const totalPages = Math.max(1, Math.ceil(filteredShips.length / ROWS_PER_PAGE));
-    const adjustedPage = Math.min(page, totalPages);
-
-    // Paginate filtered results
-    const pagedShips = useMemo(() => {
-        const start = (adjustedPage - 1) * ROWS_PER_PAGE;
-        return filteredShips.slice(start, start + ROWS_PER_PAGE);
-    }, [filteredShips, adjustedPage]);
-
-    // Clear persisted state on manual close (optional)
-    const handleClose = useCallback(() => {
-        // Uncomment if you want to clear state on close:
-        // sessionStorage.removeItem('shipTable_page');
-        // sessionStorage.removeItem('shipTable_search');
-        // sessionStorage.removeItem('shipTable_filters');
-        onClose();
-    }, [onClose]);
+    const {
+        ships,
+        pagination,
+        loading,
+        error,
+        page,
+        pageSize,
+        typeOptions,
+        countryOptions,
+        appliedSearch,
+        appliedFilters,
+        applyFilters,
+        clearFilters,
+        changePage,
+        changePageSize,
+    } = useShipAdvancedFilter();
 
     return (
         <Box
@@ -123,7 +43,7 @@ export function ShipInfoTable({
                 justifyContent: "center",
                 padding: 2,
             }}
-            onClick={handleClose}
+            onClick={onClose}
         >
             <Paper
                 sx={{
@@ -143,11 +63,15 @@ export function ShipInfoTable({
                     sx={{ px: 2, py: 1.25, borderBottom: "1px solid #ddd" }}
                 >
                     <Typography variant="h6">
-                        Ship Data ({filteredShips.length}
-                        {filteredShips.length !== ships.length && ` of ${ships.length}`})
+                        Ship Data (
+                        {pagination.total?.toLocaleString() || 0}
+                        {pagination.total !== pagination.total_unfiltered &&
+                            ` out of ${pagination.total_unfiltered?.toLocaleString() || 0}`
+                        }
+                        )
                     </Typography>
 
-                    <IconButton onClick={handleClose}>
+                    <IconButton onClick={onClose}>
                         <Close />
                     </IconButton>
                 </Stack>
@@ -156,20 +80,35 @@ export function ShipInfoTable({
                 <ShipAdvancedFilters
                     appliedSearch={appliedSearch}
                     appliedFilters={appliedFilters}
-                    onApply={handleApplyFilters}
-                    onClear={handleClearFilters}
+                    onApply={applyFilters}
+                    onClear={clearFilters}
                     typeOptions={typeOptions}
-                    statusOptions={statusOptions}
+                    countryOptions={countryOptions}
                     isMobile={isMobile}
                 />
 
+                {/* ---------- LOADING/ERROR STATES ---------- */}
+                {loading && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress />
+                    </Box>
+                )}
+
+                {error && (
+                    <Box sx={{ px: 2, py: 2 }}>
+                        <Typography color="error">{error}</Typography>
+                    </Box>
+                )}
+
                 {/* ---------- TABLE ---------- */}
-                <ShipDataTable
-                    ships={pagedShips}
-                    selectedShip={selectedShip}
-                    onSelectShip={onSelectShip}
-                    hasResults={pagedShips.length > 0}
-                />
+                {!loading && !error && (
+                    <ShipDataTable
+                        ships={ships}
+                        selectedShip={selectedShip}
+                        onSelectShip={onSelectShip}
+                        hasResults={ships.length > 0}
+                    />
+                )}
 
                 {/* ---------- PAGINATION ---------- */}
                 <Box
@@ -177,16 +116,51 @@ export function ShipInfoTable({
                         borderTop: "1px solid #ddd",
                         py: 1.5,
                         display: "flex",
-                        justifyContent: "center",
+                        flexDirection: isMobile ? "column" : "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 2,
+                        px: 2,
                     }}
                 >
+                    {/* Page Size Selector */}
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+                            Rows per page:
+                        </Typography>
+                        <FormControl size="small">
+                            <Select
+                                value={pageSize}
+                                onChange={(e) => changePageSize(e.target.value)}
+                                disabled={loading}
+                                sx={{ minWidth: 80 }}
+                                MenuProps={{
+                                    sx: { zIndex: 1500 } // Higher than modal (1400)
+                                }}
+                            >
+                                {PAGE_SIZE_OPTIONS.map(size => (
+                                    <MenuItem key={size} value={size}>
+                                        {size}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <Typography variant="body2" color="text.secondary">
+                            {pagination.total > 0
+                                ? `${((page - 1) * pageSize) + 1}-${Math.min(page * pageSize, pagination.total)} of ${pagination.total.toLocaleString()}`
+                                : '0 results'}
+                        </Typography>
+                    </Stack>
+
+                    {/* Pagination Controls */}
                     <Pagination
                         size={isMobile ? "small" : "medium"}
-                        count={totalPages}
-                        page={adjustedPage}
+                        count={pagination.totalPages}
+                        page={page}
                         siblingCount={isMobile ? 1 : 2}
-                        onChange={(_, newPage) => setPage(newPage)}
+                        onChange={(_, p) => changePage(p)}
                         color="primary"
+                        disabled={loading}
                     />
                 </Box>
             </Paper>

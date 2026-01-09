@@ -1,7 +1,7 @@
 // ShipTimeControl/ShipTimeControl.desktop.jsx
 import { Paper, Stack, IconButton, Slider, Typography, Popover, Box, Tooltip, Collapse, } from "@mui/material";
 import { PlayArrow, Pause, RestartAlt, FiberManualRecord, Stop, Speed, CalendarMonth, DirectionsBoat, } from "@mui/icons-material";
-import { TimeWindowPicker } from "@/components";
+import { TimeWindowPicker } from "./TimeWindowPicker";
 
 export function ShipTimeControlDesktop({
     selectedTime,
@@ -142,12 +142,14 @@ export function ShipTimeControlDesktop({
                     )}
                 </Stack>
 
+                {/*TIME SLIDER */}
                 <Box sx={{ flex: 1 }}>
                     <Slider
-                        value={selectedTime ?? windowEnd ?? minTime ?? 0}
+                        value={selectedTime ?? windowEnd ?? 0}
                         min={windowStart}
                         max={windowEnd}
                         onChange={(_, v) => !isAnimating && onTimeChange(v)}
+                        disabled={isAnimating}
                         step={(windowEnd - windowStart) / 1000}
                         valueLabelDisplay="auto"
                         valueLabelFormat={formatDateTime}
@@ -181,6 +183,7 @@ export function ShipTimeControlDesktop({
                 )}
             </Stack>
 
+            {/* PLAYBACK SPEED SLIDER */}
             <Popover
                 open={showPlaybackPicker}
                 anchorEl={playbackRef.current}

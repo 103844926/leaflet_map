@@ -1,52 +1,128 @@
-import { useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { fetchShipsPaginated, fetchShipFilters } from "@/datas";
 
-const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
+const EMPTY_FILTERS = {
+    lengthMin: "",
+    lengthMax: "",
+    widthMin: "",
+    widthMax: "",
+    type: "",
+    country_code: "",
+};
 
-function getCountryLabel(code) {
-    if (!code || code === "UNKNOWN") return "Unknown";
-    try {
-        return COUNTRY_NAMES.of(code) || code;
-    } catch {
-        return code;
-    }
-}
+function usePersistedState(key, initialValue) {
+    const [state, setState] = useState(() => {
+        try {
+            const item = sessionStorage.getItem(key);
+            return item ? JSON.parse(item) : initialValue;
+        } catch {
+            return initialValue;
+        }
+    });
 
-export function useShipAdvancedFilters(ships, appliedSearch, appliedFilters) {
-    // Pure filtering logic - no state management
-    const filteredShips = useMemo(() => {
-        return ships.filter((ship) => {
-            /* ---- Text search ---- */
-            if (appliedSearch.trim()) {
-                const q = appliedSearch.toLowerCase();
+    const setPersistedState = useCallback((valueOrUpdater) => {
+        setState(prev => {
+            const nextValue =
+                typeof valueOrUpdater === "function"
+                    ? valueOrUpdater(prev)
+                    : valueOrUpdater;
 
-                const match =
-                    String(ship.name || "").toLowerCase().includes(q) ||
-                    String(ship.ship_type || "").toLowerCase().includes(q) ||
-                    String(ship.country_code || "").toLowerCase().includes(q) ||
-                    getCountryLabel(ship.country_code).toLowerCase().includes(q) ||
-                    String(ship.status || "").toLowerCase().includes(q) ||
-                    String(ship.speed || "").includes(q);
-
-                if (!match) return false;
+            try {
+                sessionStorage.setItem(key, JSON.stringify(nextValue));
+            } catch (err) {
+                console.warn("Failed to persist state:", err);
             }
 
-            /* ---- Length ---- */
-            if (appliedFilters.lengthMin && ship.length < +appliedFilters.lengthMin) return false;
-            if (appliedFilters.lengthMax && ship.length > +appliedFilters.lengthMax) return false;
-
-            /* ---- Width ---- */
-            if (appliedFilters.widthMin && ship.width < +appliedFilters.widthMin) return false;
-            if (appliedFilters.widthMax && ship.width > +appliedFilters.widthMax) return false;
-
-            /* ---- Type ---- */
-            if (appliedFilters.type && ship.ship_type !== appliedFilters.type) return false;
-
-            /* ---- Status ---- */
-            if (appliedFilters.status && ship.status !== appliedFilters.status) return false;
-
-            return true;
+            return nextValue;
         });
-    }, [ships, appliedSearch, appliedFilters]);
+    }, [key]);
 
-    return filteredShips;
+    return [state, setPersistedState];
+}
+
+export function useShipAdvancedFilter() {
+    const [page, setPage] = usePersistedState("shipTable_page", 1);
+    const [pageSize, setPageSize] = usePersistedState("shipTable_pageSize", 20);
+    const [appliedSearch, setAppliedSearch] = usePersistedState("shipTable_search", "");
+    const [appliedFilters, setAppliedFilters] = usePersistedState(
+        "shipTable_filters",
+        EMPTY_FILTERS
+    );
+
+
+    const [ships, setShips] = useState([]);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        size: 20,
+        total: 0,
+        totalPages: 0,
+    });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const [typeOptions, setTypeOptions] = useState([]);
+    const [countryOptions, setCountryOptions] = useState([]);
+
+    // Fetch metadata once
+    useEffect(() => {
+        fetchShipFilters()
+            .then(data => {
+                setTypeOptions(data.ship_types);
+                setCountryOptions(data.country_codes);
+            })
+            .catch(() => setError("Failed to load filters"));
+    }, []);
+
+    // Fetch paginated ships
+    useEffect(() => {
+        setLoading(true);
+        fetchShipsPaginated({
+            filter: appliedSearch,
+            country_code: appliedFilters.country_code,
+            ship_type: appliedFilters.type,
+            page,
+            size: pageSize,
+        })
+            .then(res => {
+                setShips(res.ships);
+                setPagination(res.pagination);
+            })
+            .catch(() => setError("Failed to load ship data"))
+            .finally(() => setLoading(false));
+    }, [page, pageSize, appliedSearch, appliedFilters]);
+
+    const applyFilters = useCallback((search, filters) => {
+        setAppliedSearch(search);
+        setAppliedFilters(filters);
+        setPage(1);
+    }, [setAppliedSearch, setAppliedFilters, setPage]);
+
+    const clearFilters = useCallback(() => {
+        setAppliedSearch("");
+        setAppliedFilters(EMPTY_FILTERS);
+        setPage(1);
+    }, [setAppliedSearch, setAppliedFilters, setPage]);
+
+    return {
+        ships,
+        pagination,
+        loading,
+        error,
+
+        page,
+        pageSize,
+        typeOptions,
+        countryOptions,
+
+        appliedSearch,
+        appliedFilters,
+
+        applyFilters,
+        clearFilters,
+        changePage: setPage,
+        changePageSize: (size) => {
+            setPageSize(size);
+            setPage(1);
+        },
+    };
 }

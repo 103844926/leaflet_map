@@ -30,7 +30,7 @@ export function ShipLayerControl({
     showShipTable,
     onToggleShipTable,
 }) {
-    const [isExpanded, setIsExpanded] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [isOpen, setIsOpen] = useState(!isMobile);
     const [searchQuery, setSearchQuery] = useState("");
     const [isFilterOpen, setIsFilterOpen] = useState(false);

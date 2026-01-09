@@ -3,7 +3,7 @@ import { getShipColor, createShipTexture, getSprite, resetPool, isInViewport } f
 
 export function drawMarkers({
     container, project, scale, bounds, renderer,
-    shipsToRender, filteredShips, visibleShips, shipPositions,
+    shipsToRender, timeFilteredShips, visibleShips, shipPositions,
     onMarkerClick, recordingShipIndex, isRecording, resources,
     movementStartMap, currentTime, selectedShipId
 }) {

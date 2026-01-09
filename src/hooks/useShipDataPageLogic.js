@@ -25,7 +25,7 @@ export function useShipDataPageLogic() {
     } = useShipVisible(ships, currentShips);
 
     // --------------------------
-    // Load Ships + Current Ships + Compute Center
+    // Load Ships & Current Ships Then Compute Center
     // --------------------------
     useEffect(() => {
         const load = async (forceRefresh = false) => {
@@ -52,15 +52,12 @@ export function useShipDataPageLogic() {
         };
 
         load();
-
-        const interval = setInterval(() => load(true), 30000);
-        return () => clearInterval(interval);
     }, [initialCenter]);
 
     // --------------------------
     // Filter ships based on time
     // --------------------------
-    const filteredShips = useMemo(() => {
+    const timeFilteredShips = useMemo(() => {
         if (!timeRange) return ships;
         const current = timeRange[1];
         return ships.map((ship, i) => {
@@ -128,7 +125,7 @@ export function useShipDataPageLogic() {
         setTimeRange,
         visibleShips,
         handleShipToggle,
-        filteredShips,
+        timeFilteredShips,
         isAnimatingRef,
         movementMarks,
         windData,

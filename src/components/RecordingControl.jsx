@@ -9,6 +9,7 @@ export function RecordingControl({
     shouldStop,
     isAnimating,
     onStartAnimation,
+    onStopAnimation,
     mapRef,
     ships,
     visibleShips,
@@ -29,6 +30,8 @@ export function RecordingControl({
     trackShip,
     onTrackShipChange,
     movementMarks,
+    playbackSpeed,
+    setPlaybackSpeed,
 }) {
 
     // Time window management
@@ -47,14 +50,12 @@ export function RecordingControl({
 
     // Recording logic
     const {
-        recordingSpeed,
-        setRecordingSpeed,
         startRecording: startRecordingHook,
-        resetRecordingSpeed
     } = useRecording({
         mapRef,
         isAnimating,
         onStartAnimation,
+        onStopAnimation,
         shouldStop,
         recordingStartTime: stagingStart,
         recordingEndTime: stagingEnd,
@@ -90,9 +91,9 @@ export function RecordingControl({
 
     // Reset all settings to defaults
     const resetToDefaults = useCallback(() => {
-        resetRecordingSpeed();
+        setPlaybackSpeed(1);
         resetTimeWindow();
-    }, [resetRecordingSpeed, resetTimeWindow]);
+    }, [setPlaybackSpeed, resetTimeWindow]);
 
     // Handle dialog close
     const handleCloseDialog = useCallback(() => {
@@ -125,6 +126,13 @@ export function RecordingControl({
                 <DialogTitle>Start Recording?</DialogTitle>
                 <DialogContent dividers>
                     <Stack spacing={2}>
+                        {/* 🔧 ADD WARNING when animation is running */}
+                        {isAnimating && (
+                            <Typography variant="body2" color="warning.main">
+                                ⚠️ Please stop the current animation before starting a recording.
+                            </Typography>
+                        )}
+
                         <Typography variant="body2">
                             Your map animation will be recorded into a video. All visible ships on screen will be recorded.
                         </Typography>
@@ -174,13 +182,13 @@ export function RecordingControl({
                         )}
 
                         <Box>
-                            <Typography variant="caption">Recording Speed: {recordingSpeed}x</Typography>
+                            <Typography variant="caption">Recording Speed: {playbackSpeed}x</Typography>
                             <Slider
-                                value={recordingSpeed}
-                                min={0.1}
-                                max={2}
-                                step={0.1}
-                                onChange={(_, v) => setRecordingSpeed(v)}
+                                value={playbackSpeed}
+                                min={0.2}
+                                max={4}
+                                step={0.2}
+                                onChange={(_, v) => setPlaybackSpeed(v)}
                             />
                         </Box>
 
@@ -220,6 +228,7 @@ export function RecordingControl({
                         variant="contained"
                         color="success"
                         onClick={handleStartRecording}
+                        disabled={isAnimating}  // 🔧 DISABLE when animating, remove when the problem is solved
                     >
                         Start Recording
                     </Button>

@@ -57,7 +57,14 @@ export function WindColorOverlay({
 
     // Update sprite position and size based on map bounds
     const updateSpriteTransform = useCallback(() => {
-        if (!spriteRef.current || !windData || !map) return;
+        const sprite = spriteRef.current;
+
+        if (
+            !sprite ||
+            sprite.destroyed ||
+            !windData ||
+            !map
+        ) return;
 
         const { lo1, la1, lo2, la2 } = windData;
 
@@ -115,12 +122,17 @@ export function WindColorOverlay({
 
         return () => {
             resizeObserver.disconnect();
+            spriteRef.current = null;
             delete map._windPixiApp;
+
             app.destroy(true, { children: true });
+
             if (containerRef.current) {
                 containerRef.current.remove();
+                containerRef.current = null;
             }
         };
+
     }, [map, updateSpriteTransform]);
 
     // Update texture at initial load and when data changes

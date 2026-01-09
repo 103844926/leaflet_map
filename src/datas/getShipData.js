@@ -1,3 +1,9 @@
+const getBackendBase = () => {
+  return window.location.hostname === "localhost"
+    ? "http://localhost:3001"
+    : `http://${window.location.hostname}:3001`;
+};
+
 let cachedData = null;
 let cachedCurrentData = null;
 
@@ -79,6 +85,63 @@ export const getCurrentShipData = async (forceRefresh = false) => {
     source_type: ship.source_type,
     isCurrentPosition: true,
   }));
+};
+
+// NEW: Fetch paginated ships from your backend
+export const fetchShipsPaginated = async (params = {}) => {
+  const {
+    country_code = '',
+    ship_type = '',
+    filter = '',
+    page = 1,
+    size = 20,
+  } = params;
+
+  try {
+    const BACKEND_BASE = getBackendBase();
+    const url = new URL(`${BACKEND_BASE}/api/ships`);
+
+    // Add all parameters to URL
+    url.searchParams.set('country_code', country_code);
+    url.searchParams.set('ship_type', ship_type);
+    url.searchParams.set('filter', filter);
+    url.searchParams.set('page', page);
+    url.searchParams.set('size', size);
+
+    console.log('🚀 Fetching ships from:', url.toString());
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return {
+      ships: result.data,
+      pagination: {
+        page: result.page,
+        size: result.size,
+        total: result.total,
+        total_unfiltered: result.total_unfiltered,
+        totalPages: result.total_page
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching ships:", error);
+    return {
+      ships: [],
+      pagination: { page: 1, size: 20, total: 0, total_unfiltered: 0, totalPages: 0 }
+    };
+  }
+};
+
+export const fetchShipFilters = async () => {
+  const BACKEND_BASE = getBackendBase();
+  const res = await fetch(`${BACKEND_BASE}/api/ships/filters`);
+  if (!res.ok) throw new Error('Failed to fetch ship filters');
+  return res.json();
 };
 
 // Get data for a specific ship

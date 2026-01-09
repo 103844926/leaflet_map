@@ -6,7 +6,7 @@ export function useShipDataPageProps({
     // ---- Shared Data ----
     isMobile,
     ships,
-    filteredShips,
+    timeFilteredShips,
     visibleShips,
     shipPositions,
     currentShips,
@@ -177,7 +177,6 @@ export function useShipDataPageProps({
                 isAnimating,
                 onStartAnimation: (start, end) =>
                     animate(start, start, end, updateTime),
-
                 onStopAnimation: stopAnimation,
 
                 mapRef,
@@ -210,6 +209,8 @@ export function useShipDataPageProps({
                 trackShip,
                 onTrackShipChange: setTrackShip,
                 movementMarks,
+                playbackSpeed,
+                setPlaybackSpeed,
                 setWindowStart,
                 setWindowEnd,
             };
@@ -236,9 +237,9 @@ export function useShipDataPageProps({
             trackShip,
             setTrackShip,
             movementMarks,
+            playbackSpeed,
+            setPlaybackSpeed,
             visibleShips,
-            windowStart,
-            windowEnd,
             setWindowStart,
             setWindowEnd,
         ]
@@ -271,7 +272,6 @@ export function useShipDataPageProps({
             onRecordingButtonClick: () => {
                 if (isRecordingActive) {
                     setShouldStopRecording(true);
-                    setIsRecordingActive(false);
                 } else {
                     setShowRecordingDialog(true);
                     setShouldStopRecording(false);
@@ -299,7 +299,6 @@ export function useShipDataPageProps({
             movementMarks,
             setShouldStopRecording,
             setShowRecordingDialog,
-            setIsRecordingActive,
         ]
     );
 
@@ -315,21 +314,22 @@ export function useShipDataPageProps({
             onSelectShip: (ship) => {
                 setSelectedShip(ship);
 
-                // ✅ NEW: Set shipLatLng when jumping from table
-                if (ship?.lat != null && ship?.long != null) {
-                    setShipLatLng({ lat: ship.lat, lng: ship.long });
+                // Fix: Check for the actual property names your ships have
+                const lat = ship?.lat ?? ship?.ship_lat ?? ship?.latitude;
+                const lng = ship?.long ?? ship?.ship_long ?? ship?.lng ?? ship?.longitude;
+
+                if (lat != null && lng != null) {
+                    setShipLatLng({ lat, lng });
                 }
 
                 if (!mapRef.current || !ship) return;
 
-                // Fly to the ship's position
                 mapRef.current.flyTo(
-                    [ship.lat, ship.long],
-                    12,
+                    [lat, lng],  // Use the resolved coordinates
+                    15,
                     { duration: 1.2 }
                 );
             },
-
             onClose: () => setShowShipTable(false),
         }),
         [
@@ -337,7 +337,7 @@ export function useShipDataPageProps({
             currentShips,
             selectedShip,
             setSelectedShip,
-            setShipLatLng, // ✅ Add to dependencies
+            setShipLatLng,
             mapRef,
             setShowShipTable,
         ]
