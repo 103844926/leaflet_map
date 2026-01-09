@@ -3,7 +3,7 @@ import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
 import { ShipMapLayer, ShipInfoPanel, ShipLayerControl, ShipTimeControl } from "./components";
-import { MiniMapControl, RecordingControl, LeafletRulerControl } from "@/components";
+import { RecordingControl, LeafletRulerControl } from "@/components";
 import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps } from "@/hooks";
 
 export default function ShipDataPage() {
@@ -228,9 +228,6 @@ export default function ShipDataPage() {
           isRecording={isRecordingActive}
           selectedTime={selectedTime}  // ADD THIS LINE
         />
-
-        <MiniMapControl zoom={5} />
-
       </MapContainer>
 
       {isRecordingActive && (
