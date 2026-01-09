@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
 import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipInfoTable, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
 
-import { RecordingControl } from "@/components";
+import { RecordingControl, LeafletRulerControl } from "@/components";
 import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions, useLayerControl } from "@/hooks";
 import { defaultShipFilters } from "@/utils";
 
@@ -255,6 +255,11 @@ export default function ShipDataPage() {
           zoomOffset={-1}
         />
 
+        {/* RULER LAYER */}
+        {!isRecordingActive && !isAnimating && (
+          <LeafletRulerControl />
+        )}
+        
         {/* WIND LAYER */}
         {windData && selectedTime && minTime && maxTime && showWeather && (
           <WeatherLayer
@@ -271,7 +276,6 @@ export default function ShipDataPage() {
         {showUI && selectedShip && (
           <ShipInfoPanel {...infoPanelProps} />
         )}
-
 
         <ShipMapLayer
           ships={ships}
