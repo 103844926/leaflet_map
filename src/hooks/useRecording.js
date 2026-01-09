@@ -5,6 +5,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRecordingCapture } from "./useRecordingCapture";
+import { useRecordingExport } from "./useRecordingExport";
 
 export function useRecording({
     mapRef,
@@ -15,32 +16,44 @@ export function useRecording({
     recordingEndTime,
     onTimeChange,
     onRecordingStateChange,
-    selectedTime
+    selectedTime,
+    onResetTimeWindow,
 }) {
     const [isRecording, setIsRecording] = useState(false);
-    const [recordingSpeed, setRecordingSpeed] = useState(0.5);
     const [hasStartedCapture, setHasStartedCapture] = useState(false);
-
-    const DEFAULT_SPEED = 0.5;
 
     const shouldRecordRef = useRef(false);
     const hasStoppedRef = useRef(false);
+
+    // 🔧 FIX: prevent double-stop race conditions
+    const stoppingRef = useRef(false);
+
     const animationCompleteTimeoutRef = useRef(null);
     const selectedTimeRef = useRef(selectedTime);
 
-    const { startRecording: startCapture, stopRecording: stopCapture } = useRecordingCapture();
+    const {
+        startRecording: startCapture,
+        stopRecording: stopCapture,
+    } = useRecordingCapture();
 
-    useEffect(() => { selectedTimeRef.current = selectedTime }, [selectedTime]);
+    const { exportRecording, isExporting, exportError } = useRecordingExport();
+
+    useEffect(() => {
+        selectedTimeRef.current = selectedTime;
+    }, [selectedTime]);
 
     // -------------------------------------------------------------------------
     // STOP RECORDING
     // -------------------------------------------------------------------------
     const stopRecording = useCallback(async () => {
-        if (!isRecording || hasStoppedRef.current) return;
+        if (!isRecording || hasStoppedRef.current || stoppingRef.current) return;
 
         console.log("🛑 Stopping recording...");
+
+        stoppingRef.current = true;
         hasStoppedRef.current = true;
         shouldRecordRef.current = false;
+
         setHasStartedCapture(false);
         setIsRecording(false);
 
@@ -49,27 +62,28 @@ export function useRecording({
             animationCompleteTimeoutRef.current = null;
         }
 
+        // 🧹 CLEANUP: stop capture & release all MediaRecorder resources
         const finalBlob = await stopCapture();
+
+        stoppingRef.current = false;
 
         if (!finalBlob) {
             alert("Recording failed or stopped too early.");
             return;
         }
 
-        // Download
-        const url = URL.createObjectURL(finalBlob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `ship-recording-${Date.now()}.webm`;
-        a.click();
-        URL.revokeObjectURL(url);
+        exportRecording(finalBlob);
+
+        // Reset time window after recording completes
+        if (onResetTimeWindow) {
+            onResetTimeWindow();
+        }
+
+        onRecordingStateChange?.(false);
 
         console.log("✅ Recording complete!");
-    }, [isRecording, stopCapture]);
+    }, [isRecording, stopCapture, exportRecording, onResetTimeWindow, onRecordingStateChange]);
 
-    // -------------------------------------------------------------------------
-    // START RECORDING
-    // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
     // START RECORDING
     // -------------------------------------------------------------------------
@@ -91,28 +105,28 @@ export function useRecording({
 
         shouldRecordRef.current = true;
         hasStoppedRef.current = false;
+        stoppingRef.current = false;
+
         setIsRecording(true);
 
         // STEP 1: Position ships at start
         console.log("📍 Setting ships to start position...");
         onTimeChange(startTime);
 
-        const initialDelay = Math.max(1500, 1000 * recordingSpeed);
+        const initialDelay = 1500;
         await new Promise((resolve) => setTimeout(resolve, initialDelay));
 
-        // STEP 2: Start capture - NOW using ref instead of closure
+        // STEP 2: Start capture
         console.log("🎥 Starting recorder...");
 
         const stream = await startCapture(mapInstance, {
             fps: 24,
             scale: 1,
-            videoBitsPerSecond: 15000000,
+            videoBitsPerSecond: 15_000_000,
             adaptive: true,
-            getCurrentTime: () => {
-                // ← CHANGED: Use .current from ref to get latest value
-                const currentTime = selectedTimeRef.current;
-                return currentTime;
-            }
+
+            // 🔧 FIX: always read latest selected time via ref
+            getCurrentTime: () => selectedTimeRef.current,
         });
 
         if (!stream) {
@@ -121,32 +135,36 @@ export function useRecording({
             return;
         }
 
-        const firstFrameDelay = Math.max(500, 300 * recordingSpeed);
+        const firstFrameDelay = 500;
         await new Promise((resolve) => setTimeout(resolve, firstFrameDelay));
 
         // STEP 4: Start animation
         console.log("▶️ Starting animation...");
-        if (onStartAnimation) {
-            onStartAnimation(startTime, endTime);
-        }
+        onStartAnimation?.(startTime, endTime);
 
         setHasStartedCapture(true);
         console.log("🔴 Recording active");
-    }, [recordingStartTime, recordingEndTime, recordingSpeed, onTimeChange, mapRef, onStartAnimation, startCapture]);
-
-    // -------------------------------------------------------------------------
-    // RESET SPEED
-    // -------------------------------------------------------------------------
-    const resetRecordingSpeed = useCallback(() => {
-        setRecordingSpeed(DEFAULT_SPEED);
-    }, []);
+    }, [
+        recordingStartTime,
+        recordingEndTime,
+        onTimeChange,
+        mapRef,
+        onStartAnimation,
+        startCapture,
+    ]);
 
     // -------------------------------------------------------------------------
     // Auto-stop when animation ends
     // -------------------------------------------------------------------------
     useEffect(() => {
-        if (hasStartedCapture && !isAnimating && isRecording && !hasStoppedRef.current) {
+        if (
+            hasStartedCapture &&
+            !isAnimating &&
+            isRecording &&
+            !hasStoppedRef.current
+        ) {
             console.log("⏹ Animation finished → waiting before stopping");
+
             animationCompleteTimeoutRef.current = setTimeout(() => {
                 stopRecording();
             }, 1000);
@@ -163,9 +181,7 @@ export function useRecording({
     // Notify state changes
     // -------------------------------------------------------------------------
     useEffect(() => {
-        if (onRecordingStateChange) {
-            onRecordingStateChange(isRecording);
-        }
+        onRecordingStateChange?.(isRecording);
     }, [isRecording, onRecordingStateChange]);
 
     // -------------------------------------------------------------------------
@@ -178,7 +194,7 @@ export function useRecording({
     }, [shouldStop, isRecording, stopRecording]);
 
     // -------------------------------------------------------------------------
-    // Cleanup
+    // Cleanup on unmount
     // -------------------------------------------------------------------------
     useEffect(() => {
         return () => {
@@ -191,12 +207,10 @@ export function useRecording({
     // -------------------------------------------------------------------------
     return {
         isRecording,
-        isProcessing: false,
-        recordingSpeed,
-        setRecordingSpeed,
+        isProcessing: isExporting,
         startRecording,
         stopRecording,
-        resetRecordingSpeed,
-        mergeProgress: 0
+        mergeProgress: 0,
+        exportError,
     };
 }

@@ -9,6 +9,7 @@ export function RecordingControl({
     shouldStop,
     isAnimating,
     onStartAnimation,
+    onStopAnimation,
     mapRef,
     ships,
     visibleShips,
@@ -26,11 +27,11 @@ export function RecordingControl({
     showDialog,
     onDialogChange,
     initialStartTime,
-    showBackgroundShips,
-    onShowBackgroundShipsChange,
     trackShip,
     onTrackShipChange,
     movementMarks,
+    playbackSpeed,
+    setPlaybackSpeed,
 }) {
 
     // Time window management
@@ -49,31 +50,29 @@ export function RecordingControl({
 
     // Recording logic
     const {
-        // eslint-disable-next-line
-        isRecording,
-        // eslint-disable-next-line
-        isProcessing,
-        recordingSpeed,
-        setRecordingSpeed,
         startRecording: startRecordingHook,
-        // eslint-disable-next-line
-        stopRecording,
-        resetRecordingSpeed
     } = useRecording({
         mapRef,
         isAnimating,
         onStartAnimation,
+        onStopAnimation,
         shouldStop,
         recordingStartTime: stagingStart,
         recordingEndTime: stagingEnd,
         onTimeChange,
         onRecordingStateChange,
-        selectedTime
+        selectedTime,
+        onResetTimeWindow: () => {
+            setWindowStart(minTime);
+            setWindowEnd(maxTime);
+        }
     });
+
+    const ALL_SHIPS = -1;
 
     // When ship selection changes, update start time automatically
     const handleShipChange = useCallback((shipIndex) => {
-        onRecordingShipChange(shipIndex);
+        onRecordingShipChange(shipIndex === ALL_SHIPS ? null : shipIndex);
 
         // Only auto-set start time if a specific ship is selected (not null)
         if (shipIndex !== null) {
@@ -88,13 +87,13 @@ export function RecordingControl({
                 }
             }
         }
-    }, [onRecordingShipChange, ships, movementMarks, setStagingStart]);
+    }, [ALL_SHIPS, onRecordingShipChange, ships, movementMarks, setStagingStart]);
 
     // Reset all settings to defaults
     const resetToDefaults = useCallback(() => {
-        resetRecordingSpeed();
+        setPlaybackSpeed(1);
         resetTimeWindow();
-    }, [resetRecordingSpeed, resetTimeWindow]);
+    }, [setPlaybackSpeed, resetTimeWindow]);
 
     // Handle dialog close
     const handleCloseDialog = useCallback(() => {
@@ -127,8 +126,15 @@ export function RecordingControl({
                 <DialogTitle>Start Recording?</DialogTitle>
                 <DialogContent dividers>
                     <Stack spacing={2}>
+                        {/* 🔧 ADD WARNING when animation is running */}
+                        {isAnimating && (
+                            <Typography variant="body2" color="warning.main">
+                                ⚠️ Please stop the current animation before starting a recording.
+                            </Typography>
+                        )}
+
                         <Typography variant="body2">
-                            Your map animation will be recorded into a .webm video. All visible ships on screen will be recorded.
+                            Your map animation will be recorded into a video. All visible ships on screen will be recorded.
                         </Typography>
 
                         {/* SHIPS DROPDOWN - For focus/tracking only */}
@@ -137,15 +143,13 @@ export function RecordingControl({
                             {ships.length > 0 ? (
                                 <Select
                                     label="Choose Ship"
-                                    value={selectedRecordingShip ?? null}
+                                    value={selectedRecordingShip ?? ALL_SHIPS}
                                     onChange={(e) => handleShipChange(e.target.value)}
                                 >
-                                    {/* ALL SHIPS OPTION - FIRST */}
-                                    <MenuItem value={null}>
+                                    <MenuItem value={ALL_SHIPS}>
                                         <strong>All Ships</strong>
                                     </MenuItem>
 
-                                    {/* INDIVIDUAL SHIPS */}
                                     {ships.map((ship, index) => (
                                         <MenuItem
                                             key={ship.ship_uid}
@@ -156,23 +160,13 @@ export function RecordingControl({
                                         </MenuItem>
                                     ))}
                                 </Select>
+
                             ) : (
                                 <Select label="Choose Ship" value="" disabled>
                                     <MenuItem value="">No ship found</MenuItem>
                                 </Select>
                             )}
                         </FormControl>
-
-                        {/* SHOW BACKGROUND SHIPS CHECKBOX */}
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={showBackgroundShips}
-                                    onChange={(e) => onShowBackgroundShipsChange(e.target.checked)}
-                                />
-                            }
-                            label="Show other ships (may reduce performance)"
-                        />
 
                         {/* TRACK SHIP CHECKBOX - Only when specific ship selected */}
                         {selectedRecordingShip !== null && (
@@ -188,13 +182,13 @@ export function RecordingControl({
                         )}
 
                         <Box>
-                            <Typography variant="caption">Recording Speed: {recordingSpeed}x</Typography>
+                            <Typography variant="caption">Recording Speed: {playbackSpeed}x</Typography>
                             <Slider
-                                value={recordingSpeed}
-                                min={0.1}
-                                max={2}
-                                step={0.1}
-                                onChange={(_, v) => setRecordingSpeed(v)}
+                                value={playbackSpeed}
+                                min={0.2}
+                                max={4}
+                                step={0.2}
+                                onChange={(_, v) => setPlaybackSpeed(v)}
                             />
                         </Box>
 
@@ -234,6 +228,7 @@ export function RecordingControl({
                         variant="contained"
                         color="success"
                         onClick={handleStartRecording}
+                        disabled={isAnimating}  // 🔧 DISABLE when animating, remove when the problem is solved
                     >
                         Start Recording
                     </Button>

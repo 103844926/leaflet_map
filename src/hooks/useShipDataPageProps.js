@@ -1,17 +1,26 @@
 // src/hooks/useShipDataPageProps.js
 import { useMemo } from "react";
+import { defaultShipFilters } from "@/utils";
 
 export function useShipDataPageProps({
     // ---- Shared Data ----
+    isMobile,
     ships,
-    filteredShips,
+    timeFilteredShips,
     visibleShips,
     shipPositions,
-    timeRange,
-    showBackgroundShips,
-    toggleBackgroundShips,
+    currentShips,
+
+    shipFilters,
+    setShipFilters,
+    filterOptions,
 
     // ---- Map ----
+    timeRange,
+    windowStart,
+    windowEnd,
+    setWindowStart,
+    setWindowEnd,
     mapRef,
     paperControl,
     boxControl,
@@ -50,54 +59,71 @@ export function useShipDataPageProps({
     updateTime,
     movementMarks,
     showPaths,
-    setSelectedShipIndex,
-    selectedShipIndex,
+    showShipTable,
+    setShowShipTable,
+    setSelectedShip,
+    selectedShip,
+    shipLatLng,
+    setShipLatLng, // ✅ NEW: Need this setter
 }) {
     // ------------------------
     // Ship Info Panel Props
     // ------------------------
     const infoPanelProps = useMemo(
         () =>
-            selectedShipIndex !== null && filteredShips[selectedShipIndex]
+            selectedShip && shipLatLng
                 ? {
-                    ship: filteredShips[selectedShipIndex],
+                    isMobile,
+                    ship: selectedShip,
                     timeRange,
-                    onClose: () => setSelectedShipIndex(null),
+                    onClose: () => {
+                        setSelectedShip(null);
+                        setShipLatLng(null); // ✅ Clear both states
+                    },
                     controlRef: boxControl,
+                    map: mapRef.current,
                 }
                 : null,
-        [selectedShipIndex, filteredShips, timeRange, boxControl, setSelectedShipIndex]
+        [isMobile, selectedShip, shipLatLng, timeRange, boxControl, mapRef, setSelectedShip, setShipLatLng]
     );
+
 
     // ------------------------
     // Ship Layer Control Props
     // ------------------------
     const shipLayerControlProps = useMemo(
         () => ({
+            isMobile,
             ships,
             visibleShips,
+            onShipToggle: handleShipToggle,
             showPaths,
             onPathToggle: setShowPaths,
+
+            shipFilters,
+            filterOptions,
+            onApplyFilters: setShipFilters,
+            onClearFilters: () => setShipFilters(defaultShipFilters),
+
             isAnimatingAll: isAnimating,
             controlRef: paperControl,
-            onShipToggle: handleShipToggle,
             movementMarks,
             selectedTime,
-            showBackgroundShips,
-            onToggleBackgroundShips: toggleBackgroundShips,
+
             onJumpToShip: (index) => {
-                if (mapRef.current) {
-                    const pos = shipPositions[index]?.position;
-                    if (pos) {
-                        mapRef.current.flyTo([pos.lat, pos.long], mapRef.current.getZoom(), {
-                            duration: 1.5,
-                        });
-                    }
+                if (!mapRef.current) return;
+
+                const pos = shipPositions[index]?.position;
+                if (pos) {
+                    mapRef.current.flyTo(
+                        [pos.lat, pos.long],
+                        mapRef.current.getZoom(),
+                        { duration: 1.5 }
+                    );
                 }
             },
 
-            onJumpToStartTime: (index, startTime) => {
-                // Update the time slider
+            onJumpToStartTime: (_, startTime) => {
                 handleManualTimeUpdate(startTime);
             },
 
@@ -105,28 +131,36 @@ export function useShipDataPageProps({
             onDialogChange: (show, shipStartTime) => {
                 setShowRecordingDialog(show);
                 if (shipStartTime !== undefined) {
-                    setRecordingShipStartTime(shipStartTime); // Pass to parent
+                    setRecordingShipStartTime(shipStartTime);
                 }
             },
+
+            showShipTable,
+            onToggleShipTable: () =>
+                setShowShipTable((v) => !v),
         }),
         [
+            isMobile,
             ships,
             visibleShips,
+            filterOptions,
+            handleShipToggle,
             showPaths,
             setShowPaths,
+            shipFilters,
+            setShipFilters,
             isAnimating,
             paperControl,
-            handleShipToggle,
+            movementMarks,
+            selectedTime,
             mapRef,
             shipPositions,
             handleManualTimeUpdate,
-            movementMarks,
-            selectedTime,
-            showBackgroundShips,
-            toggleBackgroundShips,
             setRecordingShipIndex,
             setShowRecordingDialog,
             setRecordingShipStartTime,
+            showShipTable,
+            setShowShipTable,
         ]
     );
 
@@ -143,7 +177,6 @@ export function useShipDataPageProps({
                 isAnimating,
                 onStartAnimation: (start, end) =>
                     animate(start, start, end, updateTime),
-
                 onStopAnimation: stopAnimation,
 
                 mapRef,
@@ -154,16 +187,12 @@ export function useShipDataPageProps({
 
                 minTime,
                 maxTime,
-                selectedTime,  // Still pass this for initial value
-                selectedTimeRef,  // NEW: Pass a ref that updates
+                selectedTime,
+                selectedTimeRef,
                 onTimeChange: updateTime,
 
                 windowStart: minTime,
                 windowEnd: maxTime,
-
-                setWindowStart: () => { },
-                setWindowEnd: () => { },
-
                 onRecordingStateChange: setIsRecordingActive,
                 showDialog: showRecordingDialog,
 
@@ -177,11 +206,13 @@ export function useShipDataPageProps({
                     }
                 },
                 initialStartTime: recordingShipStartTime,
-                showBackgroundShips,
-                onShowBackgroundShipsChange: toggleBackgroundShips,
                 trackShip,
                 onTrackShipChange: setTrackShip,
                 movementMarks,
+                playbackSpeed,
+                setPlaybackSpeed,
+                setWindowStart,
+                setWindowEnd,
             };
         },
         [
@@ -196,19 +227,21 @@ export function useShipDataPageProps({
             setRecordingShipIndex,
             minTime,
             maxTime,
-            selectedTime,  // IMPORTANT: Keep this in dependencies
+            selectedTime,
             setIsRecordingActive,
             showRecordingDialog,
             setShowRecordingDialog,
             recordingShipStartTime,
             setRecordingShipStartTime,
             setShouldStopRecording,
-            showBackgroundShips,
-            toggleBackgroundShips,
             trackShip,
             setTrackShip,
             movementMarks,
+            playbackSpeed,
+            setPlaybackSpeed,
             visibleShips,
+            setWindowStart,
+            setWindowEnd,
         ]
     );
 
@@ -217,9 +250,14 @@ export function useShipDataPageProps({
     // ------------------------
     const timeControlProps = useMemo(
         () => ({
+            isMobile,
             selectedTime,
             minTime,
             maxTime,
+            windowStart,
+            windowEnd,
+            setWindowStart,
+            setWindowEnd,
             availableTimes,
             isAnimating,
             playbackSpeed,
@@ -234,7 +272,6 @@ export function useShipDataPageProps({
             onRecordingButtonClick: () => {
                 if (isRecordingActive) {
                     setShouldStopRecording(true);
-                    setIsRecordingActive(false);
                 } else {
                     setShowRecordingDialog(true);
                     setShouldStopRecording(false);
@@ -242,9 +279,14 @@ export function useShipDataPageProps({
             },
         }),
         [
+            isMobile,
             selectedTime,
             minTime,
             maxTime,
+            windowStart,
+            windowEnd,
+            setWindowStart,
+            setWindowEnd,
             availableTimes,
             isAnimating,
             playbackSpeed,
@@ -257,7 +299,47 @@ export function useShipDataPageProps({
             movementMarks,
             setShouldStopRecording,
             setShowRecordingDialog,
-            setIsRecordingActive,
+        ]
+    );
+
+    // ------------------------
+    // Ship Table Props
+    // ------------------------
+    const shipTableProps = useMemo(
+        () => ({
+            isMobile,
+            ships: currentShips || [],
+            selectedShip,
+
+            onSelectShip: (ship) => {
+                setSelectedShip(ship);
+
+                // Fix: Check for the actual property names your ships have
+                const lat = ship?.lat ?? ship?.ship_lat ?? ship?.latitude;
+                const lng = ship?.long ?? ship?.ship_long ?? ship?.lng ?? ship?.longitude;
+
+                if (lat != null && lng != null) {
+                    setShipLatLng({ lat, lng });
+                }
+
+                if (!mapRef.current || !ship) return;
+
+                mapRef.current.flyTo(
+                    [lat, lng],  // Use the resolved coordinates
+                    15,
+                    { duration: 1.2 }
+                );
+            },
+            onClose: () => setShowShipTable(false),
+        }),
+        [
+            isMobile,
+            currentShips,
+            selectedShip,
+            setSelectedShip,
+            setShipLatLng,
+            mapRef,
+            setShowShipTable,
         ]
     );
 
@@ -266,5 +348,6 @@ export function useShipDataPageProps({
         timeControlProps,
         shipLayerControlProps,
         infoPanelProps,
+        shipTableProps,
     };
 }

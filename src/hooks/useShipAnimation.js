@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { useSliderAnimation } from './useSliderAnimation';
+import { useTimeAnimation } from './useTimeAnimation';
 
 // Linearly interpolate between two positions
 function interpolatePosition(pos1, pos2, progress) {
@@ -12,10 +12,10 @@ function interpolatePosition(pos1, pos2, progress) {
 }
 
 export function useShipAnimation(ships, selectedTime) {
-  const [selectedShipIndex, setSelectedShipIndex] = useState(null);
+  const [selectedShip, setSelectedShip] = useState(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
-  const { isAnimating, animate, stopAnimation } = useSliderAnimation(playbackSpeed);
+  const { isAnimating, animate, stopAnimation } = useTimeAnimation(playbackSpeed);
 
   // Calculate interpolated ship positions based on current time
   const getShipPositionsAtTime = useCallback((currentTime) => {
@@ -68,7 +68,7 @@ export function useShipAnimation(ships, selectedTime) {
   }, [ships]);
 
   const animateShips = useCallback((currentTime, minTime, maxTime, updateTime) => {
-    // Start from current time, but clamp to minTime..maxTime
+    // Start from current time, but clamp to minTime if it is at maxTime
     let startTime = currentTime;
     if (startTime < minTime) startTime = minTime;
     if (startTime >= maxTime) startTime = minTime;
@@ -93,9 +93,8 @@ export function useShipAnimation(ships, selectedTime) {
   );
 
   return {
-    selectedShipIndex,
-    setSelectedShipIndex,
-    getShipPositionsAtTime,
+    selectedShip,
+    setSelectedShip,
     shipPositions,
     isAnimating,
     animate: animateShips,

@@ -17,11 +17,7 @@ export function drawPaths({
 
   shipsToRender.forEach(ship => {
     const i = ship.index;
-    if (!ships[i]?.locations) return;
-
-    const markerVisible = resources.visibleMarkers?.[i];
-
-    if (!markerVisible) return;
+    if (!visibleShips[i]) return;
 
     const color = getShipColor(i);
 

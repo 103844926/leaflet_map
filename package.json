@@ -2,6 +2,11 @@
   "name": "leaflet",
   "version": "0.1.0",
   "private": true,
+  "_moduleAliases": {
+    "@services": "server/services",
+    "@routes": "server/routes",
+    "@utils-backend": "server/utils"
+  },
   "dependencies": {
     "@date-io/date-fns": "^3.2.1",
     "@emotion/react": "^11.14.0",
@@ -15,14 +20,21 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "cors": "^2.8.5",
     "date-fns": "^2.30.0",
     "dom-to-image-more": "^3.7.2",
+    "express": "^5.2.1",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "leaflet": "^1.9.4",
     "leaflet-pixi-overlay": "^1.9.3",
+    "leaflet-velocity": "^2.1.4",
+    "leaflet.heat": "^0.2.0",
     "leaflet.markercluster": "^1.5.3",
     "modern-screenshot": "^4.6.7",
+    "module-alias": "^2.2.3",
+    "multer": "^2.0.2",
+    "node-fetch": "^2.7.0",
     "pixi.js": "^7.3.2",
     "react": "^19.0.0-rc.1",
     "react-dom": "^19.0.0-rc.1",
@@ -74,5 +86,10 @@
     "globals": "^16.5.0",
     "prettier": "3.6.2",
     "prettier-plugin-one-line-imports": "^1.0.1"
-  }
+  },
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "craco.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

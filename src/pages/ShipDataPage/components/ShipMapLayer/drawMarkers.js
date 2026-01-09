@@ -3,12 +3,10 @@ import { getShipColor, createShipTexture, getSprite, resetPool, isInViewport } f
 
 export function drawMarkers({
     container, project, scale, bounds, renderer,
-    shipsToRender, filteredShips, visibleShips, shipPositions,
+    shipsToRender, timeFilteredShips, visibleShips, shipPositions,
     onMarkerClick, recordingShipIndex, isRecording, resources,
-    movementStartMap, // Pass the movement start map from detectShipMovementStartsDetailed
-    currentTime // Current timeline time
+    movementStartMap, currentTime, selectedShipId
 }) {
-    // Create both textures using the integrated function
     const triangleTexture = createShipTexture(renderer, resources, 'triangle', true);
     const circleTexture = createShipTexture(renderer, resources, 'circle');
 
@@ -26,7 +24,6 @@ export function drawMarkers({
         const pos = shipPositions[i];
         let lat, long, course = 0;
 
-        // Resolve position
         if (pos?.position) {
             lat = pos.position.lat;
             long = pos.position.long;
@@ -47,7 +44,6 @@ export function drawMarkers({
 
         if (lat == null || long == null || !isInViewport(lat, long, bounds)) return;
 
-        // Marker is in viewport --> remember it
         resources.visibleMarkers[i] = true;
 
         const pt = project([lat, long]);
@@ -55,34 +51,41 @@ export function drawMarkers({
 
         const color = getShipColor(i);
         const isRecordingShip = isRecording && recordingShipIndex === i;
+        const shipId = ship.ship_uid ?? ship.mmsi ?? ship.id;
+        const isSelected = selectedShipId === shipId;
 
-        // Determine if ship has started moving
         const movementStart = movementStartMap?.get(ship.ship_uid);
         const hasStartedMoving = movementStart && currentTime >= movementStart.time;
 
-        // Choose texture based on movement status
         const texture = hasStartedMoving ? triangleTexture : circleTexture;
 
-        // Create sprite
+        // Draw main sprite
         const sprite = getSprite(pool, texture);
         if (!sprite) return;
 
         sprite.x = pt.x;
         sprite.y = pt.y;
-
-        // Only apply rotation to triangle
         sprite.rotation = hasStartedMoving ? (course * Math.PI) / 180 : 0;
-
         sprite.tint = color;
-        sprite.alpha = isRecordingShip ? 1 : 0.9;
+        sprite.alpha = isRecordingShip || isSelected ? 1 : 0.85;
 
         const baseScale = 0.625;
-        sprite.scale.set((isRecordingShip ? baseScale * 1.2 : baseScale) / scale);
+        // Existing boost (recording)
+        const recordingBoost = isRecordingShip ? 1.2 : 1.0;
+
+        // New boost (selection)
+        const selectedBoost = isSelected ? 1.35 : 1.0;
+
+        // Final scale (zoom-safe)
+        const finalScale =
+            (baseScale * recordingBoost * selectedBoost) / scale;
+
+        sprite.scale.set(finalScale);
 
         sprite.eventMode = "static";
         sprite.cursor = "pointer";
         sprite.removeAllListeners();
-        sprite.on("pointertap", () => onMarkerClick?.(i));
+        sprite.on("pointertap", (event) => onMarkerClick?.(i, event)); // ✅ Pass the PIXI event
 
         container.addChild(sprite);
     });

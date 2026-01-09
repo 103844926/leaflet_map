@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import { getShipData, getCurrentShipData } from "@/datas";
+import { useState, useEffect, useMemo, useRef, } from "react";
+import { useTheme, useMediaQuery } from "@mui/material";
+import { getShipData, getCurrentShipData, getWindyData } from "@/datas";
 import { useShipVisible } from "./useShipVisible";
 import { detectShipMovementStartsDetailed } from "@/utils";
 
@@ -8,19 +9,23 @@ export function useShipDataPageLogic() {
     const [currentShips, setCurrentShips] = useState([]);
     const [initialCenter, setInitialCenter] = useState(null);
     const [timeRange, setTimeRange] = useState(null);
-
+    const [windData, setWindData] = useState(null);
+    const [virtualMinTime, setVirtualMinTime] = useState(null);
+    const [virtualMaxTime, setVirtualMaxTime] = useState(null);
     const isAnimatingRef = useRef(false);
+
+    // UI breakpoint
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     // Ship visibility logic stays the same
     const {
         visibleShips,
         handleShipToggle,
-        showBackgroundShips,
-        toggleBackgroundShips
     } = useShipVisible(ships, currentShips);
 
     // --------------------------
-    // Load Ships + Current Ships + Compute Center
+    // Load Ships & Current Ships Then Compute Center
     // --------------------------
     useEffect(() => {
         const load = async (forceRefresh = false) => {
@@ -47,15 +52,12 @@ export function useShipDataPageLogic() {
         };
 
         load();
-
-        const interval = setInterval(() => load(true), 30000);
-        return () => clearInterval(interval);
     }, [initialCenter]);
 
     // --------------------------
     // Filter ships based on time
     // --------------------------
-    const filteredShips = useMemo(() => {
+    const timeFilteredShips = useMemo(() => {
         if (!timeRange) return ships;
         const current = timeRange[1];
         return ships.map((ship, i) => {
@@ -63,7 +65,7 @@ export function useShipDataPageLogic() {
 
             return {
                 ...ship,
-                index: i,                        // <-- THIS LINE: permanent original index
+                index: i,                        // permanent original index
                 locations: filtered.length ? filtered : [ship.locations[0]],
             };
         });
@@ -83,6 +85,38 @@ export function useShipDataPageLogic() {
         return detectShipMovementStartsDetailed(shipsToAnalyze, 50);
     }, [ships, visibleShips]);
 
+    // --------------------
+    // Get Windy Data
+    // --------------------
+
+    useEffect(() => {
+        if (!initialCenter) return;
+        const [lat, lon] = initialCenter;
+
+        getWindyData({ lat, lon, model: "gfs" })
+            .then((data) => {
+                setWindData(data);
+                console.log("Windy data:", data);
+                // optionally store in state for visualization
+            })
+            .catch(console.error);
+    }, [initialCenter]);
+
+    // --------------------
+    // Sync ship time range with wind data time range
+    // --------------------
+
+    useEffect(() => {
+        if (!ships.length || !windData) return;
+
+        const shipMin = Math.min(...ships.flatMap(s => s.locations.map(l => l.time)));
+        const shipMax = Math.max(...ships.flatMap(s => s.locations.map(l => l.time)));
+
+        // virtual timeline is the SHIP timeline
+        setVirtualMinTime(shipMin);
+        setVirtualMaxTime(shipMax);
+    }, [ships, windData]);
+
     return {
         ships,
         currentShips,
@@ -91,10 +125,12 @@ export function useShipDataPageLogic() {
         setTimeRange,
         visibleShips,
         handleShipToggle,
-        showBackgroundShips,
-        toggleBackgroundShips,
-        filteredShips,
+        timeFilteredShips,
         isAnimatingRef,
         movementMarks,
+        windData,
+        virtualMinTime,
+        virtualMaxTime,
+        isMobile,
     };
 }

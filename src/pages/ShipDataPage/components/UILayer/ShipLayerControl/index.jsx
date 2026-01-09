@@ -1,14 +1,21 @@
-// ShipLayerControl/ index.jsx
-import { React, useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
-import { Paper, Typography, Stack, IconButton, Collapse, TextField, InputAdornment, Button } from "@mui/material";
-import { ExpandMore, ExpandLess, Search, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Paper, Typography, Stack, IconButton, Collapse, Fab, } from "@mui/material";
+import { ExpandMore, ExpandLess, Menu, Close, } from "@mui/icons-material";
 
 import { ShipLayerRow } from "./ShipLayerRow";
+import { ShipLayerAction } from "./ShipLayerAction";
+import { ShipFilterControl } from "./ShipFilterControl";
+import { applyShipFilters } from "@/utils";
 
 export function ShipLayerControl({
+    isMobile,
     ships,
     visibleShips,
+    shipFilters,
+    filterOptions,
+    onApplyFilters,
+    onClearFilters,
     onShipToggle,
     showPaths,
     onPathToggle,
@@ -20,121 +27,187 @@ export function ShipLayerControl({
     selectedTime,
     onRecordingShipChange,
     onDialogChange,
-    showBackgroundShips,
-    onToggleBackgroundShips,
+    showShipTable,
+    onToggleShipTable,
 }) {
-    const [isExpanded, setIsExpanded] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isOpen, setIsOpen] = useState(!isMobile);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    const filteredShips = ships.filter((ship) =>
-        ship.ship_uid.toLowerCase().includes(searchQuery.toLowerCase())
+    useEffect(() => {
+        setIsOpen(!isMobile);
+    }, [isMobile]);
+
+    const filteredShips = useMemo(
+        () =>
+            ships.filter(
+                (ship) =>
+                    ship.ship_uid
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()) &&
+                    applyShipFilters(ship, shipFilters)
+            ),
+        [ships, shipFilters, searchQuery]
+    );
+
+    const BodyContent = (
+        <Stack spacing={1.25}>
+            <ShipLayerAction
+                searchQuery={searchQuery}
+                onSearchChange={(e) => setSearchQuery(e.target.value)}
+                onOpenFilter={() => setIsFilterOpen(true)}
+                onToggleTable={onToggleShipTable}
+            />
+
+            <Stack spacing={1}>
+                <Typography
+                    variant="subtitle2"
+                    sx={{
+                        fontSize: isMobile ? "13px" : "14px",
+                        fontWeight: "bold",
+                    }}
+                >
+                    Ships ({filteredShips.length})
+                </Typography>
+
+                {filteredShips.length === 0 ? (
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            fontSize: "12px",
+                            py: 2,
+                            textAlign: "center",
+                        }}
+                    >
+                        No ships found
+                    </Typography>
+                ) : (
+                    filteredShips.map((ship) => {
+                        const index = ships.findIndex(
+                            (s) => s.ship_uid === ship.ship_uid
+                        );
+
+                        return (
+                            <ShipLayerRow
+                                key={ship.ship_uid}
+                                index={index}
+                                ship={ship}
+                                isVisible={visibleShips[index]}
+                                isAnimatingAll={isAnimatingAll}
+                                onShipToggle={onShipToggle}
+                                onJumpToShip={onJumpToShip}
+                                onJumpToStartTime={onJumpToStartTime}
+                                movementMarks={movementMarks}
+                                onRecordingShipChange={onRecordingShipChange}
+                                onDialogChange={(show, shipStartTime) =>
+                                    onDialogChange(show, shipStartTime)
+                                }
+                            />
+                        );
+                    })
+                )}
+            </Stack>
+        </Stack>
     );
 
     return (
-        <Paper
-            ref={controlRef}
-            sx={{
-                position: "fixed",
-                bottom: 32,
-                left: 32,
-                width: 300,
-                maxHeight: "80vh",
-                overflowY: "auto",
-                backgroundColor: "white",
-                padding: "15px",
-                borderRadius: "8px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                zIndex: 1000,
-            }}
-        >
-            {/* HEADER */}
-            <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                sx={{ marginBottom: isExpanded ? 2 : 0 }}
+        <>
+            {/* 📱 MOBILE OPEN */}
+            {isMobile && !isOpen && (
+                <Fab
+                    size="small"
+                    color="primary"
+                    onClick={() => setIsOpen(true)}
+                    sx={{
+                        position: "fixed",
+                        top: 16,
+                        left: 16,
+                        zIndex: 1100,
+                    }}
+                >
+                    <Menu />
+                </Fab>
+            )}
+
+            {/* 📱 MOBILE CLOSE */}
+            {isMobile && isOpen && (
+                <Fab
+                    size="small"
+                    color="secondary"
+                    onClick={() => setIsOpen(false)}
+                    sx={{
+                        position: "fixed",
+                        top: 16,
+                        left: 16,
+                        zIndex: 1100,
+                    }}
+                >
+                    <Close />
+                </Fab>
+            )}
+
+            <Paper
+                ref={controlRef}
+                sx={{
+                    position: "fixed",
+                    top: isMobile ? 16 : 20,
+                    left: isMobile ? 16 : 20,
+                    maxWidth: isMobile ? "100%" : 280,
+                    maxHeight: isMobile ? "70vh" : "80vh",
+                    overflowY: "auto",
+                    p: isMobile ? 1 : 1.5,
+                    borderRadius: 2,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+                    zIndex: 1000,
+                    display: isMobile && !isOpen ? "none" : "block",
+                }}
             >
-                <Typography variant="h6" sx={{ fontSize: "16px", fontWeight: "bold" }}>
-                    Ships Control
-                </Typography>
-                <IconButton size="small" onClick={() => setIsExpanded(!isExpanded)}>
-                    {isExpanded ? <ExpandLess /> : <ExpandMore />}
-                </IconButton>
-            </Stack>
-
-            {/* BODY */}
-            <Collapse in={isExpanded}>
-                <Stack spacing={2}>
-                    {/* SEARCH BAR */}
-                    <TextField
-                        size="small"
-                        placeholder="Search ships..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <Search fontSize="small" />
-                                </InputAdornment>
-                            ),
-                        }}
-                        sx={{ width: "100%" }}
-                    />
-
-                    {/* TOGGLE BACKGROUND SHIPS */}
-                    <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={showBackgroundShips ? <VisibilityOff /> : <Visibility />}
-                        onClick={onToggleBackgroundShips}
-                        disabled={isAnimatingAll}
-                        sx={{
-                            width: "100%",
-                            borderColor: showBackgroundShips ? "grey.400" : "grey.300",
-                            color: showBackgroundShips ? "grey.700" : "grey.500",
-                        }}
+                {/* HEADER */}
+                <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ mb: 1 }}
+                >
+                    <Typography
+                        variant="h6"
+                        sx={{ fontSize: "14px", fontWeight: "bold" }}
                     >
-                        {showBackgroundShips ? "Hide Background Ships" : "Show Background Ships"}
-                    </Button>
+                        Ships
+                    </Typography>
 
-                    {/* SHIP LIST */}
-                    <Stack spacing={1}>
-                        <Typography variant="subtitle2" sx={{ fontSize: "14px", fontWeight: "bold" }}>
-                            Ships ({filteredShips.length})
-                        </Typography>
-
-                        {filteredShips.length === 0 ? (
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ fontSize: "12px", py: 2, textAlign: "center" }}
-                            >
-                                No ships found
-                            </Typography>
-                        ) : (
-                            filteredShips.map((ship) => {
-                                const index = ships.findIndex((s) => s.ship_uid === ship.ship_uid);
-
-                                return (
-                                    <ShipLayerRow
-                                        key={ship.ship_uid}
-                                        index={index}
-                                        ship={ship}
-                                        isVisible={visibleShips[index]}
-                                        isAnimatingAll={isAnimatingAll}
-                                        onShipToggle={onShipToggle}
-                                        onJumpToShip={onJumpToShip}
-                                        onJumpToStartTime={onJumpToStartTime}
-                                        movementMarks={movementMarks}
-                                        onRecordingShipChange={onRecordingShipChange}
-                                        onDialogChange={(show, shipStartTime) => onDialogChange(show, shipStartTime)}
-                                    />
-                                );
-                            })
-                        )}
-                    </Stack>
+                    {!isMobile && (
+                        <IconButton
+                            size="small"
+                            onClick={() => setIsExpanded((v) => !v)}
+                        >
+                            {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                        </IconButton>
+                    )}
                 </Stack>
-            </Collapse>
-        </Paper>
+
+                {/* BODY */}
+                {isMobile ? (
+                    BodyContent
+                ) : (
+                    <Collapse in={isExpanded}>{BodyContent}</Collapse>
+                )}
+
+                {/* FILTER DIALOG */}
+                <ShipFilterControl
+                    open={isFilterOpen}
+                    filters={shipFilters}
+                    filterOptions={filterOptions}
+                    onApply={(filters) => {
+                        onApplyFilters(filters);
+                        setIsFilterOpen(false);
+                    }}
+                    onClear={onClearFilters}
+                    onClose={() => setIsFilterOpen(false)}
+                />
+            </Paper>
+        </>
     );
 }

@@ -1,18 +1,18 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
-export function useSliderAnimation(playbackSpeed = 1) {
+export function useTimeAnimation(playbackSpeed = 1) {
   const [isAnimating, setIsAnimating] = useState(false);
   const animationRef = useRef(null);
 
   // Track simulation time
-  const simTimeRef = useRef(0); // Last simulation time
-  const lastFrameRef = useRef(0); // Timestamp of last frame
-  const speedRef = useRef(playbackSpeed); // Latest speed
-  const startTimeRef = useRef(0); // Track start time for accuracy
-  const endTimeRef = useRef(0); // Track end time
+  const simTimeRef = useRef(0);                 // Last simulation time
+  const lastFrameRef = useRef(0);               // Timestamp of last frame
+  const speedRef = useRef(playbackSpeed);       // Latest speed
+  const startTimeRef = useRef(0);               // Track start time for accuracy
+  const endTimeRef = useRef(0);                 // Track end time
 
-  const FRAME_INTERVAL = 1000 / 30; // ~30 FPS to match recording
-  const BASE_SPEED = 480; // ms of simulation per 1ms real time
+  const FRAME_INTERVAL = 1000 / 30;             // ~30 FPS to match recording
+  const BASE_SPEED = 480;                       // ms of simulation per 1ms real time
 
   // Update speed ref whenever playbackSpeed changes
   useEffect(() => {
@@ -47,9 +47,9 @@ export function useSliderAnimation(playbackSpeed = 1) {
       onUpdate(startTime);
 
       const loop = (now) => {
-        const delta = now - lastFrameRef.current; // ms since last frame
-        const deltaSim = delta * BASE_SPEED * speedRef.current; // sim ms to advance
-        let newSimTime = simTimeRef.current + deltaSim;
+        const delta = now - lastFrameRef.current; // calculate time passed since last frame
+        const deltaSim = delta * BASE_SPEED * speedRef.current; // convert to sim time to advance
+        let newSimTime = simTimeRef.current + deltaSim; // advance the simulation clock
 
         // Clamp to endTime
         if (newSimTime > endTime) newSimTime = endTime;
