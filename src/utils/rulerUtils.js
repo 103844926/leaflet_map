@@ -14,14 +14,19 @@ export const COLORS = {
     labelBgTemp: 'rgba(0, 0, 0, 0.6)',
     totalBg: 'rgba(68, 68, 255, 0.9)',
     ringLabelBg: 'rgba(0, 0, 0, 0.7)',
-    ringLabelText: '#1fe9ff'
+    ringLabelText: '#1fe9ff',
+    polygonFill: '#4444ff',
+    polygonStroke: '#4444ff'
 };
 
 export const CONFIG = {
-    ringInterval: 5, // km
-    minRingDistance: 5, // km
+    ringInterval: 5,
+    minRingDistance: 5,
     markerSize: 12,
-    tolerance: 12 // pixels
+    tolerance: 12,
+    polygonFillOpacity: 0.2,
+    polygonStrokeOpacity: 0.5,
+    polygonStrokeWeight: 2
 };
 
 /* -----------------------------
@@ -105,6 +110,34 @@ export function createMeasurementLabel(latlng1, latlng2, isTemp, map) {
     }).addTo(map);
 }
 
+export function buildAreaLayers(points, map) {
+    const latlngs = points.map(p => L.latLng(p.lat, p.lng));
+
+    const polygon = createPolygon(latlngs, map);
+
+    const edges = [];
+    const labels = [];
+
+    for (let i = 0; i < latlngs.length; i++) {
+        const a = latlngs[i];
+        const b = latlngs[(i + 1) % latlngs.length];
+
+        edges.push(
+            L.polyline([a, b], {
+                color: COLORS.line,
+                weight: 3,
+                opacity: 0.7
+            }).addTo(map)
+        );
+
+        labels.push(
+            createMeasurementLabel(a, b, false, map)
+        );
+    }
+
+    return { polygon, edges, labels };
+}
+
 /* -----------------------------
  * Range Ring Creation
  * ----------------------------- */
@@ -161,6 +194,20 @@ export function createFillCircle(centerPoint, radiusKm, map) {
 }
 
 /* -----------------------------
+ * Polygon Creation
+ * ----------------------------- */
+export function createPolygon(latlngs, map) {
+    return L.polygon(latlngs, {
+        color: COLORS.polygonStroke,
+        weight: CONFIG.polygonStrokeWeight,
+        opacity: CONFIG.polygonStrokeOpacity,
+        fillColor: COLORS.polygonFill,
+        fillOpacity: CONFIG.polygonFillOpacity,
+        interactive: false
+    }).addTo(map);
+}
+
+/* -----------------------------
  * Cleanup Functions
  * ----------------------------- */
 export function clearLineElements(points, lines, labels, map) {
@@ -198,16 +245,33 @@ export function clearTempElements(tempLine, tempLabel, map) {
 }
 
 export function clearAllElements(refs, map) {
-    clearLineElements(refs.points.current, refs.lines.current, refs.labels.current, map);
-    clearCircleElements(refs.fillCircle.current, refs.ringLayer.current, refs.ringLabels.current, map);
-    clearTempElements(refs.tempLine.current, refs.tempLabel.current, map);
+    if (!refs || !map) return;
 
-    // Reset refs
-    refs.fillCircle.current = null;
-    refs.ringLayer.current = null;
-    refs.ringLabels.current = null;
-    refs.tempLine.current = null;
-    refs.tempLabel.current = null;
+    clearLineElements(
+        refs.points?.current ?? [],
+        refs.lines?.current ?? [],
+        refs.labels?.current ?? [],
+        map
+    );
+
+    clearCircleElements(
+        refs.fillCircle?.current,
+        refs.ringLayer?.current,
+        refs.ringLabels?.current,
+        map
+    );
+
+    clearTempElements(
+        refs.tempLine?.current,
+        refs.tempLabel?.current,
+        map
+    );
+
+    if (refs.fillCircle) refs.fillCircle.current = null;
+    if (refs.ringLayer) refs.ringLayer.current = null;
+    if (refs.ringLabels) refs.ringLabels.current = null;
+    if (refs.tempLine) refs.tempLine.current = null;
+    if (refs.tempLabel) refs.tempLabel.current = null;
 
     map.getContainer().style.cursor = "";
 }

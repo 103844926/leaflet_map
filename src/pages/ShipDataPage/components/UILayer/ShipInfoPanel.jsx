@@ -112,7 +112,7 @@ export function ShipInfoPanel({
       map.off("move", updatePosition);
       map.off("zoom", updatePosition);
     };
-  }, [isMobile, map, ship, timeRange]);
+  }, [isMobile, map, ship, timeRange, getCurrentPosition]);
 
   /* ===============================
      Render guard

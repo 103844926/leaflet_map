@@ -20,7 +20,7 @@ export default function ShipDataPage() {
   const paperControl = useLeafletControl();
   const boxControl = useLeafletControl();
   const layerControl = useLeafletControl();
-  const { showWeather, showUI, layerConfigs } = useLayerControl();
+  const { showWeather, showUI, showRuler, layerConfigs } = useLayerControl();
 
   // NEW: Add click position state
   const [shipLatLng, setShipLatLng] = useState(null);
@@ -33,7 +33,6 @@ export default function ShipDataPage() {
   const [recordingShipIndex, setRecordingShipIndex] = useState(null);
   const [recordingShipStartTime, setRecordingShipStartTime] = useState(null);
   const [trackShip, setTrackShip] = useState(false);
-
 
   // Ship filters
   const [shipFilters, setShipFilters] = useState(defaultShipFilters);
@@ -256,10 +255,10 @@ export default function ShipDataPage() {
         />
 
         {/* RULER LAYER */}
-        {!isRecordingActive && !isAnimating && (
+        {showRuler && !isRecordingActive && !isAnimating && (
           <LeafletRulerControl />
         )}
-        
+
         {/* WIND LAYER */}
         {windData && selectedTime && minTime && maxTime && showWeather && (
           <WeatherLayer

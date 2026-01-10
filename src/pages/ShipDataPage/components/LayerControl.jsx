@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 
 export function LayerControl({ layers, control }) {
-    const [layerExpanded, setLayerExpanded] = useState(true);
+    const [layerExpanded, setLayerExpanded] = useState(false);
 
     return (
         <Paper

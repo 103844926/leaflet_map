@@ -1,5 +1,6 @@
 import L from "leaflet";
-import { createMarker, createMeasurementLabel, createRangeRings, createFillCircle, clearCircleElements, clearTempElements, clearAllElements, COLORS, CONFIG } from "@/utils";
+import { useCallback } from "react";
+import { createMarker, buildAreaLayers, createMeasurementLabel, createRangeRings, createFillCircle, clearCircleElements, clearTempElements, COLORS, CONFIG } from "@/utils";
 
 /* -----------------------------
  * Helpers
@@ -14,9 +15,9 @@ function clearRingLayers(refs, map) {
 /* -----------------------------
  * Hook
  * ----------------------------- */
-export function useRulerHandlers(map, refs) {
+export function useRulerHandlers(map, refs, ui) {
 
-    const clearPreview = () => {
+    const clearPreview = useCallback(() => {
         clearTempElements(refs.tempLine.current, refs.tempLabel.current, map);
         clearCircleElements(
             refs.fillCircle.current,
@@ -30,19 +31,51 @@ export function useRulerHandlers(map, refs) {
         refs.fillCircle.current = null;
         refs.ringLayer.current = null;
         refs.ringLabels.current = null;
-    };
+    }, [map, refs]);
 
-    const canPreview = () =>
-        refs.isActive.current &&
-        refs.hasAnchor.current &&
-        refs.chainStartIndex.current !== null &&
-        refs.points.current.length - 1 >= refs.chainStartIndex.current;
+
+    const canPreview = useCallback(() => {
+        return (
+            refs.isActive.current &&
+            refs.hasAnchor.current &&
+            refs.chainStartIndex.current !== null &&
+            refs.points.current.length - 1 >= refs.chainStartIndex.current
+        );
+    }, [refs]);
+
+    /* -----------------------------
+     * Update Markers
+     * ----------------------------- */
+
+    const updateCompletedArea = useCallback((areaId, newPoints) => {
+        const area = refs.completedAreas.current.find(a => a.id === areaId);
+        if (!area) return;
+
+        // 1. Remove old layers
+        area.edges.forEach(l => map.removeLayer(l));
+        area.labels.forEach(l => map.removeLayer(l));
+        map.removeLayer(area.polygon);
+
+        // 2. Rebuild everything
+        const rebuilt = buildAreaLayers(newPoints, map);
+
+        // 3. Assign new references
+        area.points = newPoints.map(p => ({ ...p }));
+        area.polygon = rebuilt.polygon;
+        area.edges = rebuilt.edges;
+        area.labels = rebuilt.labels;
+
+    }, [map, refs]);
+
 
     /* -----------------------------
      * Map Click
      * ----------------------------- */
-    function onMapClick(e) {
+    const onMapClick = useCallback((e) => {
+
         if (!refs.isActive.current) return;
+
+        console.log("[RULER] map click fired", e.latlng);
 
         const isNewChain = !refs.hasAnchor.current;
         const marker = createMarker(e.latlng, isNewChain, map);
@@ -50,32 +83,58 @@ export function useRulerHandlers(map, refs) {
         if (isNewChain) {
             refs.hasAnchor.current = true;
             refs.chainStartIndex.current = refs.points.current.length;
+            ui?.setHasAnchorUI(true);
 
             marker.on("click", () => {
                 const start = refs.chainStartIndex.current;
                 const end = refs.points.current.length - 1;
 
                 if (end - start + 1 >= 3) {
-                    const first = refs.points.current[start];
-                    const last = refs.points.current[end];
+                    const chainPoints = refs.points.current
+                        .slice(start, end + 1)
+                        .map(p => p.latlng);
 
-                    refs.lines.current.push(
-                        L.polyline([last.latlng, first.latlng], {
-                            color: COLORS.line,
-                            weight: 3,
-                            opacity: 0.7,
-                            dashArray: "6,4"
-                        }).addTo(map)
+                    // Save completed area info
+                    const areaLayers = buildAreaLayers(
+                        chainPoints.map(p => ({ lat: p.lat, lng: p.lng })),
+                        map
                     );
 
-                    refs.labels.current.push(
-                        createMeasurementLabel(last.latlng, first.latlng, false, map)
-                    );
+                    const area = {
+                        id: crypto.randomUUID(),
+                        name: "",
+                        points: chainPoints.map(p => ({ lat: p.lat, lng: p.lng })),
+                        ...areaLayers
+                    };
+
+                    refs.completedAreas.current.push(area);
+                    ui?.addCompletedAreaUI(area);
                 }
 
+                // Only clear preview elements, not the completed polygon
                 clearPreview();
+
+                // ---- CLEAR DRAWING GEOMETRY ----
+                // Remove drawing markers
+                refs.points.current.forEach(p => {
+                    if (p.marker) map.removeLayer(p.marker);
+                });
+
+                // Remove drawing lines
+                refs.lines.current.forEach(l => map.removeLayer(l));
+
+                // Remove drawing labels
+                refs.labels.current.forEach(l => map.removeLayer(l));
+
+                // Reset drawing refs
+                refs.points.current = [];
+                refs.lines.current = [];
+                refs.labels.current = [];
+
+                // Reset anchor state for next polygon
                 refs.hasAnchor.current = false;
                 refs.chainStartIndex.current = null;
+                ui?.setHasAnchorUI(false);
             });
         }
 
@@ -100,15 +159,16 @@ export function useRulerHandlers(map, refs) {
         }
 
         refs.points.current.push({ latlng: e.latlng, marker });
-    }
+    }, [map, refs, clearPreview, ui]);
 
     /* -----------------------------
      * Mouse Move
      * ----------------------------- */
-    function onMouseMove(e) {
+    const onMouseMove = useCallback((e) => {
         if (!canPreview()) return;
 
-        const last = refs.points.current.at(-1);
+        const currentChainPoints = refs.points.current.slice(refs.chainStartIndex.current);
+        const last = currentChainPoints.at(-1);
 
         if (refs.tempLine.current) map.removeLayer(refs.tempLine.current);
         if (refs.tempLabel.current) map.removeLayer(refs.tempLabel.current);
@@ -133,36 +193,14 @@ export function useRulerHandlers(map, refs) {
             refs.fillCircle.current.bringToBack();
         } else {
             refs.fillCircle.current.setRadius(maxKm * 1000);
+            refs.fillCircle.current.setLatLng(last.latlng);
         }
 
         clearRingLayers(refs, map);
         const { rings, labels } = createRangeRings(last.latlng, maxKm, map);
         refs.ringLayer.current = rings;
         refs.ringLabels.current = labels;
-    }
+    }, [map, refs, canPreview]);
 
-    /* -----------------------------
-     * Button
-     * ----------------------------- */
-    function onButtonClick(e) {
-        L.DomEvent.preventDefault(e);
-
-        if (refs.isActive.current) {
-            refs.isActive.current = false;
-            refs.hasAnchor.current = false;
-            refs.chainStartIndex.current = null;
-            clearAllElements(refs, map);
-
-            refs.button.current.style.backgroundColor = "";
-            refs.button.current.style.color = "";
-            map.getContainer().style.cursor = "";
-        } else {
-            refs.isActive.current = true;
-            refs.button.current.style.backgroundColor = COLORS.marker;
-            refs.button.current.style.color = "white";
-            map.getContainer().style.cursor = "crosshair";
-        }
-    }
-
-    return { onMapClick, onMouseMove, onButtonClick };
+    return { updateCompletedArea, onMapClick, onMouseMove, clearPreview };
 }
