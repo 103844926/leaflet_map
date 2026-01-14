@@ -58,7 +58,7 @@ export function formatDistance(meters) {
 /* -----------------------------
  * Marker & Label Creation
  * ----------------------------- */
-export function createMarker(latlng, isFirst, map) {
+export function createMarker(latlng, isFirst, map, paneName) {
     const markerIcon = L.divIcon({
         className: "ruler-marker",
         html: `<div style="
@@ -68,7 +68,8 @@ export function createMarker(latlng, isFirst, map) {
             border: 2px solid white;
             border-radius: 50%;
             box-shadow: 0 0 4px rgba(0,0,0,0.5);
-            cursor: pointer;
+            cursor: ${isFirst ? 'pointer' : 'default'};
+            pointer-events: ${isFirst ? 'auto' : 'none'};
         "></div>`,
         iconSize: [CONFIG.markerSize, CONFIG.markerSize],
         iconAnchor: [CONFIG.markerSize / 2, CONFIG.markerSize / 2]
@@ -76,14 +77,22 @@ export function createMarker(latlng, isFirst, map) {
 
     const marker = L.marker(latlng, {
         icon: markerIcon,
-        interactive: true // ✅ important
+        pane: paneName,
+        interactive: isFirst
     }).addTo(map);
 
-    marker._isFirst = isFirst; // ✅ tag it
+    if (isFirst) {
+        const element = marker.getElement();
+        if (element) {
+            element.style.pointerEvents = 'auto';
+        }
+    }
+
+    marker._isFirst = isFirst;
     return marker;
 }
 
-export function createMeasurementLabel(latlng1, latlng2, isTemp, map) {
+export function createMeasurementLabel(latlng1, latlng2, isTemp, map, paneName) {
     const distance = latlng1.distanceTo(latlng2);
     const bearing = calculateBearing(latlng1, latlng2);
 
@@ -106,14 +115,15 @@ export function createMeasurementLabel(latlng1, latlng2, isTemp, map) {
 
     return L.marker(midPoint, {
         icon: labelIcon,
+        pane: paneName,
         interactive: false,
     }).addTo(map);
 }
 
-export function buildAreaLayers(points, map) {
+export function buildAreaLayers(points, map, paneName) {
     const latlngs = points.map(p => L.latLng(p.lat, p.lng));
 
-    const polygon = createPolygon(latlngs, map);
+    const polygon = createPolygon(latlngs, map, paneName);
 
     const edges = [];
     const labels = [];
@@ -126,12 +136,14 @@ export function buildAreaLayers(points, map) {
             L.polyline([a, b], {
                 color: COLORS.line,
                 weight: 3,
-                opacity: 0.7
+                opacity: 0.7,
+                pane: paneName,
+                interactive: false
             }).addTo(map)
         );
 
         labels.push(
-            createMeasurementLabel(a, b, false, map)
+            createMeasurementLabel(a, b, false, map, paneName)
         );
     }
 
@@ -141,30 +153,29 @@ export function buildAreaLayers(points, map) {
 /* -----------------------------
  * Range Ring Creation
  * ----------------------------- */
-export function createRangeRings(centerPoint, maxKm, map) {
+export function createRangeRings(centerPoint, maxKm, map, paneName) {
     const rings = L.layerGroup();
     const labels = L.layerGroup();
 
     for (let km = CONFIG.ringInterval; km <= maxKm; km += CONFIG.ringInterval) {
-        // Create ring
         L.circle(centerPoint, {
             radius: km * 1000,
             color: COLORS.ringStroke,
             weight: 1,
             dashArray: "4,4",
             fill: false,
+            pane: paneName,
             interactive: false,
         }).addTo(rings);
 
-        // Calculate label position (to the right of center)
         const lngOffset =
             (km * 1000) /
             (111320 * Math.cos(centerPoint.lat * Math.PI / 180));
 
-        // Create label
         L.marker(
             [centerPoint.lat, centerPoint.lng + lngOffset],
             {
+                pane: paneName,
                 interactive: false,
                 icon: L.divIcon({
                     className: "range-ring-label",
@@ -182,13 +193,14 @@ export function createRangeRings(centerPoint, maxKm, map) {
     return { rings, labels };
 }
 
-export function createFillCircle(centerPoint, radiusKm, map) {
+export function createFillCircle(centerPoint, radiusKm, map, paneName) {
     return L.circle(centerPoint, {
         radius: radiusKm * 1000,
         color: COLORS.circleBorder,
         weight: 0,
         fillColor: COLORS.ringFill,
         fillOpacity: 0.15,
+        pane: paneName,
         interactive: false,
     }).addTo(map);
 }
@@ -196,13 +208,14 @@ export function createFillCircle(centerPoint, radiusKm, map) {
 /* -----------------------------
  * Polygon Creation
  * ----------------------------- */
-export function createPolygon(latlngs, map) {
+export function createPolygon(latlngs, map, paneName) {
     return L.polygon(latlngs, {
         color: COLORS.polygonStroke,
         weight: CONFIG.polygonStrokeWeight,
         opacity: CONFIG.polygonStrokeOpacity,
         fillColor: COLORS.polygonFill,
         fillOpacity: CONFIG.polygonFillOpacity,
+        pane: paneName,
         interactive: false
     }).addTo(map);
 }
@@ -244,34 +257,49 @@ export function clearTempElements(tempLine, tempLabel, map) {
     }
 }
 
-export function clearAllElements(refs, map) {
+// Clear only review/drawing state
+export function clearReviewState(refs, map) {
     if (!refs || !map) return;
 
-    clearLineElements(
-        refs.points?.current ?? [],
-        refs.lines?.current ?? [],
-        refs.labels?.current ?? [],
-        map
-    );
+    // Clear drawing markers, lines and labels
+    if (refs.points?.current) {
+        refs.points.current.forEach(point => {
+            if (point.marker) map.removeLayer(point.marker);
+        });
+        refs.points.current = [];
+    }
 
+    if (refs.lines?.current) {
+        refs.lines.current.forEach(line => map.removeLayer(line));
+        refs.lines.current = [];
+    }
+
+    if (refs.labels?.current) {
+        refs.labels.current.forEach(label => map.removeLayer(label));
+        refs.labels.current = [];
+    }
+
+    // Clear preview elements
     clearCircleElements(
         refs.fillCircle?.current,
         refs.ringLayer?.current,
         refs.ringLabels?.current,
         map
     );
-
     clearTempElements(
         refs.tempLine?.current,
         refs.tempLabel?.current,
         map
     );
 
+    // Reset refs
     if (refs.fillCircle) refs.fillCircle.current = null;
     if (refs.ringLayer) refs.ringLayer.current = null;
     if (refs.ringLabels) refs.ringLabels.current = null;
     if (refs.tempLine) refs.tempLine.current = null;
     if (refs.tempLabel) refs.tempLabel.current = null;
 
-    map.getContainer().style.cursor = "";
+    // Reset state
+    if (refs.hasAnchor) refs.hasAnchor.current = false;
+    if (refs.chainStartIndex) refs.chainStartIndex.current = null;
 }

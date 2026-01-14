@@ -6,7 +6,6 @@ export function useShipDataPageProps({
     // ---- Shared Data ----
     isMobile,
     ships,
-    timeFilteredShips,
     visibleShips,
     shipPositions,
     currentShips,
@@ -168,53 +167,47 @@ export function useShipDataPageProps({
     // Recording Control Props
     // ------------------------
     const recordingProps = useMemo(
-        () => {
-            // Create a ref that always has the current selectedTime
-            const selectedTimeRef = { current: selectedTime };
+        () => ({
+            shouldStop: shouldStopRecording,
+            isAnimating,
+            onStartAnimation: (start, end) =>
+                animate(start, start, end, updateTime),
+            onStopAnimation: stopAnimation,
 
-            return {
-                shouldStop: shouldStopRecording,
-                isAnimating,
-                onStartAnimation: (start, end) =>
-                    animate(start, start, end, updateTime),
-                onStopAnimation: stopAnimation,
+            mapRef,
+            ships,
+            visibleShips,
+            selectedRecordingShip: recordingShipIndex,
+            onRecordingShipChange: setRecordingShipIndex,
 
-                mapRef,
-                ships,
-                visibleShips,
-                selectedRecordingShip: recordingShipIndex,
-                onRecordingShipChange: setRecordingShipIndex,
+            minTime,
+            maxTime,
+            selectedTime,
+            onTimeChange: updateTime,
 
-                minTime,
-                maxTime,
-                selectedTime,
-                selectedTimeRef,
-                onTimeChange: updateTime,
+            windowStart: minTime,
+            windowEnd: maxTime,
+            onRecordingStateChange: setIsRecordingActive,
+            showDialog: showRecordingDialog,
 
-                windowStart: minTime,
-                windowEnd: maxTime,
-                onRecordingStateChange: setIsRecordingActive,
-                showDialog: showRecordingDialog,
-
-                onDialogChange: (show, shipStartTime) => {
-                    setShowRecordingDialog(show);
-                    if (show) {
-                        setShouldStopRecording(false);
-                    }
-                    if (shipStartTime !== undefined) {
-                        setRecordingShipStartTime(shipStartTime);
-                    }
-                },
-                initialStartTime: recordingShipStartTime,
-                trackShip,
-                onTrackShipChange: setTrackShip,
-                movementMarks,
-                playbackSpeed,
-                setPlaybackSpeed,
-                setWindowStart,
-                setWindowEnd,
-            };
-        },
+            onDialogChange: (show, shipStartTime) => {
+                setShowRecordingDialog(show);
+                if (show) {
+                    setShouldStopRecording(false);
+                }
+                if (shipStartTime !== undefined) {
+                    setRecordingShipStartTime(shipStartTime);
+                }
+            },
+            initialStartTime: recordingShipStartTime,
+            trackShip,
+            onTrackShipChange: setTrackShip,
+            movementMarks,
+            playbackSpeed,
+            setPlaybackSpeed,
+            setWindowStart,
+            setWindowEnd,
+        }),
         [
             shouldStopRecording,
             isAnimating,
@@ -308,7 +301,6 @@ export function useShipDataPageProps({
     const shipTableProps = useMemo(
         () => ({
             isMobile,
-            ships: currentShips || [],
             selectedShip,
 
             onSelectShip: (ship) => {
@@ -334,7 +326,6 @@ export function useShipDataPageProps({
         }),
         [
             isMobile,
-            currentShips,
             selectedShip,
             setSelectedShip,
             setShipLatLng,

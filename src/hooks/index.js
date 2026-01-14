@@ -16,8 +16,8 @@ export * from "./useRecordingCapture";
 export * from "./useShipTracking";
 
 // For LeafletRulerControl
-export * from "./useRulerHandlers";
-export * from "./useRulerAreas";
+export * from "./useCompletedAreaHandlers";
+export * from "./useDrawingHandlers";
 
 // For ShipAdvancedFilters
 export * from "./useShipAdvancedFilters";

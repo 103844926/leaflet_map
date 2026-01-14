@@ -125,7 +125,7 @@ export function useRecording({
             videoBitsPerSecond: 15_000_000,
             adaptive: true,
 
-            // 🔧 FIX: always read latest selected time via ref
+            // Always read latest selected time via ref
             getCurrentTime: () => selectedTimeRef.current,
         });
 

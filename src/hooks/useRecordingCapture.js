@@ -69,13 +69,13 @@ export function useRecordingCapture() {
             desynchronized: true,
         });
 
-        // init background
+        // Init background
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, outW, outH);
 
         chunksRef.current = [];
 
-        // 🔧 FIX: store stream reference for later cleanup
+        // Store stream reference for later cleanup
         const stream = compositeCanvas.captureStream(fps);
         streamRef.current = stream;
 

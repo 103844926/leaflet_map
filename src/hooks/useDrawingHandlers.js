@@ -1,10 +1,16 @@
 import L from "leaflet";
 import { useCallback } from "react";
-import { createMarker, buildAreaLayers, createMeasurementLabel, createRangeRings, createFillCircle, clearCircleElements, clearTempElements, COLORS, CONFIG } from "@/utils";
+import {
+    createMarker,
+    createMeasurementLabel,
+    createRangeRings,
+    createFillCircle,
+    clearCircleElements,
+    clearTempElements,
+    COLORS,
+    CONFIG
+} from "@/utils";
 
-/* -----------------------------
- * Helpers
- * ----------------------------- */
 function clearRingLayers(refs, map) {
     if (refs.ringLayer.current) map.removeLayer(refs.ringLayer.current);
     if (refs.ringLabels.current) map.removeLayer(refs.ringLabels.current);
@@ -12,10 +18,7 @@ function clearRingLayers(refs, map) {
     refs.ringLabels.current = null;
 }
 
-/* -----------------------------
- * Hook
- * ----------------------------- */
-export function useRulerHandlers(map, refs, ui) {
+export function useDrawingHandlers(map, refs, ui) {
 
     const clearPreview = useCallback(() => {
         clearTempElements(refs.tempLine.current, refs.tempLabel.current, map);
@@ -33,7 +36,6 @@ export function useRulerHandlers(map, refs, ui) {
         refs.ringLabels.current = null;
     }, [map, refs]);
 
-
     const canPreview = useCallback(() => {
         return (
             refs.isActive.current &&
@@ -44,41 +46,15 @@ export function useRulerHandlers(map, refs, ui) {
     }, [refs]);
 
     /* -----------------------------
-     * Update Markers
-     * ----------------------------- */
-
-    const updateCompletedArea = useCallback((areaId, newPoints) => {
-        const area = refs.completedAreas.current.find(a => a.id === areaId);
-        if (!area) return;
-
-        // 1. Remove old layers
-        area.edges.forEach(l => map.removeLayer(l));
-        area.labels.forEach(l => map.removeLayer(l));
-        map.removeLayer(area.polygon);
-
-        // 2. Rebuild everything
-        const rebuilt = buildAreaLayers(newPoints, map);
-
-        // 3. Assign new references
-        area.points = newPoints.map(p => ({ ...p }));
-        area.polygon = rebuilt.polygon;
-        area.edges = rebuilt.edges;
-        area.labels = rebuilt.labels;
-
-    }, [map, refs]);
-
-
-    /* -----------------------------
      * Map Click
      * ----------------------------- */
     const onMapClick = useCallback((e) => {
-
         if (!refs.isActive.current) return;
 
-        console.log("[RULER] map click fired", e.latlng);
+        console.log("[DRAWING] map click fired", e.latlng);
 
         const isNewChain = !refs.hasAnchor.current;
-        const marker = createMarker(e.latlng, isNewChain, map);
+        const marker = createMarker(e.latlng, isNewChain, map, "drawingPane");
 
         if (isNewChain) {
             refs.hasAnchor.current = true;
@@ -94,36 +70,25 @@ export function useRulerHandlers(map, refs, ui) {
                         .slice(start, end + 1)
                         .map(p => p.latlng);
 
-                    // Save completed area info
-                    const areaLayers = buildAreaLayers(
-                        chainPoints.map(p => ({ lat: p.lat, lng: p.lng })),
-                        map
-                    );
-
+                    // Emit completed area to parent
                     const area = {
-                        id: crypto.randomUUID(),
+                        id: Date.now().toString(),
                         name: "",
                         points: chainPoints.map(p => ({ lat: p.lat, lng: p.lng })),
-                        ...areaLayers
                     };
 
-                    refs.completedAreas.current.push(area);
                     ui?.addCompletedAreaUI(area);
                 }
 
-                // Only clear preview elements, not the completed polygon
+                // Clear preview elements
                 clearPreview();
 
-                // ---- CLEAR DRAWING GEOMETRY ----
-                // Remove drawing markers
+                // Clear drawing geometry
                 refs.points.current.forEach(p => {
                     if (p.marker) map.removeLayer(p.marker);
                 });
 
-                // Remove drawing lines
                 refs.lines.current.forEach(l => map.removeLayer(l));
-
-                // Remove drawing labels
                 refs.labels.current.forEach(l => map.removeLayer(l));
 
                 // Reset drawing refs
@@ -149,12 +114,14 @@ export function useRulerHandlers(map, refs, ui) {
                 L.polyline([prev.latlng, e.latlng], {
                     color: COLORS.line,
                     weight: 3,
-                    opacity: 0.7
+                    opacity: 0.7,
+                    pane: 'drawingPane',
+                    interactive: false,
                 }).addTo(map)
             );
 
             refs.labels.current.push(
-                createMeasurementLabel(prev.latlng, e.latlng, false, map)
+                createMeasurementLabel(prev.latlng, e.latlng, false, map, "drawingPane")
             );
         }
 
@@ -175,21 +142,29 @@ export function useRulerHandlers(map, refs, ui) {
 
         refs.tempLine.current = L.polyline(
             [last.latlng, e.latlng],
-            { color: COLORS.line, weight: 2, opacity: 0.4, dashArray: "5,5" }
+            {
+                color: COLORS.line,
+                weight: 2,
+                opacity: 0.4,
+                dashArray: "5,5",
+                pane: 'drawingPane',
+                interactive: false,
+            }
         ).addTo(map);
 
         refs.tempLabel.current = createMeasurementLabel(
             last.latlng,
             e.latlng,
             true,
-            map
+            map,
+            "drawingPane"
         );
 
         const km = last.latlng.distanceTo(e.latlng) / 1000;
         const maxKm = Math.max(CONFIG.minRingDistance, km);
 
         if (!refs.fillCircle.current) {
-            refs.fillCircle.current = createFillCircle(last.latlng, maxKm, map);
+            refs.fillCircle.current = createFillCircle(last.latlng, maxKm, map, "drawingPane");
             refs.fillCircle.current.bringToBack();
         } else {
             refs.fillCircle.current.setRadius(maxKm * 1000);
@@ -197,10 +172,10 @@ export function useRulerHandlers(map, refs, ui) {
         }
 
         clearRingLayers(refs, map);
-        const { rings, labels } = createRangeRings(last.latlng, maxKm, map);
+        const { rings, labels } = createRangeRings(last.latlng, maxKm, map, "drawingPane");
         refs.ringLayer.current = rings;
         refs.ringLabels.current = labels;
     }, [map, refs, canPreview]);
 
-    return { updateCompletedArea, onMapClick, onMouseMove, clearPreview };
+    return { onMapClick, onMouseMove, clearPreview };
 }

@@ -2,9 +2,9 @@ import { React, useState, useCallback, useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
-import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipInfoTable, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
+import { AreaRulerLayer, ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipInfoTable, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
 
-import { RecordingControl, LeafletRulerControl } from "@/components";
+import { RecordingControl } from "@/components";
 import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions, useLayerControl } from "@/hooks";
 import { defaultShipFilters } from "@/utils";
 
@@ -20,7 +20,7 @@ export default function ShipDataPage() {
   const paperControl = useLeafletControl();
   const boxControl = useLeafletControl();
   const layerControl = useLeafletControl();
-  const { showWeather, showUI, showRuler, layerConfigs } = useLayerControl();
+  const { showWeather, showRuler, showUI, layerConfigs } = useLayerControl();
 
   // NEW: Add click position state
   const [shipLatLng, setShipLatLng] = useState(null);
@@ -59,7 +59,7 @@ export default function ShipDataPage() {
   const filterOptions = useShipFilterOptions(currentShips);
 
   // --------------------
-  // Time management (no animation)
+  // Time management 
   // --------------------
   const handleTimeChange = useCallback((range) => setTimeRange(range), [setTimeRange]);
 
@@ -70,12 +70,6 @@ export default function ShipDataPage() {
     maxTime,
     updateTime,
   } = useShipTime(ships, handleTimeChange);
-
-  const selectedTimeRef = useRef(selectedTime);
-
-  useEffect(() => {
-    selectedTimeRef.current = selectedTime;
-  }, [selectedTime]);
 
   // ---- Recording / Time playback window (GLOBAL) ----
   const [windowStart, setWindowStart] = useState(minTime);
@@ -147,7 +141,6 @@ export default function ShipDataPage() {
   } = useShipDataPageProps({
     isMobile,
     ships,
-    timeFilteredShips,
     visibleShips,
     shipPositions,
     currentShips,
@@ -172,7 +165,6 @@ export default function ShipDataPage() {
     minTime,
     maxTime,
     selectedTime,
-    selectedTimeRef,
     recordingShipStartTime,
     trackShip,
     setTrackShip,
@@ -255,9 +247,7 @@ export default function ShipDataPage() {
         />
 
         {/* RULER LAYER */}
-        {showRuler && !isRecordingActive && !isAnimating && (
-          <LeafletRulerControl />
-        )}
+        <AreaRulerLayer active={showRuler && !isRecordingActive && !isAnimating} />
 
         {/* WIND LAYER */}
         {windData && selectedTime && minTime && maxTime && showWeather && (
