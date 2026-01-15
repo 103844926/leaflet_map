@@ -45,7 +45,7 @@ async function getWindGrid(lat, lon) {
         lons.push(lo1 + (x * (lo2 - lo1)) / (GRID_NX - 1));
     }
 
-    // Fetch all points (parallel, safe)
+    // Build all request URLs
     const requests = [];
     for (const latP of lats) {
         for (const lonP of lons) {
@@ -58,11 +58,27 @@ async function getWindGrid(lat, lon) {
                 `&forecast_days=3` +
                 `&timezone=UTC`;
 
-            requests.push(fetch(url).then(r => r.json()));
+            requests.push(() => fetch(url).then(r => r.json()));
         }
     }
 
-    const responses = await Promise.all(requests);
+    // Batch requests to avoid rate limiting
+    const BATCH_SIZE = 10; // Adjust based on API limits
+    const DELAY_MS = 200;  // Delay between batches
+    const responses = [];
+
+    console.log(`Fetching ${requests.length} grid points in batches of ${BATCH_SIZE}...`);
+
+    for (let i = 0; i < requests.length; i += BATCH_SIZE) {
+        const batch = requests.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.all(batch.map(fn => fn()));
+        responses.push(...batchResults);
+
+        // Add delay between batches (except for the last one)
+        if (i + BATCH_SIZE < requests.length) {
+            await new Promise(resolve => setTimeout(resolve, DELAY_MS));
+        }
+    }
 
     // Use first response as time reference
     const time = responses[0].hourly.time.map(t => new Date(t).getTime());
@@ -80,7 +96,8 @@ async function getWindGrid(lat, lon) {
             !resp.hourly.wind_speed_10m ||
             !resp.hourly.wind_direction_10m
         ) {
-            console.warn("Skipping invalid Open-Meteo response at index", idx);
+            console.warn(`Invalid response at index ${idx}`);
+            console.warn("Response:", JSON.stringify(resp, null, 2));
 
             // Fill with zeros to keep grid shape intact
             for (let t = 0; t < timeCount; t++) {
