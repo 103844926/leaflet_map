@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { Box, Typography } from "@mui/material";
 import L from "leaflet";
 import { formatCoordinates, getResponsiveVariant } from "@/utils";
@@ -15,7 +15,7 @@ export function ShipInfoPanel({
   /* ===============================
      Resolve ship locations
   =============================== */
-  const resolveLocations = () => {
+  const resolveLocations = useCallback(() => {
     if (Array.isArray(ship?.locations) && ship.locations.length > 0) {
       return ship.locations;
     }
@@ -34,7 +34,7 @@ export function ShipInfoPanel({
     }
 
     return null;
-  };
+  }, [ship]);
 
   /* ===============================
      Local DOM ref - Used only for positioning
@@ -45,7 +45,7 @@ export function ShipInfoPanel({
      Resolve active ship position
      - Accounts for timeRange
   =============================== */
-  const getCurrentPosition = () => {
+  const getCurrentPosition = useCallback(() => {
     const locations = resolveLocations();
     if (!locations) return null;
 
@@ -55,6 +55,7 @@ export function ShipInfoPanel({
       const lastVisibleIndex = locations.findIndex(
         loc => loc.time > timeRange[1]
       );
+
       index =
         lastVisibleIndex === -1
           ? locations.length - 1
@@ -65,7 +66,7 @@ export function ShipInfoPanel({
       index,
       location: locations[index]
     };
-  };
+  }, [resolveLocations, timeRange]);
 
   /* ===============================
      Position panel above ship (mobile)

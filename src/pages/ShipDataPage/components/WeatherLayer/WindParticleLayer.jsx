@@ -94,7 +94,7 @@ export function WindParticleLayer({
 
             layerRef.current = null;
         };
-    }, [map]);
+    }, [map, visible]);
 
     // Update wind data (debounced, time-based) - same as original
     useEffect(() => {

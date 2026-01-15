@@ -120,36 +120,6 @@ export function createMeasurementLabel(latlng1, latlng2, isTemp, map, paneName) 
     }).addTo(map);
 }
 
-export function buildAreaLayers(points, map, paneName) {
-    const latlngs = points.map(p => L.latLng(p.lat, p.lng));
-
-    const polygon = createPolygon(latlngs, map, paneName);
-
-    const edges = [];
-    const labels = [];
-
-    for (let i = 0; i < latlngs.length; i++) {
-        const a = latlngs[i];
-        const b = latlngs[(i + 1) % latlngs.length];
-
-        edges.push(
-            L.polyline([a, b], {
-                color: COLORS.line,
-                weight: 3,
-                opacity: 0.7,
-                pane: paneName,
-                interactive: false
-            }).addTo(map)
-        );
-
-        labels.push(
-            createMeasurementLabel(a, b, false, map, paneName)
-        );
-    }
-
-    return { polygon, edges, labels };
-}
-
 /* -----------------------------
  * Range Ring Creation
  * ----------------------------- */

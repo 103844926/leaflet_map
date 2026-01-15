@@ -7,9 +7,10 @@ import { useRef, useCallback, useEffect } from "react";
 import {
     useRecordingMapTiles,
     useRecordingPixi,
-    useRecordingTimestamp,
     useRecordingWindParticles,
     useRecordingWindPixi,
+    useRecordingCompletedAreas,
+    useRecordingTimestamp,
 } from "./recordings";
 
 export function useRecordingCapture() {
@@ -24,6 +25,7 @@ export function useRecordingCapture() {
     const { capture: capturePixi } = useRecordingPixi();
     const { capture: captureWindPixi } = useRecordingWindPixi();
     const { capture: captureWindParticles } = useRecordingWindParticles();
+    const { capture: captureCompletedAreas } = useRecordingCompletedAreas();
     const { drawTimestamp } = useRecordingTimestamp();
 
     // -------------------------------------------------------------------------
@@ -107,8 +109,9 @@ export function useRecordingCapture() {
 
             lastTs = ts;
 
-            await captureTiles(mapInstance, ctx, outW, outH, scale);             // Draw Map Tiles: Always render first!
+            await captureTiles(mapInstance, ctx, outW, outH, scale);             // Draw Map Tiles: Must be render first!
             await capturePixi(mapInstance, ctx, outW, outH, scale);              // Draw Entire Ship Map Layer
+            await captureCompletedAreas(mapInstance, ctx, outW, outH, scale);    // Draw Completed Areas Layer
             await captureWindPixi(mapInstance, ctx, outW, outH, scale);          // Draw Wind heatmap
             await captureWindParticles(mapInstance, ctx, outW, outH, scale);     // Draw Wind particles
 
@@ -126,6 +129,7 @@ export function useRecordingCapture() {
         capturePixi,
         captureWindPixi,
         captureWindParticles,
+        captureCompletedAreas,
         drawTimestamp,
     ]);
 

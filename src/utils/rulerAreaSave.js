@@ -11,12 +11,14 @@ export function saveAreas(areas) {
 }
 
 export function loadAreas() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch {
-        return [];
-    }
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const areas = JSON.parse(raw);
+    // Make sure visible property is preserved
+    return areas.map(area => ({
+        ...area,
+        visible: area.visible ?? false  // Default to false if not set
+    }));
 }
 
 export function clearAreas() {
