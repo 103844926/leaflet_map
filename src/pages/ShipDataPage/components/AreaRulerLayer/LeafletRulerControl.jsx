@@ -55,23 +55,31 @@ export function LeafletRulerControl({
             ref={controlRef}
             sx={{
                 position: 'absolute',
-                top: '10px',
-                right: '10px',
+                // Responsive positioning
+                top: { xs: 8, sm: 12, md: 16 },
+                right: { xs: 56, sm: 68, md: 80 },
                 zIndex: 1000,
                 background: 'white',
-                padding: '10px',
-                borderRadius: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                // Responsive padding
+                p: { xs: 1, sm: 1.5, md: 2 },
+                borderRadius: { xs: 1, sm: 2 },
+                boxShadow: 3,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px',
-                minWidth: '180px'
+                gap: { xs: 0.5, sm: 1 },
+                // Flexible width
+                minWidth: { xs: 160, sm: 180, md: 200 },
+                maxWidth: { xs: 280, sm: 320, md: 360 },
+                // Make it scrollable if content overflows
+                maxHeight: { xs: 'calc(100vh - 80px)', sm: 'calc(100vh - 100px)' },
+                overflowY: 'auto'
             }}>
             <Typography
                 variant="h6"
                 sx={{
-                    marginBottom: '4px',
-                    color: '#333'
+                    marginBottom: { xs: 0.5, sm: 1 },
+                    color: '#333',
+                    fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' }
                 }}>
                 Area Controls
             </Typography>
@@ -80,14 +88,15 @@ export function LeafletRulerControl({
             <Button
                 onClick={onToggleDrawing}
                 variant="contained"
+                size="small"
                 sx={{
-                    padding: '8px 12px',
+                    padding: { xs: '6px 10px', sm: '8px 12px' },
                     background: isDrawing ? '#ff4444' : '#4caf50',
                     color: 'white',
                     border: 'none',
-                    borderRadius: '4px',
+                    borderRadius: 1,
                     cursor: 'pointer',
-                    fontSize: '13px',
+                    fontSize: { xs: '0.75rem', sm: '0.8125rem' },
                     fontWeight: 'bold',
                     transition: 'all 0.2s',
                     '&:hover': {
@@ -100,8 +109,19 @@ export function LeafletRulerControl({
             </Button>
 
             {/* Completed Areas List */}
-            <Paper variant="outlined" sx={{ p: 1 }}>
-                <Typography variant="caption">Completed Areas</Typography>
+            <Paper
+                variant="outlined"
+                sx={{
+                    p: { xs: 0.5, sm: 1 },
+                    mt: { xs: 0.5, sm: 1 }
+                }}
+            >
+                <Typography
+                    variant="caption"
+                    sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
+                    Completed Areas
+                </Typography>
                 {completedAreas.map(area => (
                     <Box
                         key={area.id}
@@ -109,20 +129,33 @@ export function LeafletRulerControl({
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            gap: 1,
-                            spacing: 2
+                            gap: { xs: 0.5, sm: 1 },
+                            mt: 0.5
                         }}
                     >
-                        <Typography variant="body2">
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                                flex: 1,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
                             {area.name?.trim()
                                 ? area.name
                                 : `Area${area.id.slice(0, 10)}`}
                         </Typography>
 
-                        <Stack direction="row" justifyContent="flex-end">
+                        <Stack direction="row" spacing={0.5}>
                             <IconButton
                                 size="small"
                                 onClick={() => onToggleVisible(area.id)}
+                                sx={{
+                                    p: { xs: 0.25, sm: 0.5 },
+                                    '& svg': { fontSize: { xs: '1rem', sm: '1.25rem' } }
+                                }}
                             >
                                 {area.visible ? <Visibility /> : <VisibilityOff />}
                             </IconButton>
@@ -130,6 +163,10 @@ export function LeafletRulerControl({
                             <IconButton
                                 size="small"
                                 onClick={() => handleEditClick(area.id)}
+                                sx={{
+                                    p: { xs: 0.25, sm: 0.5 },
+                                    '& svg': { fontSize: { xs: '1rem', sm: '1.25rem' } }
+                                }}
                             >
                                 <Edit />
                             </IconButton>
@@ -137,6 +174,10 @@ export function LeafletRulerControl({
                             <IconButton
                                 size="small"
                                 onClick={() => handleDelete(area.id)}
+                                sx={{
+                                    p: { xs: 0.25, sm: 0.5 },
+                                    '& svg': { fontSize: { xs: '1rem', sm: '1.25rem' } }
+                                }}
                             >
                                 <Delete />
                             </IconButton>
