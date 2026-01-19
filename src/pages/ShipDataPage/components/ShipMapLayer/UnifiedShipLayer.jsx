@@ -10,7 +10,7 @@ import { drawBackground } from "./drawBackground";
 import { detectShipMovementStartsDetailed } from "@/utils";
 
 export function UnifiedShipLayer({
-    ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
+    ships, shipsToRender, visibleShips, shipPositions,
     onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
     backgroundShips = [], backgroundShipColor = 0x888888,
     onBackgroundShipClick, selectedShipId
@@ -35,12 +35,26 @@ export function UnifiedShipLayer({
 
     // Update propsRef when dependancy changes
     useEffect(() => {
+        console.groupCollapsed("🛳️ UnifiedShipLayer props");
+        console.log("ships:", {
+            type: Array.isArray(ships),
+            length: ships?.length,
+            sample: ships,
+        });
+
+        console.log("ShipPositions:", {
+            type: Array.isArray(shipPositions),
+            length: shipPositions?.length,
+            sample: shipPositions,
+        });
+
+        console.groupEnd();
         propsRef.current = {
-            ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
+            ships, shipsToRender, visibleShips, shipPositions,
             onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
             backgroundShips, backgroundShipColor, onBackgroundShipClick, selectedShipId
         };
-    }, [ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
+    }, [ships, shipsToRender, visibleShips, shipPositions,
         onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
         backgroundShips, backgroundShipColor, onBackgroundShipClick, selectedShipId]);
 
@@ -93,7 +107,6 @@ export function UnifiedShipLayer({
             drawMarkers({
                 container, project: latLngToLayerPoint, scale, bounds, renderer,
                 shipsToRender: props.shipsToRender,
-                timeFilteredShips: props.timeFilteredShips,
                 visibleShips: props.visibleShips,
                 shipPositions: props.shipPositions,
                 onMarkerClick: props.onMarkerClick,
@@ -136,7 +149,7 @@ export function UnifiedShipLayer({
 
     useEffect(() => {
         pixiOverlayRef.current?.redraw();
-    }, [ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
+    }, [ships, shipsToRender, visibleShips, shipPositions,
         showPaths, recordingShipIndex, isRecording,
         backgroundShips, backgroundShipColor, selectedShipId]);
 

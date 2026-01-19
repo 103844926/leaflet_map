@@ -13,8 +13,8 @@ export function useShipTime(ships, onTimeChange) {
     return Array.from(timeSet).sort((a, b) => a - b);
   }, [ships]);
 
-  const minTime = availableTimes[0] ?? null;
-  const maxTime = availableTimes[availableTimes.length - 1] ?? null;
+  const minTime = availableTimes[0] ?? null;                            // Minimum Time Available
+  const maxTime = availableTimes[availableTimes.length - 1] ?? null;    // Maximum Time Available
 
   const prevMaxRef = useRef(maxTime);
   const prevMinRef = useRef(minTime);

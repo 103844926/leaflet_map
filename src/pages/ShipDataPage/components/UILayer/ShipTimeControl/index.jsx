@@ -25,15 +25,13 @@ export function ShipTimeControl(props) {
     const [showRangePicker, setShowRangePicker] = useState(false);
     const [showPlaybackPicker, setPlaybackPicker] = useState(false);
 
-    const [stagingStart, setStagingStart] = useState(minTime);
-    const [stagingEnd, setStagingEnd] = useState(maxTime);
+    const [stagingStart, setStagingStart] = useState(null);
+    const [stagingEnd, setStagingEnd] = useState(null);
 
     const playbackRef = useRef(null);
 
     // ---- sync time bounds ----
     useEffect(() => {
-        setWindowStart(minTime);
-        setWindowEnd(maxTime);
         setStagingStart(minTime);
         setStagingEnd(maxTime);
     }, [minTime, maxTime]);

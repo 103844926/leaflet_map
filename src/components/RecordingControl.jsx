@@ -19,8 +19,6 @@ export function RecordingControl({
     maxTime,
     selectedTime,
     onTimeChange,
-    windowStart,
-    windowEnd,
     setWindowStart,
     setWindowEnd,
     onRecordingStateChange,

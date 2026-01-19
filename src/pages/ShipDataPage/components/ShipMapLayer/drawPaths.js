@@ -30,22 +30,26 @@ export function drawPaths({
 
     // Animated path
     const pos = shipPositions[i];
+    if (!pos?.position) return;
+
+    if (pos.ship_uid && pos.ship_uid !== ship.ship_uid) {
+      console.warn("ShipPosition mismatch", ship.ship_uid, pos.ship_uid);
+    }
+
+    const { lat, long } = pos.position;
+    if (lat == null || long == null) return;
+
+    const points = ship.locations.slice(0, pos.index + 1);
     graphics.lineStyle(3 / scale, color, 0.8);
 
-    if (pos?.position?.lat && pos?.position?.long && pos.index >= 0) {
-      const points = ship.locations.slice(0, pos.index + 1);
-      points.forEach((loc, idx) => {
-        const pt = project([loc.lat, loc.long]);
-        idx === 0 ? graphics.moveTo(pt.x, pt.y) : graphics.lineTo(pt.x, pt.y);
-      });
-      const currPt = project([pos.position.lat, pos.position.long]);
-      graphics.lineTo(currPt.x, currPt.y);
-    } else if (ship.locations?.length > 0) {
-      ship.locations.forEach((loc, idx) => {
-        const pt = project([loc.lat, loc.long]);
-        idx === 0 ? graphics.moveTo(pt.x, pt.y) : graphics.lineTo(pt.x, pt.y);
-      });
-    }
+    points.forEach((loc, idx) => {
+      const pt = project([loc.lat, loc.long]);
+      idx === 0 ? graphics.moveTo(pt.x, pt.y) : graphics.lineTo(pt.x, pt.y);
+    });
+
+    const currPt = project([lat, long]);
+    graphics.lineTo(currPt.x, currPt.y);
+
   });
 
   container.addChild(graphics);

@@ -9,7 +9,6 @@ export function useShipDataPageProps({
     timeFilteredShips,
     visibleShips,
     shipPositions,
-    currentShips,
 
     shipFilters,
     setShipFilters,
@@ -64,7 +63,7 @@ export function useShipDataPageProps({
     setSelectedShip,
     selectedShip,
     shipLatLng,
-    setShipLatLng, // ✅ NEW: Need this setter
+    setShipLatLng,
 }) {
     // ------------------------
     // Ship Info Panel Props
@@ -168,53 +167,45 @@ export function useShipDataPageProps({
     // Recording Control Props
     // ------------------------
     const recordingProps = useMemo(
-        () => {
-            // Create a ref that always has the current selectedTime
-            const selectedTimeRef = { current: selectedTime };
+        () => ({
+            shouldStop: shouldStopRecording,
+            isAnimating,
+            onStartAnimation: (start, end) =>
+                animate(start, start, end, updateTime),
+            onStopAnimation: stopAnimation,
+            mapRef,
 
-            return {
-                shouldStop: shouldStopRecording,
-                isAnimating,
-                onStartAnimation: (start, end) =>
-                    animate(start, start, end, updateTime),
-                onStopAnimation: stopAnimation,
+            ships,
+            visibleShips,
+            selectedRecordingShip: recordingShipIndex,
+            onRecordingShipChange: setRecordingShipIndex,
 
-                mapRef,
-                ships,
-                visibleShips,
-                selectedRecordingShip: recordingShipIndex,
-                onRecordingShipChange: setRecordingShipIndex,
+            minTime,
+            maxTime,
+            selectedTime,
+            onTimeChange: updateTime,
+            setWindowStart,
+            setWindowEnd,
 
-                minTime,
-                maxTime,
-                selectedTime,
-                selectedTimeRef,
-                onTimeChange: updateTime,
+            onRecordingStateChange: setIsRecordingActive,
+            showDialog: showRecordingDialog,
 
-                windowStart: minTime,
-                windowEnd: maxTime,
-                onRecordingStateChange: setIsRecordingActive,
-                showDialog: showRecordingDialog,
-
-                onDialogChange: (show, shipStartTime) => {
-                    setShowRecordingDialog(show);
-                    if (show) {
-                        setShouldStopRecording(false);
-                    }
-                    if (shipStartTime !== undefined) {
-                        setRecordingShipStartTime(shipStartTime);
-                    }
-                },
-                initialStartTime: recordingShipStartTime,
-                trackShip,
-                onTrackShipChange: setTrackShip,
-                movementMarks,
-                playbackSpeed,
-                setPlaybackSpeed,
-                setWindowStart,
-                setWindowEnd,
-            };
-        },
+            onDialogChange: (show, shipStartTime) => {
+                setShowRecordingDialog(show);
+                if (show) {
+                    setShouldStopRecording(false);
+                }
+                if (shipStartTime !== undefined) {
+                    setRecordingShipStartTime(shipStartTime);
+                }
+            },
+            initialStartTime: recordingShipStartTime,
+            trackShip,
+            onTrackShipChange: setTrackShip,
+            movementMarks,
+            playbackSpeed,
+            setPlaybackSpeed,
+        }),
         [
             shouldStopRecording,
             isAnimating,

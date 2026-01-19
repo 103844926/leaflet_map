@@ -22,7 +22,7 @@ export default function ShipDataPage() {
   const layerControl = useLeafletControl();
   const { showWeather, showUI, layerConfigs } = useLayerControl();
 
-  // NEW: Add click position state
+  // Click position state
   const [shipLatLng, setShipLatLng] = useState(null);
   const [showShipTable, setShowShipTable] = useState(false);
 
@@ -49,7 +49,6 @@ export default function ShipDataPage() {
     setTimeRange,
     visibleShips,
     handleShipToggle,
-    timeFilteredShips,
     movementMarks,
     windData,
     virtualMinTime,
@@ -79,8 +78,8 @@ export default function ShipDataPage() {
   }, [selectedTime]);
 
   // ---- Recording / Time playback window (GLOBAL) ----
-  const [windowStart, setWindowStart] = useState(minTime);
-  const [windowEnd, setWindowEnd] = useState(maxTime);
+  const [windowStart, setWindowStart] = useState(null);
+  const [windowEnd, setWindowEnd] = useState(null);
 
   // keep window in sync with data range
   useEffect(() => {
@@ -151,7 +150,6 @@ export default function ShipDataPage() {
     timeFilteredShips,
     visibleShips,
     shipPositions,
-    currentShips,
 
     shipFilters,
     setShipFilters,
@@ -281,11 +279,9 @@ export default function ShipDataPage() {
           ships={ships}
           currentShips={currentShips}
           shipFilters={shipFilters}
-          timeFilteredShips={timeFilteredShips}
           visibleShips={visibleShips}
           shipPositions={shipPositions}
           onShipSelect={handleShipSelect}
-          timeRange={timeRange}
           showPaths={showPaths}
           recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
           isRecording={isRecordingActive}

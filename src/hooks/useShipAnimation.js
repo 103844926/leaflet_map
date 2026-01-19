@@ -7,7 +7,6 @@ function interpolatePosition(pos1, pos2, progress) {
     lat: pos1.lat + (pos2.lat - pos1.lat) * progress,
     long: pos1.long + (pos2.long - pos1.long) * progress,
     course: pos2.course, // Use the target course
-    speed: pos1.speed + (pos2.speed - pos1.speed) * progress,
   };
 }
 
@@ -19,30 +18,48 @@ export function useShipAnimation(ships, selectedTime) {
 
   // Calculate interpolated ship positions based on current time
   const getShipPositionsAtTime = useCallback((currentTime) => {
-    if (!currentTime) return ships.map(() => ({ index: 0, position: null }));
+    if (currentTime == null) {
+      return ships.map(ship => ({ ship_uid: ship.ship_uid, index: 0, nextIndex: 0, progress: 0, position: null }));
+    }
 
     return ships.map((ship) => {
       if (!ship.locations?.length) {
-        return { index: 0, position: null };
+        return { ship_uid: ship.ship_uid, index: 0, nextIndex: 0, progress: 0, position: null };
       }
 
       // Find the two waypoints to interpolate between
       let nextIndex = ship.locations.findIndex(loc => loc.time > currentTime);
 
-      // If no future waypoint, ship is at the last position
+      // If no future waypoint, return ship position at the last position
       if (nextIndex === -1) {
         const lastIndex = ship.locations.length - 1;
+        const lastLoc = ship.locations[lastIndex];
         return {
+          ship_uid: ship.ship_uid,
           index: lastIndex,
-          position: ship.locations[lastIndex]
+          nextIndex: lastIndex,
+          progress: 1,
+          position: {
+            lat: lastLoc.lat,
+            long: lastLoc.long,
+            course: lastLoc.course ?? 0,
+          },
         };
       }
 
-      // If at or before first waypoint
+      // If at or before first waypoint, return at first position
       if (nextIndex === 0) {
+        const first = ship.locations[0];
         return {
+          ship_uid: ship.ship_uid,
           index: 0,
-          position: ship.locations[0]
+          nextIndex: 1,
+          progress: 0,
+          position: {
+            lat: first.lat,
+            long: first.long,
+            course: first.course ?? 0
+          }
         };
       }
 
@@ -58,27 +75,29 @@ export function useShipAnimation(ships, selectedTime) {
       // Interpolate between the two positions
       const interpolatedPosition = interpolatePosition(prevLoc, nextLoc, progress);
 
+      // Data structure to return
       return {
+        ship_uid: ship.ship_uid,
         index: prevIndex,
-        position: interpolatedPosition,
         nextIndex: nextIndex,
-        progress: progress
+        progress: progress,
+        position: interpolatedPosition,
       };
     });
   }, [ships]);
 
-  const animateShips = useCallback((currentTime, minTime, maxTime, updateTime) => {
-    // Start from current time, but clamp to minTime if it is at maxTime
+  const animateShips = useCallback((currentTime, startAnimate, endAnimate, updateTime) => {
+    // Start from current time, but clamp to startAnimate if it is at endAnimate
     let startTime = currentTime;
-    if (startTime < minTime) startTime = minTime;
-    if (startTime >= maxTime) startTime = minTime;
+    if (startTime < startAnimate) startTime = startAnimate;
+    if (startTime >= endAnimate) startTime = startAnimate;
 
     animate(
       startTime,
-      maxTime,
+      endAnimate,
       (t) => {
         // Clamp time on every frame (safety)
-        const clamped = Math.min(Math.max(t, minTime), maxTime);
+        const clamped = Math.min(Math.max(t, startAnimate), endAnimate);
         updateTime(clamped);
       },
       () => {

@@ -54,24 +54,6 @@ export function useShipDataPageLogic() {
         load();
     }, [initialCenter]);
 
-    // --------------------------
-    // Filter ships based on time
-    // --------------------------
-    const timeFilteredShips = useMemo(() => {
-        if (!timeRange) return ships;
-        const current = timeRange[1];
-        return ships.map((ship, i) => {
-            const filtered = ship.locations.filter((loc) => loc.time <= current);
-
-            return {
-                ...ship,
-                index: i,                        // permanent original index
-                locations: filtered.length ? filtered : [ship.locations[0]],
-            };
-        });
-
-    }, [ships, timeRange]);
-
     // --------------------
     // Detect movement starts
     // --------------------
@@ -125,7 +107,6 @@ export function useShipDataPageLogic() {
         setTimeRange,
         visibleShips,
         handleShipToggle,
-        timeFilteredShips,
         isAnimatingRef,
         movementMarks,
         windData,

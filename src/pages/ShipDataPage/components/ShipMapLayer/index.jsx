@@ -8,11 +8,9 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
   ships,
   currentShips,
   shipFilters,
-  timeFilteredShips,
   visibleShips,
   shipPositions,
   onShipSelect,
-  timeRange,
   showPaths,
   recordingShipIndex,
   isRecording,
@@ -27,11 +25,21 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
     );
   }, [currentShips, shipFilters]);
 
+  // Create indexed ships ONCE
+  const indexedShips = useMemo(() => {
+    return ships.map((ship, i) => ({
+      ...ship,
+      index: i
+    }));
+  }, [ships]);
+
+  // Select ships to render
   const shipsToRender = useMemo(() => {
     return recordingShipIndex !== null
-      ? [timeFilteredShips[recordingShipIndex]]
-      : timeFilteredShips;
-  }, [recordingShipIndex, timeFilteredShips]);
+      ? [indexedShips[recordingShipIndex]]
+      : indexedShips;
+  }, [indexedShips, recordingShipIndex]);
+
 
   const onPixiShipClick = useCallback(
     (ship, pixiEvent) => {
@@ -69,7 +77,6 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
     <UnifiedShipLayer
       // Main ships
       ships={ships}
-      timeFilteredShips={timeFilteredShips}
       shipsToRender={shipsToRender}
       visibleShips={visibleShips}
       shipPositions={shipPositions}
