@@ -3,10 +3,6 @@ import { Box, Stack, TextField, Button, Collapse, Autocomplete, InputAdornment }
 import { Search } from "@mui/icons-material";
 
 const EMPTY_FILTERS = {
-    lengthMin: "",
-    lengthMax: "",
-    widthMin: "",
-    widthMax: "",
     type: "",
     country_code: "",
 };
@@ -18,7 +14,6 @@ export function ShipAdvancedFilters({
     onClear,
     typeOptions = [],
     countryOptions = [],
-    isMobile,
 }) {
     // Draft state lives here (UI-only, doesn't need persistence)
     const [draftSearch, setDraftSearch] = useState(appliedSearch);
@@ -51,7 +46,7 @@ export function ShipAdvancedFilters({
 
     return (
         <Box sx={{ px: 2, pt: 2, pb: 1 }}>
-            {/* ---------- SEARCH (DRAFT ONLY) ---------- */}
+            {/* ---------- FIELD FILTERS ---------- */}
             <TextField
                 size="small"
                 placeholder="Search by name, type, country, status..."
@@ -90,6 +85,7 @@ export function ShipAdvancedFilters({
                     flexWrap="wrap"
                     sx={{ mt: 2, pb: 2 }}
                 >
+                    {/* Ship Type Filter*/}
                     <Autocomplete
                         size="small"
                         options={["", ...typeOptions]}
@@ -101,6 +97,7 @@ export function ShipAdvancedFilters({
                         sx={{ minWidth: 100 }}
                     />
 
+                    {/* Country Filter*/}
                     <Autocomplete
                         size="small"
                         options={["", ...countryOptions]}
@@ -111,50 +108,6 @@ export function ShipAdvancedFilters({
                         disablePortal
                         sx={{ minWidth: 100 }}
                     />
-
-                    {/* ---------- LENGTH AND WIDTH FILTER (IGNORE FOR NOW)
-                    <Stack direction="row" spacing={2}>
-                        <TextField
-                            label="Length min"
-                            type="number"
-                            size="small"
-                            value={draftFilters.lengthMin}
-                            onChange={(e) =>
-                                handleDraftChange({ lengthMin: e.target.value })
-                            }
-                        />
-                        <TextField
-                            label="Length max"
-                            type="number"
-                            size="small"
-                            value={draftFilters.lengthMax}
-                            onChange={(e) =>
-                                handleDraftChange({ lengthMax: e.target.value })
-                            }
-                        />
-                    </Stack>
-
-                    <Stack direction="row" spacing={2}>
-                        <TextField
-                            label="Width min"
-                            type="number"
-                            size="small"
-                            value={draftFilters.widthMin}
-                            onChange={(e) =>
-                                handleDraftChange({ widthMin: e.target.value })
-                            }
-                        />
-                        <TextField
-                            label="Width max"
-                            type="number"
-                            size="small"
-                            value={draftFilters.widthMax}
-                            onChange={(e) =>
-                                handleDraftChange({ widthMax: e.target.value })
-                            }
-                        />
-                    </Stack>
-                    ---------- */}
                 </Stack>
             </Collapse>
         </Box>

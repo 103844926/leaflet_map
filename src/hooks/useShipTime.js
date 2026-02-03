@@ -41,6 +41,7 @@ export function useShipTime(ships, onTimeChange) {
       newSelectedTime = maxTime;
       shouldUpdate = true;
     }
+
     // Old data deleted — clamp to new min if needed
     else if (minTime > prevMinRef.current && selectedTime < minTime) {
       newSelectedTime = minTime;
@@ -64,6 +65,7 @@ export function useShipTime(ships, onTimeChange) {
       const clamped = Math.max(minTime, Math.min(maxTime, timestamp));
       setSelectedTime(clamped);
       onTimeChange([minTime, clamped]);
+      console.log("Time updated to:", clamped);
     },
     [availableTimes.length, minTime, maxTime, onTimeChange],
   );

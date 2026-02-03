@@ -45,7 +45,7 @@ export function ShipLayerRow({
                     <VisibilityOff fontSize="small" color="disabled" sx={{ mr: 1 }} />
                 )}
 
-                {/* Truncated label */}
+                {/* Label */}
                 <span
                     style={{
                         whiteSpace: "nowrap",
@@ -55,7 +55,7 @@ export function ShipLayerRow({
                         display: "inline-block",
                         verticalAlign: "middle",
                     }}
-                    title={ship.ship_uid} // native tooltip
+                    title={ship.ship_uid}
                 >
                     {ship.ship_uid}
                 </span>

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 export function useRecordingTimeWindow({ minTime, maxTime, initialStartTime, showDialog }) {
-  const [stagingStart, setStagingStart] = useState(minTime);
-  const [stagingEnd, setStagingEnd] = useState(maxTime);
+  const [stagingStart, setStagingStart] = useState(null);
+  const [stagingEnd, setStagingEnd] = useState(null);
 
   // Track if we've already applied the initial start time for this dialog session
   const appliedInitialStartRef = useRef(false);
@@ -14,7 +14,7 @@ export function useRecordingTimeWindow({ minTime, maxTime, initialStartTime, sho
     }
   }, [showDialog]);
 
-  // First apply min/max when they change
+  // Apply min/max when open
   useEffect(() => {
     setStagingStart(minTime);
     setStagingEnd(maxTime);
@@ -23,7 +23,7 @@ export function useRecordingTimeWindow({ minTime, maxTime, initialStartTime, sho
   // Apply initialStartTime when dialog opens and we have a value
   useEffect(() => {
     if (showDialog && initialStartTime != null && !appliedInitialStartRef.current) {
-      console.log("🎯 Setting recording start time to:", new Date(initialStartTime).toLocaleString());
+      console.log(" Setting recording start time to:", new Date(initialStartTime).toLocaleString());
       setStagingStart(initialStartTime);
       appliedInitialStartRef.current = true;
     }
@@ -31,9 +31,9 @@ export function useRecordingTimeWindow({ minTime, maxTime, initialStartTime, sho
 
   // Reset function
   const resetTimeWindow = useCallback(() => {
-    setStagingStart(initialStartTime ?? minTime);
+    setStagingStart(minTime);
     setStagingEnd(maxTime);
-  }, [minTime, maxTime, initialStartTime]);
+  }, [minTime, maxTime]);
 
   return {
     stagingStart,

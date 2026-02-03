@@ -2,10 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchShipsPaginated, fetchShipFilters } from "@/datas";
 
 const EMPTY_FILTERS = {
-    lengthMin: "",
-    lengthMax: "",
-    widthMin: "",
-    widthMax: "",
     type: "",
     country_code: "",
 };
@@ -26,13 +22,11 @@ function usePersistedState(key, initialValue) {
                 typeof valueOrUpdater === "function"
                     ? valueOrUpdater(prev)
                     : valueOrUpdater;
-
             try {
                 sessionStorage.setItem(key, JSON.stringify(nextValue));
             } catch (err) {
                 console.warn("Failed to persist state:", err);
             }
-
             return nextValue;
         });
     }, [key]);
@@ -40,7 +34,7 @@ function usePersistedState(key, initialValue) {
     return [state, setPersistedState];
 }
 
-export function useShipAdvancedFilter() {
+export function useShipTableFilter() {
     const [page, setPage] = usePersistedState("shipTable_page", 1);
     const [pageSize, setPageSize] = usePersistedState("shipTable_pageSize", 20);
     const [appliedSearch, setAppliedSearch] = usePersistedState("shipTable_search", "");
@@ -48,7 +42,6 @@ export function useShipAdvancedFilter() {
         "shipTable_filters",
         EMPTY_FILTERS
     );
-
 
     const [ships, setShips] = useState([]);
     const [pagination, setPagination] = useState({
@@ -73,7 +66,7 @@ export function useShipAdvancedFilter() {
             .catch(() => setError("Failed to load filters"));
     }, []);
 
-    // Fetch paginated ships
+    // Fetch paginated ships with search and filters
     useEffect(() => {
         setLoading(true);
         fetchShipsPaginated({

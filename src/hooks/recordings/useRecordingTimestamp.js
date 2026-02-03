@@ -1,4 +1,4 @@
-// useRecordingTimestamp.js
+// useRecordingTimestamp.js - Draw timestamp for recording
 import { useCallback } from "react";
 
 export function useRecordingTimestamp() {

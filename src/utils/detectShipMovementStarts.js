@@ -10,7 +10,7 @@
  * @returns {number} Distance in meters
  */
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // Earth's radius in meters
+  const R = 6378137; // Earth's radius in meters
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
 
@@ -24,20 +24,18 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * Detect timestamps where ships start moving significantly
- * Works with your ship data structure: { ship_uid, locations: [{ lat, long, time }] }
- * 
+ * Enhanced version that returns detailed information about each movement
  * @param {Array} ships - Array of ship objects with locations array
  * @param {number} threshold - Movement threshold in meters (default: 50m)
- * @returns {Array} Array of timestamps (time values) where ships start moving
+ * @returns {Map<string, Object>} Map keyed by ship_uid with movement start details
  */
 export function detectShipMovementStarts(ships, threshold = 50) {
-  const movementTimestamps = new Set();
+  const movementMap = new Map();
 
   ships.forEach(ship => {
     if (!ship.locations || ship.locations.length < 2) return;
 
-    // Your data comes reversed from getShipData, but let's sort to be safe
+    // Sort locations by time
     const sortedLocations = [...ship.locations].sort((a, b) => a.time - b.time);
 
     for (let i = 1; i < sortedLocations.length; i++) {
@@ -52,75 +50,19 @@ export function detectShipMovementStarts(ships, threshold = 50) {
         curr.long
       );
 
-      // If distance exceeds threshold, this is a movement start
-      // Add the PREVIOUS timestamp (just before movement)
-      if (distance >= threshold) {
-        movementTimestamps.add(prev.time);
-        break; // Only mark the first significant movement for each ship
-      }
-    }
-  });
-
-  // Return as sorted array
-  return Array.from(movementTimestamps).sort((a, b) => a - b);
-}
-
-/**
- * Enhanced version that returns detailed information about each movement
- * @param {Array} ships - Array of ship objects with locations array
- * @param {number} threshold - Movement threshold in meters (default: 50m)
- * @returns {Array} Array of objects with time, ship_uid, distance info
- */
-export function detectShipMovementStartsDetailed(ships, threshold = 50) {
-  const movementMap = new Map();
-
-  ships.forEach(ship => {
-    if (!ship.locations || ship.locations.length < 2) return;
-
-    const sortedLocations = [...ship.locations].sort((a, b) => a.time - b.time);
-
-    for (let i = 1; i < sortedLocations.length; i++) {
-      const prev = sortedLocations[i - 1];
-      const curr = sortedLocations[i];
-
-      const distance = calculateDistance(
-        prev.lat,
-        prev.long,
-        curr.lat,
-        curr.long
-      );
-
+      // If distance exceeds threshold, record movement start
       if (distance >= threshold) {
         movementMap.set(ship.ship_uid, {
           time: prev.time,
           timeFormatted: prev.timeFormatted,
           shipUid: ship.ship_uid,
-          distance: Math.round(distance),
-          fromCoords: { lat: prev.lat, lon: prev.long },
-          toCoords: { lat: curr.lat, lon: curr.long },
-          timeDiff: (curr.time - prev.time) / 1000 / 60,
-          course: curr.course
         });
-        break;
+        break; // Only mark the first significant movement for each ship
       }
     }
   });
 
   return movementMap;
-}
-
-/**
- * Helper: Convert Map to sorted array (for timeline marks)
- */
-export function movementMapToArray(movementMap) {
-  return Array.from(movementMap.values()).sort((a, b) => a.time - b.time);
-}
-
-/**
- * Helper: Get start time for a specific ship
- */
-export function getShipStartTime(movementMap, shipUid) {
-  return movementMap.get(shipUid)?.time ?? null;
 }
 
 /**

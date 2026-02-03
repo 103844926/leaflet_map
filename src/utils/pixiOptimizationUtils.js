@@ -1,6 +1,7 @@
 // pixiOptimizationUtils.js - Place this in your @/utils folder
 import * as PIXI from "pixi.js";
 
+// Ship color palette - cycles through array indexes
 export const getShipColor = (i) => {
     const colors = [0x00FF00, 0x0000FF, 0xFF0000, 0xFFA500, 0x800080, 0x00FFFF, 0xFF00FF, 0xFFFF00];
     return colors[i % colors.length];
@@ -21,12 +22,12 @@ export const createShipTexture = (renderer, resources, shape = 'triangle', withB
         ? 'circleTexture'
         : (withBorder ? 'shipTexture' : 'shipTextureNoBorder');
 
-    // Return if cached and valid
+    // Reuse existing texture if cached and valid
     if (resources[cacheKey] && resources[cacheKey].valid) {
         return resources[cacheKey];
     }
 
-    // Destroy existing cached texture if present
+    // Destroy invalid cached texture
     if (resources[cacheKey]) {
         try { resources[cacheKey].destroy(true); } catch (e) { }
         resources[cacheKey] = null;
@@ -45,7 +46,7 @@ export const createShipTexture = (renderer, resources, shape = 'triangle', withB
             // alpha must be 0..1
             g.lineStyle(2, 0x000000, 1);
         }
-        const size = 16, half = size * 0.5, height = size * 1.3;
+        const size = 16, half = size * 0.5, height = size * 1.4;
         g.moveTo(0, -height / 2);
         g.lineTo(-half, height / 2);
         g.lineTo(half, height / 2);

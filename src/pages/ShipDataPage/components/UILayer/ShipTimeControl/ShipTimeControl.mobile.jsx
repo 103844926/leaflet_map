@@ -56,11 +56,12 @@ export function ShipTimeControlMobile({
                 px: 1,
                 py: 1,
                 borderRadius: 2,
+                opacity: 0.9,
                 zIndex: 1000,
                 padding: "10px",
             }}
         >
-            {/* RANGE PICKER */}
+            {/* TIME RANGE PICKER */}
             <Collapse in={showRangePicker}>
                 <TimeWindowPicker
                     minTime={minTime}
@@ -83,14 +84,19 @@ export function ShipTimeControlMobile({
             </Collapse>
 
             <Stack>
-                {/* BUTTON ROW */}
+                {/* ICON BUTTONS ROW */}
                 <Stack direction="row" spacing={2} justifyContent="flex-start">
                     {!isRecordingActive && (
                         <IconButton
                             size="small"
                             onClick={() =>
-                                onAnimate(selectedTime, windowStart, windowEnd, onTimeChange)
+                                onAnimate(selectedTime, windowStart, windowEnd, onTimeChange)   // Start from selectedTime to windowEnd
                             }
+                            sx={{
+                                color: "white",
+                                backgroundColor: "grey.800",
+                                "&:hover": { backgroundColor: "grey.600" }
+                            }}
                         >
                             {isAnimating ? (
                                 <Pause />
@@ -104,8 +110,12 @@ export function ShipTimeControlMobile({
 
                     <IconButton
                         size="small"
-                        color={isRecordingActive ? "error" : "success"}
                         onClick={onRecordingButtonClick}
+                        sx={{
+                            color: "white",
+                            backgroundColor: isRecordingActive ? "error.main" : "success.main",
+                            "&:hover": { backgroundColor: isRecordingActive ? "error.dark" : "success.dark" }
+                        }}
                     >
                         {isRecordingActive ? <Stop /> : <FiberManualRecord />}
                     </IconButton>
@@ -130,13 +140,14 @@ export function ShipTimeControlMobile({
                         <IconButton
                             size="small"
                             onClick={() => setShowRangePicker((v) => !v)}
+                            disabled={isAnimating}
                         >
                             <CalendarMonth />
                         </IconButton>
                     )}
                 </Stack>
 
-                {/*TIME SLIDER */}
+                {/* TIME SLIDER */}
                 <Slider
                     size="small"
                     value={selectedTime ?? windowEnd ?? 0}

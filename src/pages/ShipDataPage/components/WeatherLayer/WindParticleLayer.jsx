@@ -27,7 +27,6 @@ export function WindParticleLayer({
     selectedTime,
     minTime,
     maxTime,
-    visible = true,
 }) {
     const map = useMap();
 

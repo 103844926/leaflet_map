@@ -75,11 +75,11 @@ export function RecordingControl({
         // Only auto-set start time if a specific ship is selected (not null)
         if (shipIndex !== null) {
             // Get the ship_uid for this index
-            const selectedShip = ships[shipIndex];
-            if (selectedShip) {
-                const startTime = movementMarks.get(selectedShip.ship_uid)?.time;
+            const chosenShip = ships[shipIndex];
+            if (chosenShip) {
+                const startTime = movementMarks.get(chosenShip.ship_uid)?.time;
                 if (startTime) {
-                    console.log(`🚢 Ship ${selectedShip.ship_uid} start time:`, new Date(startTime).toLocaleString());
+                    console.log(`Chosen ship ${chosenShip.ship_uid} start time:`, new Date(startTime).toLocaleString());
                     // Update the staging start time directly
                     setStagingStart(startTime);
                 }
@@ -93,11 +93,15 @@ export function RecordingControl({
         resetTimeWindow();
     }, [setPlaybackSpeed, resetTimeWindow]);
 
+    // Time range validity check
+    const isTimeRangeInvalid = stagingStart >= stagingEnd;
+
     // Handle dialog close
     const handleCloseDialog = useCallback(() => {
         resetToDefaults();
         onDialogChange(false);
-    }, [resetToDefaults, onDialogChange]);
+        handleShipChange(ALL_SHIPS);
+    }, [resetToDefaults, onDialogChange, handleShipChange, ALL_SHIPS]);
 
     // Start recording with window updates
     const handleStartRecording = useCallback(() => {
@@ -124,7 +128,7 @@ export function RecordingControl({
                 <DialogTitle>Start Recording?</DialogTitle>
                 <DialogContent dividers>
                     <Stack spacing={2}>
-                        {/* 🔧 ADD WARNING when animation is running */}
+                        {/* ADD WARNING when animation is running */}
                         {isAnimating && (
                             <Typography variant="body2" color="warning.main">
                                 ⚠️ Please stop the current animation before starting a recording.
@@ -183,16 +187,15 @@ export function RecordingControl({
                             <Typography variant="caption">Recording Speed: {playbackSpeed}x</Typography>
                             <Slider
                                 value={playbackSpeed}
-                                min={0.2}
+                                min={0.1}
                                 max={4}
-                                step={0.2}
+                                step={0.1}
                                 onChange={(_, v) => setPlaybackSpeed(v)}
                             />
                         </Box>
 
                         <Stack direction="row" spacing={2}>
                             <DateTimePicker
-                                key={stagingStart}
                                 label="Start Time"
                                 value={new Date(stagingStart)}
                                 onChange={(v) => setStagingStart(v?.getTime() || minTime)}
@@ -212,6 +215,12 @@ export function RecordingControl({
                                 slotProps={{ textField: { fullWidth: true, size: "small" } }}
                             />
                         </Stack>
+
+                        {isTimeRangeInvalid && !isAnimating && (
+                            <Typography variant="body2" color="error">
+                                ⚠️ Start time must be before end time
+                            </Typography>
+                        )}
                     </Stack>
                 </DialogContent>
 
@@ -226,7 +235,7 @@ export function RecordingControl({
                         variant="contained"
                         color="success"
                         onClick={handleStartRecording}
-                        disabled={isAnimating}  // 🔧 DISABLE when animating, remove when the problem is solved
+                        disabled={isAnimating || isTimeRangeInvalid}  // 🔧 DISABLE when animating, remove when the problem is solved
                     >
                         Start Recording
                     </Button>

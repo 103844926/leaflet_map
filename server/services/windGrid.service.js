@@ -4,7 +4,6 @@ const fetch = require("node-fetch");
 // ===== CONFIG =====
 const GRID_NX = 10;
 const GRID_NY = 12;
-const GRID_SPAN_DEG = 4; // degrees (2° around center)
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 let cache = null;
@@ -27,8 +26,7 @@ async function getWindGrid(lat, lon) {
         return cache;
     }
 
-    // Build grid bounds
-    const half = GRID_SPAN_DEG / 2;
+    // Build grid bounds (using fixed area around VietNam)
     const la1 = 22;
     const la2 = 8;
     const lo1 = 104;
@@ -55,6 +53,7 @@ async function getWindGrid(lat, lon) {
                 `&longitude=${lonP}` +
                 `&hourly=wind_speed_10m,wind_direction_10m` +
                 `&wind_speed_unit=ms` +
+                `&past_days=7` +
                 `&forecast_days=3` +
                 `&timezone=UTC`;
 
@@ -63,8 +62,8 @@ async function getWindGrid(lat, lon) {
     }
 
     // Batch requests to avoid rate limiting
-    const BATCH_SIZE = 10; // Adjust based on API limits
-    const DELAY_MS = 200;  // Delay between batches
+    const BATCH_SIZE = 10;  // Adjust based on API limits
+    const DELAY_MS = 200;   // Delay between batches
     const responses = [];
 
     console.log(`Fetching ${requests.length} grid points in batches of ${BATCH_SIZE}...`);

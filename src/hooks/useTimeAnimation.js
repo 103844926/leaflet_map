@@ -24,6 +24,7 @@ export function useTimeAnimation(playbackSpeed = 1) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
+    console.log("Animation stopped at time:", simTimeRef.current);
     simTimeRef.current = 0;
     lastFrameRef.current = 0;
     setIsAnimating(false);
@@ -68,10 +69,7 @@ export function useTimeAnimation(playbackSpeed = 1) {
       if (newSimTime < endTime) {
         animationRef.current = requestAnimationFrame(loop);
       } else {
-        // Make sure we call onUpdate with exact endTime
-        if (Math.abs(newSimTime - endTime) > 1) {
-          onUpdate(endTime);
-        }
+        console.log("Animation has reached endTime:", endTimeRef.current);
         stopAnimation();
         if (onComplete) onComplete();
       }

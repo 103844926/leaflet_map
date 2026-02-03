@@ -15,6 +15,7 @@ export function TimeWindowPicker({
     onTimeChange,
     onClose,
 }) {
+    // Apply staged time window
     const handleApply = () => {
         setWindowStart(stagingStart);
         setWindowEnd(stagingEnd);
@@ -25,14 +26,19 @@ export function TimeWindowPicker({
         } else if (selectedTime < stagingStart) {
             onTimeChange(stagingStart);
         }
+        console.log("Applied time window:", stagingStart, stagingEnd);
     };
 
+    // Reset to default range
     const handleReset = () => {
         setWindowStart(minTime);
         setWindowEnd(maxTime);
         setStagingStart(minTime);
         setStagingEnd(maxTime);
     };
+
+    // Time range validity check
+    const isTimeRangeInvalid = stagingStart >= stagingEnd;
 
     return (
         <Box sx={{ mb: 2, p: 2, bgcolor: "grey.50", borderRadius: 1, border: "1px solid", borderColor: "grey.300" }}>
@@ -41,6 +47,7 @@ export function TimeWindowPicker({
             </Typography>
 
             <Stack direction="row" spacing={2} mb={2}>
+                {/* Choose Staging Start Time */}
                 <DateTimePicker
                     label="Start Time"
                     value={new Date(stagingStart)}
@@ -51,6 +58,7 @@ export function TimeWindowPicker({
                     slotProps={{ textField: { fullWidth: true, size: "small" } }}
                 />
 
+                {/* Choose Staging End Time */}
                 <DateTimePicker
                     label="End Time"
                     value={new Date(stagingEnd)}
@@ -62,8 +70,14 @@ export function TimeWindowPicker({
                 />
             </Stack>
 
+            {isTimeRangeInvalid && (
+                <Typography variant="body2" color="error">
+                    ⚠️ Start time must be before end time
+                </Typography>
+            )}
+
             <Stack direction="row" spacing={1}>
-                <Button variant="contained" size="small" onClick={handleApply}>Apply</Button>
+                <Button variant="contained" size="small" onClick={handleApply} disabled={isTimeRangeInvalid}>Apply</Button>
                 <Button variant="contained" color="inherit" size="small" onClick={handleReset}>Reset</Button>
                 <Button variant="outlined" size="small" sx={{ ml: "auto" }} onClick={onClose}>Close</Button>
             </Stack>

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, } from "react";
 import { useTheme, useMediaQuery } from "@mui/material";
 import { getShipData, getCurrentShipData, getWindyData } from "@/datas";
 import { useShipVisible } from "./useShipVisible";
-import { detectShipMovementStartsDetailed } from "@/utils";
+import { detectShipMovementStarts } from "@/utils";
 
 export function useShipDataPageLogic() {
     const [ships, setShips] = useState([]);
@@ -22,10 +22,10 @@ export function useShipDataPageLogic() {
     const {
         visibleShips,
         handleShipToggle,
-    } = useShipVisible(ships, currentShips);
+    } = useShipVisible(ships);
 
     // --------------------------
-    // Load Ships & Current Ships Then Compute Center
+    // Load Ship Datas & Current Ship Datas Then Compute Center
     // --------------------------
     useEffect(() => {
         const load = async (forceRefresh = false) => {
@@ -54,6 +54,24 @@ export function useShipDataPageLogic() {
         load();
     }, [initialCenter]);
 
+    // --------------------------
+    // Filter ships based on time
+    // --------------------------
+    const timeFilteredShips = useMemo(() => {
+        if (!timeRange) return ships;
+        const current = timeRange[1];
+        return ships.map((ship, i) => {
+            const filtered = ship.locations.filter((loc) => loc.time <= current);
+
+            return {
+                ...ship,
+                index: i,                        // permanent original index
+                locations: filtered.length ? filtered : [ship.locations[0]],
+            };
+        });
+
+    }, [ships, timeRange]);
+
     // --------------------
     // Detect movement starts
     // --------------------
@@ -64,13 +82,12 @@ export function useShipDataPageLogic() {
             ? ships.filter((_, idx) => visibleShips[idx])
             : ships;
 
-        return detectShipMovementStartsDetailed(shipsToAnalyze, 50);
+        return detectShipMovementStarts(shipsToAnalyze, 50);
     }, [ships, visibleShips]);
 
     // --------------------
     // Get Windy Data
     // --------------------
-
     useEffect(() => {
         if (!initialCenter) return;
         const [lat, lon] = initialCenter;
@@ -87,7 +104,6 @@ export function useShipDataPageLogic() {
     // --------------------
     // Sync ship time range with wind data time range
     // --------------------
-
     useEffect(() => {
         if (!ships.length || !windData) return;
 
@@ -102,6 +118,7 @@ export function useShipDataPageLogic() {
     return {
         ships,
         currentShips,
+        timeFilteredShips,
         initialCenter,
         timeRange,
         setTimeRange,

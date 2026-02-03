@@ -53,12 +53,14 @@ export function ShipTimeControlDesktop({
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: 600,
-                px: 2,
+                px: 1,
                 py: 1,
                 borderRadius: 3,
+                opacity: 0.9,
                 zIndex: 1000,
             }}
         >
+            {/* TIME RANGE PICKER */}
             <Collapse in={showRangePicker}>
                 <TimeWindowPicker
                     minTime={minTime}
@@ -81,6 +83,7 @@ export function ShipTimeControlDesktop({
             </Collapse>
 
             <Stack direction="row" spacing={2} mb={1} alignItems="flex-start">
+                {/* ICON BUTTONS */}
                 <Stack
                     direction="row"
                     spacing={1.5}
@@ -90,7 +93,7 @@ export function ShipTimeControlDesktop({
                         <IconButton
                             size="small"
                             onClick={() =>
-                                onAnimate(selectedTime, windowStart, windowEnd, onTimeChange)
+                                onAnimate(selectedTime, windowStart, windowEnd, onTimeChange)   // Start from selectedTime to windowEnd
                             }
                             sx={{
                                 color: "white",
@@ -142,7 +145,7 @@ export function ShipTimeControlDesktop({
                     )}
                 </Stack>
 
-                {/*TIME SLIDER */}
+                {/* TIME SLIDER */}
                 <Box sx={{ flex: 1 }}>
                     <Slider
                         value={selectedTime ?? windowEnd ?? 0}

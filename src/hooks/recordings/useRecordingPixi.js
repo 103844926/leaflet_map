@@ -1,4 +1,4 @@
-// useRecordingPixi.js
+// useRecordingPixi.js - Capture ships overlay for recording 
 import { useCallback } from "react";
 
 /**
@@ -16,7 +16,7 @@ export function useRecordingPixi() {
             return false;
         }
 
-        // Try to find pixi renderer view (canvas)
+        // Get pixi renderer view (canvas)
         const pixiOverlay = mapInstance.pixiOverlay || mapInstance._pixiOverlay;
         const pixiRenderer = pixiOverlay?._renderer || pixiOverlay?._pixiRenderer || (pixiOverlay && pixiOverlay._renderer);
 

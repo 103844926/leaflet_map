@@ -11,7 +11,6 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
   visibleShips,
   shipPositions,
   onShipSelect,
-  showPaths,
   recordingShipIndex,
   isRecording,
   selectedTime,
@@ -25,7 +24,7 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
     );
   }, [currentShips, shipFilters]);
 
-  // Create indexed ships ONCE
+  // Create indexed ships
   const indexedShips = useMemo(() => {
     return ships.map((ship, i) => ({
       ...ship,
@@ -40,14 +39,13 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
       : indexedShips;
   }, [indexedShips, recordingShipIndex]);
 
-
+  // Pass Pixi Click to Map Click
   const onPixiShipClick = useCallback(
     (ship, pixiEvent) => {
       if (!map || !pixiEvent?.data?.global) return;
 
-      const { x, y } = pixiEvent.data.global;
-
       // PIXI global → Leaflet container point
+      const { x, y } = pixiEvent.data.global;
       const containerPoint = L.point(x, y);
 
       // container point → latlng
@@ -60,7 +58,7 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
 
   const handleMarkerClick = useCallback(
     (index, pixiEvent) => {
-      const ship = ships[index];
+      const ship = ships[index];          // Search in indexed array before passing
       onPixiShipClick(ship, pixiEvent);
     },
     [ships, onPixiShipClick]
@@ -68,7 +66,7 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
 
   const handleBackgroundShipClick = useCallback(
     (ship, pixiEvent) => {
-      onPixiShipClick(ship, pixiEvent);
+      onPixiShipClick(ship, pixiEvent);   // Pass ship right away
     },
     [onPixiShipClick]
   );
@@ -76,12 +74,10 @@ export const ShipMapLayer = React.memo(function ShipMapLayer({
   return (
     <UnifiedShipLayer
       // Main ships
-      ships={ships}
       shipsToRender={shipsToRender}
       visibleShips={visibleShips}
       shipPositions={shipPositions}
       onMarkerClick={handleMarkerClick}
-      showPaths={showPaths}
       recordingShipIndex={recordingShipIndex}
       isRecording={isRecording}
       currentTime={selectedTime}

@@ -27,7 +27,7 @@ export function useLayerControl() {
     );
 
     return {
-        // Individual states (if needed elsewhere)
+        // Individual states
         showWeather,
         showUI,
 

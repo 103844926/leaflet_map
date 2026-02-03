@@ -23,7 +23,9 @@ export function drawMarkers({
 
         const pos = shipPositions[i];
         if (!pos) return;
-        // Warning only
+
+        //  Safety mearsure, return warning only, will not block rendering
+        //  IF the problem DOES appear, will debug later
         if (pos.ship_uid && pos.ship_uid !== ship.ship_uid) {
             console.warn("ShipPosition mismatch", ship.ship_uid, pos.ship_uid);
         }
@@ -63,13 +65,13 @@ export function drawMarkers({
         sprite.alpha = isRecordingShip || isSelected ? 1 : 0.85;
 
         const baseScale = 0.625;
-        // Existing boost (recording)
+
+        // Recording boost
         const recordingBoost = isRecordingShip ? 1.2 : 1.0;
 
-        // New boost (selection)
+        // Selected boost
         const selectedBoost = isSelected ? 1.35 : 1.0;
 
-        // Final scale (zoom-safe)
         const finalScale =
             (baseScale * recordingBoost * selectedBoost) / scale;
 
@@ -78,7 +80,7 @@ export function drawMarkers({
         sprite.eventMode = "static";
         sprite.cursor = "pointer";
         sprite.removeAllListeners();
-        sprite.on("pointertap", (event) => onMarkerClick?.(i, event)); // ✅ Pass the PIXI event
+        sprite.on("pointertap", (event) => onMarkerClick?.(i, event)); // Pass the PIXI event
 
         container.addChild(sprite);
     });

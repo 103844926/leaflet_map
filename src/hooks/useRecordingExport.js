@@ -21,6 +21,7 @@ export function useRecordingExport() {
         // Desktop / Android → WebM
         // -----------------------------
         if (!isIOS()) {
+            // Download directly as WebM
             downloadBlob(blob, "webm");
             return;
         }
@@ -31,11 +32,13 @@ export function useRecordingExport() {
         setIsExporting(true);
 
         try {
+            // Upload Webm blob and get jobId
             const { jobId, BACKEND_BASE } = await uploadAndTranscode(blob);
 
-            // ⏳ WAIT for FFmpeg to fully finish
+            // Wait for transcode and get final mp4Url
             const mp4Url = await waitForTranscodeDone(BACKEND_BASE, jobId);
 
+            // Navigate the final URL
             const fullUrl = `${BACKEND_BASE}${mp4Url}`;
             openDownload(fullUrl);
 

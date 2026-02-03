@@ -26,7 +26,7 @@ export function ShipLayerMenu({
     const handleRecordShip = () => {
         onRecordingShipChange(index);
 
-        // Direct O(1) lookup by ship_uid
+        // Direct lookup by ship_uid
         const startTime = movementMarks.get(ship.ship_uid)?.time;
 
         onDialogChange(true, startTime);
@@ -38,7 +38,7 @@ export function ShipLayerMenu({
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={onClose}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
             transformOrigin={{ vertical: "top", horizontal: "left" }}
         >
             {/* SHOW / HIDE */}

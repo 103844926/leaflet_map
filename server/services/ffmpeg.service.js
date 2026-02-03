@@ -11,16 +11,16 @@ const uploadsDir = path.join(__dirname, "..", "uploads");
 // Create uploads directory if it doesn't exist
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log("📁 Created uploads directory:", uploadsDir);
+    console.log("Created uploads directory:", uploadsDir);
 }
 
-console.log("📁 Uploads directory:", uploadsDir);
+console.log("Uploads directory:", uploadsDir);
 
 function startTranscode(inputPath) {
     const jobId = Date.now().toString();
     const outputPath = path.join(uploadsDir, `${jobId}.mp4`);
 
-    console.log("🎬 Starting transcode:");
+    console.log("  Starting transcode:");
     console.log("  Input:", inputPath);
     console.log("  Output:", outputPath);
     console.log("  JobId:", jobId);
@@ -62,7 +62,7 @@ function startTranscode(inputPath) {
     });
 
     ffmpeg.on("close", (code) => {
-        console.log(`✅ FFmpeg finished with code ${code}`);
+        console.log(`  FFmpeg finished with code ${code}`);
         console.log(`  Checking if file exists: ${outputPath}`);
         console.log(`  File exists: ${fs.existsSync(outputPath)}`);
 
@@ -80,7 +80,7 @@ function startTranscode(inputPath) {
     });
 
     ffmpeg.on("error", (err) => {
-        console.error("❌ FFmpeg error:", err);
+        console.error(" FFmpeg error:", err);
     });
 
     return jobId;

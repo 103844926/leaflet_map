@@ -1,7 +1,9 @@
+// useRecordingWindParticles.js - Capture wind particles for recording
 import { useCallback } from "react";
 
 export function useRecordingWindParticles() {
     const capture = useCallback((map, ctx, outW, outH, scale = 1) => {
+        // Get wind particles map
         const app = map?._windParticleExportApp;
         if (!app || !app.renderer?.view) return true;
 
@@ -9,6 +11,8 @@ export function useRecordingWindParticles() {
         if (!system) return true;
 
         const canvas = app.renderer.view;
+
+        // Compute bounding rects to place wind particles correctly
         const mapRect = map.getContainer().getBoundingClientRect();
         const rect = canvas.getBoundingClientRect();
 
@@ -18,14 +22,17 @@ export function useRecordingWindParticles() {
         const dh = Math.round(rect.height * scale);
 
         try {
-            // fixed timestep for export
-            const dt = 1 / 24; // or pass fps
+            // fixed timestep for export (equal to fps inside recording capture)
+            const dt = 1 / 24;
 
-            system.step(dt);                            // Time advances
-            system.render();                            // Draw particles
-            app.renderer.render(app.stage);             // Render to canvas
-            app.renderer.gl?.flush?.();                 // Ensure all GL commands are done
-            ctx.drawImage(canvas, dx, dy, dw, dh);      // Composite to video frame
+            // Time advances
+            system.step(dt);
+
+            // Render particles to canvas
+            system.render();
+            app.renderer.render(app.stage);
+            app.renderer.gl?.flush?.();
+            ctx.drawImage(canvas, dx, dy, dw, dh);
         } catch (e) {
             console.warn("Wind particle capture failed", e);
             return false;

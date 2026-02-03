@@ -15,8 +15,5 @@ export * from "./useRecordingTimeWindow";
 export * from "./useRecordingCapture";
 export * from "./useShipTracking";
 
-// For LeafletRulerControl
-export * from "./useRulerHandlers";
-
-// For ShipAdvancedFilters
-export * from "./useShipAdvancedFilters";
+// For ShipInfoTable
+export * from "./useShipTableFilter";

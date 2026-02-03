@@ -25,6 +25,7 @@ export function TranscodeProgress({ jobId, onDone }) {
 
             if (data.done) {
                 setDone(true);
+                console.log('✅ Transcode completed', done);
                 source.close();
 
                 // Small delay for UX smoothness
@@ -46,7 +47,7 @@ export function TranscodeProgress({ jobId, onDone }) {
         return () => {
             source.close();
         };
-    }, [jobId, onDone]);
+    }, [jobId, onDone, done]);
 
     if (!jobId) return null;
 

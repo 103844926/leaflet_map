@@ -19,7 +19,7 @@ export function ShipTimeControl(props) {
         isRecordingActive,
         onStop,
         onRecordingButtonClick,
-    } = props;
+    } = props; // Not all items in props are taken out
 
     // ---- shared state ----
     const [showRangePicker, setShowRangePicker] = useState(false);

@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
 import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipInfoTable, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
 
-import { RecordingControl, LeafletRulerControl } from "@/components";
+import { RecordingControl } from "@/components";
 import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions, useLayerControl } from "@/hooks";
 import { defaultShipFilters } from "@/utils";
 
@@ -13,8 +13,6 @@ export default function ShipDataPage() {
   // --------------------
   // Basic state
   // --------------------
-  const [showPaths, setShowPaths] = useState(true);
-
   const mapRef = useRef(null);
 
   const paperControl = useLeafletControl();
@@ -23,6 +21,7 @@ export default function ShipDataPage() {
   const { showWeather, showUI, layerConfigs } = useLayerControl();
 
   // Click position state
+  const [selectedShip, setSelectedShip] = useState(null);
   const [shipLatLng, setShipLatLng] = useState(null);
   const [showShipTable, setShowShipTable] = useState(false);
 
@@ -91,8 +90,6 @@ export default function ShipDataPage() {
   // Animation + Ship positions
   // --------------------
   const {
-    selectedShip,
-    setSelectedShip,
     shipPositions,
     isAnimating,
     animate,
@@ -147,7 +144,6 @@ export default function ShipDataPage() {
   } = useShipDataPageProps({
     isMobile,
     ships,
-    timeFilteredShips,
     visibleShips,
     shipPositions,
 
@@ -179,7 +175,6 @@ export default function ShipDataPage() {
     setRecordingShipIndex,
     setIsRecordingActive,
     setShowRecordingDialog,
-    setShowPaths,
     handleShipToggle,
     handleManualTimeUpdate,
     setShouldStopRecording,
@@ -194,7 +189,6 @@ export default function ShipDataPage() {
     availableTimes,
     updateTime,
     movementMarks,
-    showPaths,
     showShipTable,
     setShowShipTable,
     setSelectedShip,
@@ -240,7 +234,7 @@ export default function ShipDataPage() {
         style={{ height: "100%", width: "100%" }}
         zoomControl={false}
       >
-        {/* ADD THIS COMPONENT RIGHT AFTER MapContainer opens */}
+        {/* Component allowing video capture */}
         <MapInstanceCapture mapRef={mapRef} />
 
         <TileLayer
@@ -253,11 +247,6 @@ export default function ShipDataPage() {
           zoomOffset={-1}
         />
 
-        {/* RULER LAYER */}
-        {!isRecordingActive && !isAnimating && (
-          <LeafletRulerControl />
-        )}
-        
         {/* WIND LAYER */}
         {windData && selectedTime && minTime && maxTime && showWeather && (
           <WeatherLayer
@@ -282,7 +271,6 @@ export default function ShipDataPage() {
           visibleShips={visibleShips}
           shipPositions={shipPositions}
           onShipSelect={handleShipSelect}
-          showPaths={showPaths}
           recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
           isRecording={isRecordingActive}
           selectedTime={selectedTime}
