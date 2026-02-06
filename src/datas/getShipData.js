@@ -35,6 +35,9 @@ export const loadCurrentShipData = async (forceRefresh = false) => {
   }
 };
 
+// -------------------------------------------------------------------------
+// GET SHIP DATA WITH MULTIPLE POSITIONS
+// -------------------------------------------------------------------------
 export const getShipData = async (forceRefresh = false) => {
   const data = await loadShipData(forceRefresh);
   if (!data || !data.data) return [];
@@ -63,7 +66,9 @@ export const getShipData = async (forceRefresh = false) => {
   }));
 };
 
-// NEW: Get current ship positions
+// -------------------------------------------------------------------------
+// GET SHIP DATA WITH ONE POSITION
+// -------------------------------------------------------------------------
 export const getCurrentShipData = async (forceRefresh = false) => {
   const data = await loadCurrentShipData(forceRefresh);
   if (!data) return [];
@@ -87,7 +92,9 @@ export const getCurrentShipData = async (forceRefresh = false) => {
   }));
 };
 
-// NEW: Fetch paginated ships from your backend
+// -------------------------------------------------------------------------
+// GET SHIP DATA FROM BACKEND FOR TABLE
+// -------------------------------------------------------------------------
 export const fetchShipsPaginated = async (params = {}) => {
   const {
     country_code = '',

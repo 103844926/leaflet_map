@@ -1,7 +1,4 @@
-/**
- * Shared utilities for responsive design across info boxes
- */
-
+// mobileResponsiveUtils.js - Shared utilities for responsive design in mobile view
 // Mobile breakpoint (in pixels)
 export const MOBILE_BREAKPOINT = 600; // MUI mobile breakpoint (sm)
 
@@ -44,7 +41,7 @@ export const formatCoordinates = (lat, lng, isMobile) => {
  * Get responsive Typography variant
  * @param {string} variant - Base variant (e.g., 'h6', 'body1')
  * @param {boolean} isMobile - Whether viewport is mobile
- * @returns {string} Responsive variant
+ * @returns {string} Responsive mapping variant
  */
 export const getResponsiveVariant = (variant, isMobile) => {
     const variantMap = {

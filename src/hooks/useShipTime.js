@@ -13,8 +13,8 @@ export function useShipTime(ships, onTimeChange) {
     return Array.from(timeSet).sort((a, b) => a - b);
   }, [ships]);
 
-  const minTime = availableTimes[0] ?? null;
-  const maxTime = availableTimes[availableTimes.length - 1] ?? null;
+  const minTime = availableTimes[0] ?? null;                            // Minimum Time Available
+  const maxTime = availableTimes[availableTimes.length - 1] ?? null;    // Maximum Time Available
 
   const prevMaxRef = useRef(maxTime);
   const prevMinRef = useRef(minTime);
@@ -36,12 +36,13 @@ export function useShipTime(ships, onTimeChange) {
     let newSelectedTime = selectedTime;
     let shouldUpdate = false;
 
-    // New data arrived — jump to latest
+    // New maxTime arrived — jump to latest
     if (maxTime > prevMaxRef.current) {
       newSelectedTime = maxTime;
       shouldUpdate = true;
     }
-    // Old data deleted — clamp to new min if needed
+
+    // Old minTime deleted — clamp to new min if needed
     else if (minTime > prevMinRef.current && selectedTime < minTime) {
       newSelectedTime = minTime;
       shouldUpdate = true;
@@ -62,8 +63,11 @@ export function useShipTime(ships, onTimeChange) {
       if (!availableTimes.length || timestamp == null) return;
 
       const clamped = Math.max(minTime, Math.min(maxTime, timestamp));
-      setSelectedTime(clamped);
+
+      setSelectedTime(clamped);       // Update Selected Time
+
       onTimeChange([minTime, clamped]);
+      console.log("Time updated to:", clamped);
     },
     [availableTimes.length, minTime, maxTime, onTimeChange],
   );

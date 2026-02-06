@@ -13,8 +13,6 @@ export default function ShipDataPage() {
   // --------------------
   // Basic state
   // --------------------
-  const [showPaths, setShowPaths] = useState(true);
-
   const mapRef = useRef(null);
 
   const paperControl = useLeafletControl();
@@ -22,7 +20,8 @@ export default function ShipDataPage() {
   const layerControl = useLeafletControl();
   const { showWeather, showRuler, showUI, layerConfigs } = useLayerControl();
 
-  // NEW: Add click position state
+  // Click position state
+  const [selectedShip, setSelectedShip] = useState(null);
   const [shipLatLng, setShipLatLng] = useState(null);
   const [showShipTable, setShowShipTable] = useState(false);
 
@@ -48,7 +47,6 @@ export default function ShipDataPage() {
     setTimeRange,
     visibleShips,
     handleShipToggle,
-    timeFilteredShips,
     movementMarks,
     windData,
     virtualMinTime,
@@ -72,8 +70,8 @@ export default function ShipDataPage() {
   } = useShipTime(ships, handleTimeChange);
 
   // ---- Recording / Time playback window (GLOBAL) ----
-  const [windowStart, setWindowStart] = useState(minTime);
-  const [windowEnd, setWindowEnd] = useState(maxTime);
+  const [windowStart, setWindowStart] = useState(null);
+  const [windowEnd, setWindowEnd] = useState(null);
 
   // keep window in sync with data range
   useEffect(() => {
@@ -85,8 +83,6 @@ export default function ShipDataPage() {
   // Animation + Ship positions
   // --------------------
   const {
-    selectedShip,
-    setSelectedShip,
     shipPositions,
     isAnimating,
     animate,
@@ -143,7 +139,6 @@ export default function ShipDataPage() {
     ships,
     visibleShips,
     shipPositions,
-    currentShips,
 
     shipFilters,
     setShipFilters,
@@ -172,7 +167,6 @@ export default function ShipDataPage() {
     setRecordingShipIndex,
     setIsRecordingActive,
     setShowRecordingDialog,
-    setShowPaths,
     handleShipToggle,
     handleManualTimeUpdate,
     setShouldStopRecording,
@@ -187,7 +181,6 @@ export default function ShipDataPage() {
     availableTimes,
     updateTime,
     movementMarks,
-    showPaths,
     showShipTable,
     setShowShipTable,
     setSelectedShip,
@@ -233,7 +226,7 @@ export default function ShipDataPage() {
         style={{ height: "100%", width: "100%" }}
         zoomControl={false}
       >
-        {/* ADD THIS COMPONENT RIGHT AFTER MapContainer opens */}
+        {/* Component allowing video capture */}
         <MapInstanceCapture mapRef={mapRef} />
 
         <TileLayer
@@ -270,12 +263,9 @@ export default function ShipDataPage() {
           ships={ships}
           currentShips={currentShips}
           shipFilters={shipFilters}
-          timeFilteredShips={timeFilteredShips}
           visibleShips={visibleShips}
           shipPositions={shipPositions}
           onShipSelect={handleShipSelect}
-          timeRange={timeRange}
-          showPaths={showPaths}
           recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
           isRecording={isRecordingActive}
           selectedTime={selectedTime}

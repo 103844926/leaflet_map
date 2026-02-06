@@ -5,7 +5,8 @@ import { createRoot } from "react-dom/client";
 import { Box, Typography, Stack } from "@mui/material";
 import { isValidWindData, calculateTimeIndex, sampleWindAtLatLng, calculateWindMetrics, getInfoBoxStyles, formatCoordinates, getResponsiveVariant } from "@/utils";
 
-function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime, isMobile, visible }) {
+// Let React render content separately
+function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime, isMobile }) {
 
     if (!isValidWindData(grid) || !latlng) return null;
 
@@ -55,7 +56,8 @@ function WindInfoBoxContent({ grid, selectedTime, latlng, minTime, maxTime, isMo
     );
 }
 
-export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile, visible, position = "bottomright" }) {
+// Listen to map click and create popup
+export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile, visible }) {
     const map = useMap();
     const popupRef = useRef(null);
     const rootRef = useRef(null);
@@ -65,11 +67,9 @@ export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile
     // Handle map click
     useEffect(() => {
         if (!map || !visible) return;
-
         const onClick = (e) => {
             setLatlng(e.latlng);
         };
-
         map.on("click", onClick);
 
         return () => map.off("click", onClick);
@@ -93,12 +93,13 @@ export function WindInfoBox({ windData, selectedTime, minTime, maxTime, isMobile
             map.closePopup(popupRef.current);
         }
 
-        const container = L.DomUtil.create("div");
+        const container = L.DomUtil.create("div");          // Create an empty DOM container
         L.DomEvent.disableClickPropagation(container);
 
-        const root = createRoot(container);
+        const root = createRoot(container);                 // Create React root inside container
         rootRef.current = root;
 
+        // Render content inside container
         root.render(
             <WindInfoBoxContent
                 grid={windData}

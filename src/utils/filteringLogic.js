@@ -8,10 +8,12 @@ export const defaultShipFilters = {
 };
 
 export function applyShipFilters(ship, filters) {
+    // Ship type filter
     if (filters.shipTypes.length && !filters.shipTypes.includes(ship.ship_type)) {
         return false;
     }
 
+    // Country code filter
     if (filters.countryCodes.length) {
         const shipCode = ship.country_code
             ? String(ship.country_code).toUpperCase()
@@ -39,6 +41,7 @@ export function applyShipFilters(ship, filters) {
         }
     }
 
+    // Speed, Violation and Length filter
     if (filters.onlyMoving && ship.speed <= 0.5) {
         return false;
     }

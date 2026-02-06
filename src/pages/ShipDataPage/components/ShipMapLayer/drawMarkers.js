@@ -3,7 +3,7 @@ import { getShipColor, createShipTexture, getSprite, resetPool, isInViewport } f
 
 export function drawMarkers({
     container, project, scale, bounds, renderer,
-    shipsToRender, timeFilteredShips, visibleShips, shipPositions,
+    shipsToRender, visibleShips, shipPositions,
     onMarkerClick, recordingShipIndex, isRecording, resources,
     movementStartMap, currentTime, selectedShipId
 }) {
@@ -22,25 +22,20 @@ export function drawMarkers({
         if (!visibleShips[i]) return;
 
         const pos = shipPositions[i];
-        let lat, long, course = 0;
+        if (!pos) return;
 
-        if (pos?.position) {
-            lat = pos.position.lat;
-            long = pos.position.long;
-            course = pos.position.course ?? 0;
-        } else if (pos?.index >= 0 && ship.locations?.[pos.index]) {
-            const loc = ship.locations[pos.index];
-            lat = loc.lat;
-            long = loc.long;
-            course = loc.course ?? 0;
-        } else if (ship.locations?.length) {
-            const last = ship.locations[ship.locations.length - 1];
-            lat = last.lat;
-            long = last.long;
-            course = last.course ?? 0;
-        } else {
-            return;
+        //  Safety mearsure, return warning only, will not block rendering
+        //  IF the problem DOES appear, will debug later
+        if (pos.ship_uid && pos.ship_uid !== ship.ship_uid) {
+            console.warn("ShipPosition mismatch", ship.ship_uid, pos.ship_uid);
         }
+
+        const p = pos?.position;
+        if (!p) return;
+
+        const lat = p.lat;
+        const long = p.long;
+        const course = p.course ?? 0;
 
         if (lat == null || long == null || !isInViewport(lat, long, bounds)) return;
 
@@ -70,13 +65,13 @@ export function drawMarkers({
         sprite.alpha = isRecordingShip || isSelected ? 1 : 0.85;
 
         const baseScale = 0.625;
-        // Existing boost (recording)
+
+        // Recording boost
         const recordingBoost = isRecordingShip ? 1.2 : 1.0;
 
-        // New boost (selection)
+        // Selected boost
         const selectedBoost = isSelected ? 1.35 : 1.0;
 
-        // Final scale (zoom-safe)
         const finalScale =
             (baseScale * recordingBoost * selectedBoost) / scale;
 
@@ -85,7 +80,7 @@ export function drawMarkers({
         sprite.eventMode = "static";
         sprite.cursor = "pointer";
         sprite.removeAllListeners();
-        sprite.on("pointertap", (event) => onMarkerClick?.(i, event)); // ✅ Pass the PIXI event
+        sprite.on("pointertap", (event) => onMarkerClick?.(i, event)); // Pass the PIXI event
 
         container.addChild(sprite);
     });

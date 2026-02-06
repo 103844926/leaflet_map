@@ -12,9 +12,9 @@ export function ShipInfoPanel({
   map
 }) {
 
-  /* ===============================
-     Resolve ship locations
-  =============================== */
+  const panelRef = useRef(null);   // Local DOM ref for positioning
+
+  // Get ship data (change depending on ship source)
   const resolveLocations = useCallback(() => {
     if (Array.isArray(ship?.locations) && ship.locations.length > 0) {
       return ship.locations;
@@ -32,19 +32,10 @@ export function ShipInfoPanel({
         }
       ];
     }
-
     return null;
   }, [ship]);
 
-  /* ===============================
-     Local DOM ref - Used only for positioning
-  =============================== */
-  const panelRef = useRef(null);
-
-  /* ===============================
-     Resolve active ship position
-     - Accounts for timeRange
-  =============================== */
+  // Get current ship position
   const getCurrentPosition = useCallback(() => {
     const locations = resolveLocations();
     if (!locations) return null;
@@ -68,11 +59,7 @@ export function ShipInfoPanel({
     };
   }, [resolveLocations, timeRange]);
 
-  /* ===============================
-     Position panel above ship (mobile)
-     - Anchored using Leaflet projection
-     - Repositions on pan / zoom
-  =============================== */
+  // Position panel on mobile
   useEffect(() => {
     if (!isMobile) return;
     if (!map || !panelRef.current) return;
@@ -115,15 +102,28 @@ export function ShipInfoPanel({
     };
   }, [isMobile, map, ship, timeRange, getCurrentPosition]);
 
-  /* ===============================
-     Render guard
-  =============================== */
+  // Position panel on desktop
+  useEffect(() => {
+    if (isMobile) return;
+    if (!panelRef.current) return;
+
+    const el = panelRef.current;
+
+    // Reset mobile-only inline styles
+    el.style.left = "";
+    el.style.top = "";
+    el.style.transform = "";
+    el.style.marginTop = "";
+  }, [isMobile]);
+
+
+  // Getting ship info
   const current = getCurrentPosition();
   if (!current) return null;
 
   const loc = current.location;
-  const lat = loc.lat ?? loc.latitude;
-  const lng = loc.long ?? loc.lng ?? loc.longitude;
+  const lat = loc.lat;
+  const lng = loc.long ?? loc.lng;
 
   const shipId = ship.name ?? ship.ship_uid ?? "Unknown";
   const shipSpeed =
@@ -133,9 +133,6 @@ export function ShipInfoPanel({
 
   const coords = formatCoordinates(lat, lng, isMobile);
 
-  /* ===============================
-     Render
-  =============================== */
   return (
     <Box
       ref={(el) => {

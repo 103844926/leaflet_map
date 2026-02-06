@@ -1,4 +1,4 @@
-// useRecordingMapTiles.js
+// useRecordingMapTiles.js - Capture map tiles for recording
 import { useCallback } from "react";
 
 /**

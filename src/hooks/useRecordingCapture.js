@@ -15,12 +15,13 @@ import {
 
 export function useRecordingCapture() {
     const recorderRef = useRef(null);
-    const streamRef = useRef(null);          // 🔧 FIX: track MediaStream
+    const streamRef = useRef(null);          // Track MediaStream
     const chunksRef = useRef([]);
     const compositeCanvasRef = useRef(null);
     const rafRef = useRef(null);
     const capturingRef = useRef(false);
 
+    // Individual capture hooks
     const { capture: captureTiles } = useRecordingMapTiles();
     const { capture: capturePixi } = useRecordingPixi();
     const { capture: captureWindPixi } = useRecordingWindPixi();
@@ -34,7 +35,7 @@ export function useRecordingCapture() {
     const cleanupCanvas = () => {
         const canvas = compositeCanvasRef.current;
         if (canvas) {
-            // 🧹 CLEANUP: force GPU + backing store release
+            // Canvas cleanup
             canvas.width = 0;
             canvas.height = 0;
         }
@@ -56,6 +57,7 @@ export function useRecordingCapture() {
             return null;
         }
 
+        // Get width height reference
         const rect = mapContainer.getBoundingClientRect();
         const outW = Math.round(rect.width * scale);
         const outH = Math.round(rect.height * scale);
@@ -90,7 +92,7 @@ export function useRecordingCapture() {
             if (e.data?.size) chunksRef.current.push(e.data);
         };
 
-        // ⚠️ IMPORTANT: larger timeslice = less memory pressure
+        // IMPORTANT: larger timeslice = less memory pressure
         recorder.start(1000);
 
         recorderRef.current = recorder;
@@ -102,12 +104,13 @@ export function useRecordingCapture() {
         const frameLoop = async (ts) => {
             if (!capturingRef.current) return;
 
+            // Skip frame capture if not enough time elapsed
             if (ts - lastTs < minFrameDelta) {
                 rafRef.current = requestAnimationFrame(frameLoop);
                 return;
             }
 
-            lastTs = ts;
+            lastTs = ts;    // Update timestamp
 
             await captureTiles(mapInstance, ctx, outW, outH, scale);             // Draw Map Tiles: Must be render first!
             await capturePixi(mapInstance, ctx, outW, outH, scale);              // Draw Entire Ship Map Layer
@@ -116,7 +119,7 @@ export function useRecordingCapture() {
             await captureWindParticles(mapInstance, ctx, outW, outH, scale);     // Draw Wind particles
 
             if (getCurrentTime) {
-                drawTimestamp(ctx, getCurrentTime(), outW, outH, scale);
+                drawTimestamp(ctx, getCurrentTime(), outW, outH, scale);         // Draw Timestamp
             }
 
             rafRef.current = requestAnimationFrame(frameLoop);
@@ -140,6 +143,7 @@ export function useRecordingCapture() {
         return new Promise((resolve) => {
             capturingRef.current = false;
 
+            // Stop RAF loop
             if (rafRef.current) {
                 cancelAnimationFrame(rafRef.current);
                 rafRef.current = null;
@@ -148,24 +152,26 @@ export function useRecordingCapture() {
             const recorder = recorderRef.current;
             const stream = streamRef.current;
 
-            // 🔧 FIX: stop all media tracks
+            // Stop all media tracks
             if (stream) {
                 stream.getTracks().forEach((t) => t.stop());
                 streamRef.current = null;
             }
 
+            // Handle cleanup
             if (!recorder || recorder.state === "inactive") {
                 cleanupCanvas();
                 resolve(null);
                 return;
             }
 
+            // Finalize blob 
             recorder.onstop = () => {
                 const blob = new Blob(chunksRef.current, {
                     type: "video/webm",
                 });
 
-                // 🧹 CLEANUP: remove references
+                // Remove references
                 recorder.ondataavailable = null;
                 recorder.onstop = null;
                 recorderRef.current = null;

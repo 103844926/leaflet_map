@@ -1,6 +1,7 @@
 // pixiOptimizationUtils.js - Place this in your @/utils folder
 import * as PIXI from "pixi.js";
 
+// Ship color palette - cycles through array indexes
 export const getShipColor = (i) => {
     const colors = [0x00FF00, 0x0000FF, 0xFF0000, 0xFFA500, 0x800080, 0x00FFFF, 0xFF00FF, 0xFFFF00];
     return colors[i % colors.length];
@@ -21,12 +22,12 @@ export const createShipTexture = (renderer, resources, shape = 'triangle', withB
         ? 'circleTexture'
         : (withBorder ? 'shipTexture' : 'shipTextureNoBorder');
 
-    // Return if cached and valid
+    // Reuse cache if it is exist and reusable
     if (resources[cacheKey] && resources[cacheKey].valid) {
         return resources[cacheKey];
     }
 
-    // Destroy existing cached texture if present
+    // Destroy corrupted cached texture then recreate it
     if (resources[cacheKey]) {
         try { resources[cacheKey].destroy(true); } catch (e) { }
         resources[cacheKey] = null;
@@ -34,7 +35,6 @@ export const createShipTexture = (renderer, resources, shape = 'triangle', withB
 
     const g = new PIXI.Graphics();
 
-    // Fill white so tint will work; add a thin black border for visibility
     g.beginFill(0xFFFFFF);
 
     if (shape === 'circle') {
@@ -45,7 +45,7 @@ export const createShipTexture = (renderer, resources, shape = 'triangle', withB
             // alpha must be 0..1
             g.lineStyle(2, 0x000000, 1);
         }
-        const size = 16, half = size * 0.5, height = size * 1.3;
+        const size = 16, half = size * 0.5, height = size * 1.4;
         g.moveTo(0, -height / 2);
         g.lineTo(-half, height / 2);
         g.lineTo(half, height / 2);
@@ -55,11 +55,13 @@ export const createShipTexture = (renderer, resources, shape = 'triangle', withB
     g.endFill();
 
     try {
+        // Convert Graphic to Texture
         const texture = renderer.generateTexture(g, {
             resolution: 2,
             scaleMode: PIXI.SCALE_MODES.LINEAR
         });
 
+        // Cache it to reuse
         resources[cacheKey] = texture;
         return texture;
     } catch (error) {
@@ -102,6 +104,7 @@ export const resetPool = (pool) => {
     }
 };
 
+// Check whether ship is inside the window view
 export const isInViewport = (lat, lng, bounds) => {
     return lat >= bounds.getSouth() &&
         lat <= bounds.getNorth() &&
@@ -109,6 +112,7 @@ export const isInViewport = (lat, lng, bounds) => {
         lng <= bounds.getEast();
 };
 
+// Normalize ship coordinates: extract [lat, lng] from various ship data formats
 export const resolveLatLng = (ship) => {
     if (!ship) return null;
 

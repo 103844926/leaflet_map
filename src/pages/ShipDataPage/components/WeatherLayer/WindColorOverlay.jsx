@@ -19,14 +19,14 @@ export function WindColorOverlay({
     // Wind speed to color mapping (similar to Windy)
     const getColorForSpeed = (speed) => {
         // Speed in m/s -> RGB color
-        if (speed < 1) return [0, 0, 139, 50]; // Dark blue, transparent
-        if (speed < 3) return [0, 139, 255, 80]; // Blue
-        if (speed < 5) return [0, 255, 255, 100]; // Cyan
-        if (speed < 7) return [0, 255, 0, 120]; // Green
-        if (speed < 10) return [255, 255, 0, 140]; // Yellow
-        if (speed < 15) return [255, 165, 0, 160]; // Orange
-        if (speed < 20) return [255, 69, 0, 180]; // Red-orange
-        return [255, 0, 0, 200]; // Red
+        if (speed < 1) return [0, 0, 139, 50];      // Dark blue, transparent
+        if (speed < 3) return [0, 139, 255, 80];    // Blue
+        if (speed < 5) return [0, 255, 255, 100];   // Cyan
+        if (speed < 7) return [0, 255, 0, 120];     // Green
+        if (speed < 10) return [255, 255, 0, 140];  // Yellow
+        if (speed < 15) return [255, 165, 0, 160];  // Orange
+        if (speed < 20) return [255, 69, 0, 180];   // Red-orange
+        return [255, 0, 0, 200];                    // Red
     };
 
     // Build texture from wind data
@@ -46,10 +46,10 @@ export function WindColorOverlay({
             const { speed } = calculateWindMetrics(uVal, vVal);
             const color = getColorForSpeed(speed);
 
-            pixels[i * 4] = color[0];     // R
-            pixels[i * 4 + 1] = color[1]; // G
-            pixels[i * 4 + 2] = color[2]; // B
-            pixels[i * 4 + 3] = color[3]; // A
+            pixels[i * 4] = color[0];           // R
+            pixels[i * 4 + 1] = color[1];       // G
+            pixels[i * 4 + 2] = color[2];       // B
+            pixels[i * 4 + 3] = color[3];       // A
         }
 
         return { pixels, width: nx, height: ny };

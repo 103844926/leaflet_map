@@ -11,8 +11,10 @@ export function useShipTracking({
     const animationFrameRef = useRef(null);
 
     useEffect(() => {
+        // Stop tracking if not recording or no ship to track
         if (!isRecordingActive || !trackShip || recordingShipIndex === null) {
             lastPositionRef.current = null;
+            // Stop animation frame loop if exists
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
                 animationFrameRef.current = null;
@@ -29,7 +31,6 @@ export function useShipTracking({
 
             const { lat, long } = shipData.position;
 
-            // Only update if position has changed significantly (avoid unnecessary updates)
             const lastPos = lastPositionRef.current;
             if (lastPos) {
                 const distance = Math.sqrt(
@@ -37,7 +38,7 @@ export function useShipTracking({
                     Math.pow(long - lastPos.long, 2)
                 );
 
-                // Skip update if movement is negligible (less than ~10 meters)
+                // Skip setView if movement is negligible (less than ~10 meters)
                 if (distance < 0.0001) {
                     animationFrameRef.current = requestAnimationFrame(updateMapPosition);
                     return;

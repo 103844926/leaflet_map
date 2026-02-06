@@ -1,23 +1,34 @@
-import { useState, useEffect } from "react";
+import { useMemo, useRef, useCallback, useState } from "react";
 
-export function useShipVisible(ships, currentShips) {
-  const [visibleShips, setVisibleShips] = useState([]);
+export function useShipVisible(ships) {
+  // Using a ref map for ship_uid based visibility
+  const visibleByUidRef = useRef(new Map());
 
-  // Initialize visibility when ships array changes
-  useEffect(() => {
-    setVisibleShips((prev) => ships.map((_, i) => prev[i] ?? true));
+  // Render trigger
+  const [visibleVersion, setVisibleVersion] = useState(0);
+
+  // Index-aligned array for rendering
+  const visibleShips = useMemo(() => {
+    console.log('Recomputing visibleShips for the', visibleVersion, 'time');
+    return ships.map(ship =>
+      visibleByUidRef.current.get(ship.ship_uid) ?? true
+    );
+  }, [ships, visibleVersion]); // Recompute when version changes
+
+  // Toggle by index
+  const handleShipToggle = useCallback((index) => {
+    const ship = ships[index];
+    if (!ship) return;
+
+    const uid = ship.ship_uid;
+    const current = visibleByUidRef.current.get(uid) ?? true;
+    visibleByUidRef.current.set(uid, !current);
+
+    setVisibleVersion(v => v + 1);
   }, [ships]);
-
-  const handleShipToggle = (index) => {
-    setVisibleShips((prev) => {
-      const newVisible = [...prev];
-      newVisible[index] = !newVisible[index];
-      return newVisible;
-    });
-  };
 
   return {
     visibleShips,
-    handleShipToggle,
+    handleShipToggle
   };
 }

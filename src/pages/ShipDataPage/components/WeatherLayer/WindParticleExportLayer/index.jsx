@@ -18,13 +18,14 @@ export function WindParticleExportLayer({
     const lastIndexRef = useRef(null);
 
     /* --------------------------------------------------
-     * 1️⃣ Create PIXI app + canvas
+     * STEP 1: Create PIXI app + canvas
      * -------------------------------------------------- */
     useEffect(() => {
         if (!map || !enabled) return;
 
         const container = map.getContainer();
 
+        // Create canvas
         const canvas = document.createElement("canvas");
         Object.assign(canvas.style, {
             position: "absolute",
@@ -36,6 +37,7 @@ export function WindParticleExportLayer({
 
         container.appendChild(canvas);
 
+        // Create PIXI app using the canvas
         const app = new PIXI.Application({
             view: canvas,
             width: container.offsetWidth,
@@ -45,6 +47,7 @@ export function WindParticleExportLayer({
             resolution: window.devicePixelRatio || 1,
         });
 
+        // Store ref 
         appRef.current = app;
         map._windParticleExportApp = app;
         delete map._windParticleExportSystem;
@@ -57,6 +60,7 @@ export function WindParticleExportLayer({
         map.on("resize", resize);
         resize();
 
+        // Cleanup
         return () => {
             map.off("resize", resize);
             delete map._windParticleExportApp;
@@ -68,7 +72,7 @@ export function WindParticleExportLayer({
     }, [map, enabled]);
 
     /* --------------------------------------------------
-     * 2️⃣ Create / update particle system when time changes
+     * STEP 2: Create / update particle system when time changes
      * -------------------------------------------------- */
     useEffect(() => {
         if (
@@ -78,6 +82,7 @@ export function WindParticleExportLayer({
             !isValidTimeRange(minTime, maxTime, selectedTime)
         ) return;
 
+        // Calculate wind data time index using selected time
         const idx = calculateTimeIndex(
             selectedTime,
             minTime,
@@ -85,9 +90,11 @@ export function WindParticleExportLayer({
             windData.ts.length
         );
 
+        // Don't redraw if time index unchanged
         if (idx === lastIndexRef.current) return;
         lastIndexRef.current = idx;
 
+        // Redraw particle system 
         if (systemRef.current) {
             appRef.current.stage.removeChild(systemRef.current.graphics);
             systemRef.current.destroy();
@@ -107,7 +114,7 @@ export function WindParticleExportLayer({
     }, [enabled, windData, selectedTime, minTime, maxTime, map]);
 
     /* --------------------------------------------------
-     * 3️⃣ VISUAL render loop (no step, render only)
+     * STEP 3: VISUAL render loop (no step, render only)
      * -------------------------------------------------- */
     useEffect(() => {
         if (!enabled || !appRef.current || !systemRef.current) return;

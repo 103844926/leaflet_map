@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet-velocity";
-import { isValidWindData, calculateTimeIndex, isValidTimeRange, velocityOptionsForZoom } from "@/utils";
+import { isValidWindData, calculateTimeIndex, isValidTimeRange, velocityOptionsForZoom, } from "@/utils";
 
 function getVelocityLayerConfig(zoom) {
     return {
@@ -13,9 +13,7 @@ function getVelocityLayerConfig(zoom) {
         opacity: 0.4,
         displayValues: false,
         pane: "overlayPane",
-        colorScale: [
-            "rgba(255, 255, 255, 0.6)",
-        ],
+        colorScale: ["rgba(255,255,255,0.6)"],
     };
 }
 
@@ -24,17 +22,18 @@ export function WindParticleLayer({
     selectedTime,
     minTime,
     maxTime,
-    visible = true,
 }) {
     const map = useMap();
-    const layerRef = useRef(null);
-    const readyRef = useRef(false);
-    const isUpdatingRef = useRef(false);
-    const debounceTimerRef = useRef(null);
-    const lastTimeIndexRef = useRef(null);
-    const lastVelocityDataRef = useRef(null);
-    const lastZoomRef = useRef(null);
 
+    const layerRef = useRef(null);
+    const lastVelocityDataRef = useRef(null);
+    const lastTimeIndexRef = useRef(null);
+    const lastZoomRef = useRef(null);
+    const debounceTimerRef = useRef(null);
+
+    /* ------------------------------------
+     * Build velocity data
+     * ------------------------------------ */
     function buildVelocityData(windData, tIndex) {
         if (!windData) return null;
 
@@ -65,7 +64,9 @@ export function WindParticleLayer({
         ];
     }
 
-    // Create layer ONCE (with zoom-aware options)
+    /* ------------------------------------
+     * Create Velocity Layer
+     * ------------------------------------ */
     useEffect(() => {
         if (!map || layerRef.current) return;
 
@@ -73,17 +74,11 @@ export function WindParticleLayer({
         lastZoomRef.current = zoom;
 
         const layer = L.velocityLayer(getVelocityLayerConfig(zoom));
+        layer.addTo(map);
 
-        // Only add to map when visible
-        if (visible) {
-            layer.addTo(map);
-        }
         layerRef.current = layer;
-        readyRef.current = true;
 
         return () => {
-            readyRef.current = false;
-
             if (debounceTimerRef.current) {
                 clearTimeout(debounceTimerRef.current);
             }
@@ -96,18 +91,15 @@ export function WindParticleLayer({
         };
     }, [map, visible]);
 
-    // Update wind data (debounced, time-based) - same as original
+    /* ------------------------------------
+     * Update wind data (debounced)
+     * ------------------------------------ */
     useEffect(() => {
         if (
-            !readyRef.current ||
             !layerRef.current ||
             !isValidWindData(windData) ||
             !isValidTimeRange(minTime, maxTime, selectedTime)
         ) return;
-
-        if (debounceTimerRef.current) {
-            clearTimeout(debounceTimerRef.current);
-        }
 
         const idx = calculateTimeIndex(
             selectedTime,
@@ -118,40 +110,25 @@ export function WindParticleLayer({
 
         if (idx === lastTimeIndexRef.current) return;
 
-        debounceTimerRef.current = setTimeout(() => {
-            if (isUpdatingRef.current) return;
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
 
+        debounceTimerRef.current = setTimeout(() => {
             const data = buildVelocityData(windData, idx);
             if (!data) return;
 
-            isUpdatingRef.current = true;
             lastTimeIndexRef.current = idx;
             lastVelocityDataRef.current = data;
 
-            requestAnimationFrame(() => {
-                layerRef.current?.setData(data);
-                isUpdatingRef.current = false;
-            });
+            layerRef.current.setData(data);
         }, 150);
 
     }, [windData, selectedTime, minTime, maxTime]);
 
-    // Handle visibility changes
-    useEffect(() => {
-        if (!map || !layerRef.current) return;
-
-        if (visible) {
-            if (!map.hasLayer(layerRef.current)) {
-                layerRef.current.addTo(map);
-            }
-        } else {
-            if (map.hasLayer(layerRef.current)) {
-                map.removeLayer(layerRef.current);
-            }
-        }
-    }, [visible, map]);
-
-    // Recreate layer on zoom change (performance-safe) - same as original
+    /* ------------------------------------
+     * Rebuild layer on zoom change
+     * ------------------------------------ */
     useEffect(() => {
         if (!map) return;
 
@@ -166,19 +143,21 @@ export function WindParticleLayer({
 
             map.removeLayer(layerRef.current);
 
-            const newLayer = L.velocityLayer(getVelocityLayerConfig(zoom));
+            const newLayer = L.velocityLayer(
+                getVelocityLayerConfig(zoom)
+            );
 
-            if (data) newLayer.setData(data);
-
-            if (visible) {
-                newLayer.addTo(map);
+            if (data) {
+                newLayer.setData(data);
             }
+
+            newLayer.addTo(map);
             layerRef.current = newLayer;
         };
 
         map.on("zoomend", onZoomEnd);
         return () => map.off("zoomend", onZoomEnd);
-    }, [map, visible]);
+    }, [map]);
 
     return null;
 }

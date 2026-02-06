@@ -15,8 +15,11 @@ export * from "./useRecordingTimeWindow";
 export * from "./useRecordingCapture";
 export * from "./useShipTracking";
 
-// For LeafletRulerControl
+// For DrawingLayer
 export * from "./useDrawingHandlers";
 
 // For ShipAdvancedFilters
 export * from "./useShipAdvancedFilters";
+
+// For ShipInfoTable
+export * from "./useShipTableFilter";

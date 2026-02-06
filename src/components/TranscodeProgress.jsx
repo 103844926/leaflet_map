@@ -26,7 +26,7 @@ export function TranscodeProgress({ jobId, onDone }) {
 
             if (data.done) {
                 setDone(true);
-                console.log('done:', done); //Just for ESLINT, this file is not being used anywhere yet
+                console.log('✅ Transcode completed', done);
                 source.close();
 
                 // Small delay for UX smoothness

@@ -3,7 +3,7 @@ import { Close } from "@mui/icons-material";
 
 import { ShipAdvancedFilters } from "./ShipAdvancedFilters";
 import { ShipDataTable } from "./ShipDataTable";
-import { useShipAdvancedFilter } from "@/hooks";
+import { useShipTableFilter } from "@/hooks";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]; // Available page sizes
 
@@ -29,7 +29,7 @@ export function ShipInfoTable({
         clearFilters,
         changePage,
         changePageSize,
-    } = useShipAdvancedFilter();
+    } = useShipTableFilter();
 
     return (
         <Box

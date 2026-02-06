@@ -1,8 +1,10 @@
 // src/utils/recordingExportUtils.js
+// IOS check
 export function isIOS() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent);
 }
 
+// Default export: Download blob as file
 export function downloadBlob(blob, ext) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -12,6 +14,7 @@ export function downloadBlob(blob, ext) {
     URL.revokeObjectURL(url);
 }
 
+// Upload blob to backend and get jobId
 export async function uploadAndTranscode(blob) {
     const form = new FormData();
     form.append("video", blob, "recording.webm");
@@ -42,6 +45,7 @@ export async function uploadAndTranscode(blob) {
     return { jobId: data.jobId, BACKEND_BASE };
 }
 
+// Use said jobId for live update and get final URL
 export function waitForTranscodeDone(BACKEND_BASE, jobId) {
     return new Promise((resolve, reject) => {
         const es = new EventSource(

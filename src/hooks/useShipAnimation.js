@@ -1,56 +1,85 @@
 import { useState, useCallback, useMemo } from "react";
 import { useTimeAnimation } from './useTimeAnimation';
 
-// Linearly interpolate between two positions
+// Base ShipPositions structure
+function baseShipPosition(ship, time) {
+  return {
+    ship_uid: ship.ship_uid,
+    time,
+    index: 0,
+    nextIndex: 0,
+    progress: 0,
+    position: null,
+  };
+}
+
+// Calculate interpolation between two positions
 function interpolatePosition(pos1, pos2, progress) {
   return {
     lat: pos1.lat + (pos2.lat - pos1.lat) * progress,
     long: pos1.long + (pos2.long - pos1.long) * progress,
-    course: pos2.course, // Use the target course
-    speed: pos1.speed + (pos2.speed - pos1.speed) * progress,
+    course: pos2.course,
   };
 }
 
 export function useShipAnimation(ships, selectedTime) {
-  const [selectedShip, setSelectedShip] = useState(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
   const { isAnimating, animate, stopAnimation } = useTimeAnimation(playbackSpeed);
 
-  // Calculate interpolated ship positions based on current time
+  //Return ship positions based on current time
   const getShipPositionsAtTime = useCallback((currentTime) => {
-    if (!currentTime) return ships.map(() => ({ index: 0, position: null }));
+    if (currentTime == null) {
+      return ships.map(ship => baseShipPosition(ship, currentTime));
+    }
 
     return ships.map((ship) => {
       if (!ship.locations?.length) {
-        return { index: 0, position: null };
+        return baseShipPosition(ship, currentTime);
       }
 
-      // Find the two waypoints to interpolate between
+      // Find the next position index
       let nextIndex = ship.locations.findIndex(loc => loc.time > currentTime);
 
-      // If no future waypoint, ship is at the last position
+      // If no future waypoint, return ship position at the last position
       if (nextIndex === -1) {
         const lastIndex = ship.locations.length - 1;
+        const lastLoc = ship.locations[lastIndex];
         return {
+          ...baseShipPosition(ship, currentTime),
           index: lastIndex,
-          position: ship.locations[lastIndex]
+          nextIndex: lastIndex,
+          progress: 1,
+          position: {
+            lat: lastLoc.lat,
+            long: lastLoc.long,
+            course: lastLoc.course ?? 0,
+          },
         };
       }
 
-      // If at or before first waypoint
+      // If at or before first waypoint, return at first position
       if (nextIndex === 0) {
+        const first = ship.locations[0];
         return {
+          ...baseShipPosition(ship, currentTime),
           index: 0,
-          position: ship.locations[0]
+          nextIndex: 1,
+          progress: 0,
+          position: {
+            lat: first.lat,
+            long: first.long,
+            course: first.course ?? 0,
+          },
         };
       }
 
+      // Get previous and next locations
       const prevIndex = nextIndex - 1;
       const prevLoc = ship.locations[prevIndex];
       const nextLoc = ship.locations[nextIndex];
 
-      // Calculate interpolation progress (0 to 1)
+      // Calculate interpolation progress between two locations (0 to 1)
       const totalTime = nextLoc.time - prevLoc.time;
       const elapsedTime = currentTime - prevLoc.time;
       const progress = Math.min(1, Math.max(0, elapsedTime / totalTime));
@@ -58,28 +87,33 @@ export function useShipAnimation(ships, selectedTime) {
       // Interpolate between the two positions
       const interpolatedPosition = interpolatePosition(prevLoc, nextLoc, progress);
 
+      // Return the ship position structure
       return {
+        ...baseShipPosition(ship, currentTime),
         index: prevIndex,
+        nextIndex,
+        progress,
         position: interpolatedPosition,
-        nextIndex: nextIndex,
-        progress: progress
       };
     });
   }, [ships]);
 
-  const animateShips = useCallback((currentTime, minTime, maxTime, updateTime) => {
-    // Start from current time, but clamp to minTime if it is at maxTime
-    let startTime = currentTime;
-    if (startTime < minTime) startTime = minTime;
-    if (startTime >= maxTime) startTime = minTime;
+  const animateShips = useCallback((startAnimateTime, startWindowTime, endAnimateTime, onTimeApply) => {
+    // Start from startAnimateTime, but clamp to startWindowTime if it is at endAnimateTime
+    console.log("Animation started from", startAnimateTime, "to", endAnimateTime);
+    let startTime = startAnimateTime;
+    if (startTime < startWindowTime || startTime >= endAnimateTime) {
+      startTime = startWindowTime;
+      console.log("Already at", endAnimateTime, "restarting to", startWindowTime);
+    }
 
     animate(
       startTime,
-      maxTime,
+      endAnimateTime,
       (t) => {
-        // Clamp time on every frame (safety)
-        const clamped = Math.min(Math.max(t, minTime), maxTime);
-        updateTime(clamped);
+        const clamped = Math.min(Math.max(t, startWindowTime), endAnimateTime);
+        // External callback to apply current time
+        onTimeApply(clamped);
       },
       () => {
         console.log("Animation complete");
@@ -93,8 +127,6 @@ export function useShipAnimation(ships, selectedTime) {
   );
 
   return {
-    selectedShip,
-    setSelectedShip,
     shipPositions,
     isAnimating,
     animate: animateShips,

@@ -25,7 +25,7 @@ export function useRecording({
     const shouldRecordRef = useRef(false);
     const hasStoppedRef = useRef(false);
 
-    // 🔧 FIX: prevent double-stop race conditions
+    // Prevent double-stop race conditions
     const stoppingRef = useRef(false);
 
     const animationCompleteTimeoutRef = useRef(null);
@@ -48,7 +48,7 @@ export function useRecording({
     const stopRecording = useCallback(async () => {
         if (!isRecording || hasStoppedRef.current || stoppingRef.current) return;
 
-        console.log("🛑 Stopping recording...");
+        console.log(" Stopping recording...");
 
         stoppingRef.current = true;
         hasStoppedRef.current = true;
@@ -62,7 +62,7 @@ export function useRecording({
             animationCompleteTimeoutRef.current = null;
         }
 
-        // 🧹 CLEANUP: stop capture & release all MediaRecorder resources
+        // CLEANUP: stop capture & release all MediaRecorder resources
         const finalBlob = await stopCapture();
 
         stoppingRef.current = false;
@@ -81,7 +81,7 @@ export function useRecording({
 
         onRecordingStateChange?.(false);
 
-        console.log("✅ Recording complete!");
+        console.log(" Recording complete!");
     }, [isRecording, stopCapture, exportRecording, onResetTimeWindow, onRecordingStateChange]);
 
     // -------------------------------------------------------------------------
@@ -90,12 +90,6 @@ export function useRecording({
     const startRecording = useCallback(async () => {
         const startTime = recordingStartTime;
         const endTime = recordingEndTime;
-        const duration = endTime - startTime;
-
-        if (duration <= 0) {
-            alert("Invalid time range!");
-            return;
-        }
 
         const mapInstance = mapRef?.current;
         if (!mapInstance) {
@@ -110,14 +104,14 @@ export function useRecording({
         setIsRecording(true);
 
         // STEP 1: Position ships at start
-        console.log("📍 Setting ships to start position...");
+        console.log(" Setting ships to start position...");
         onTimeChange(startTime);
 
         const initialDelay = 1500;
         await new Promise((resolve) => setTimeout(resolve, initialDelay));
 
         // STEP 2: Start capture
-        console.log("🎥 Starting recorder...");
+        console.log(" Starting recorder...");
 
         const stream = await startCapture(mapInstance, {
             fps: 24,
@@ -139,11 +133,11 @@ export function useRecording({
         await new Promise((resolve) => setTimeout(resolve, firstFrameDelay));
 
         // STEP 4: Start animation
-        console.log("▶️ Starting animation...");
+        console.log(" Starting animation...");
         onStartAnimation?.(startTime, endTime);
 
         setHasStartedCapture(true);
-        console.log("🔴 Recording active");
+        console.log(" Recording active");
     }, [
         recordingStartTime,
         recordingEndTime,
@@ -163,7 +157,7 @@ export function useRecording({
             isRecording &&
             !hasStoppedRef.current
         ) {
-            console.log("⏹ Animation finished → waiting before stopping");
+            console.log(" Animation finished → waiting before stopping");
 
             animationCompleteTimeoutRef.current = setTimeout(() => {
                 stopRecording();
@@ -204,7 +198,6 @@ export function useRecording({
         };
     }, []);
 
-    // -------------------------------------------------------------------------
     return {
         isRecording,
         isProcessing: isExporting,

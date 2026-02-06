@@ -1,5 +1,5 @@
 /**
- * Validate wind data structure
+ * Basic validation of wind grid metadata (ts, nx, ny)
  */
 export function isValidWindData(windData) {
     return windData &&
@@ -10,7 +10,7 @@ export function isValidWindData(windData) {
 }
 
 /**
- * Calculate time index from selected time and range
+ * Convert selected time into a clamped wind grid time index
  */
 export function calculateTimeIndex(selectedTime, minTime, maxTime, totalTimeSteps) {
     if (!selectedTime || !minTime || !maxTime || !totalTimeSteps) {
@@ -22,7 +22,7 @@ export function calculateTimeIndex(selectedTime, minTime, maxTime, totalTimeStep
 }
 
 /**
- * Validate time range parameters
+ * Check present of time range parameters
  */
 export function isValidTimeRange(minTime, maxTime, selectedTime) {
     return minTime != null &&
@@ -31,7 +31,7 @@ export function isValidTimeRange(minTime, maxTime, selectedTime) {
 }
 
 /**
- * Sample wind data at a specific latitude/longitude
+ * Sample nearest wind data at a given lat/long
  */
 export function sampleWindAtLatLng(grid, lat, lng, timeIndex) {
     if (!grid) return null;
@@ -78,9 +78,9 @@ export function calculateWindMetrics(u, v) {
 }
 
 /**
- * Log wind data to console (shared formatting)
+ * Log wind data to console 
  */
-export function logWindData(label, { lat, lng, u, v, gust, gridIndex, timeIndex, selectedTime, gridTime }) {
+export function logWindData(label, { lat, lng, u, v, gridIndex, timeIndex, selectedTime, gridTime }) {
     const { speed, speedKnots, meteoAngle, direction } = calculateWindMetrics(u, v);
 
     console.log(`=== ${label} ===`);
@@ -135,6 +135,9 @@ export function createWindClickHandler(windData, selectedTime, minTime, maxTime,
     };
 }
 
+/**
+ * Return velocity animation parameters based on map zoom level
+ */
 export function velocityOptionsForZoom(zoom) {
     if (zoom <= 4) {
         return {

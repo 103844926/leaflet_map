@@ -144,6 +144,7 @@ export class WindParticleExportSystem {
             p.px = p.x;
             p.py = p.y;
 
+            // Calculate new position each step
             p.x += wind.u * dt * this.speedScale;
             p.y -= wind.v * dt * this.speedScale;
             p.age += dt;
@@ -184,11 +185,13 @@ export class WindParticleExportSystem {
         }
     }
 
+    // Redraw particle when time index changes
     reset(timeIndex) {
         this.timeIndex = timeIndex;
         this._initParticles(this.particles.length);
     }
 
+    // Cleanup
     destroy() {
         this.graphics.clear();
         this.graphics.destroy(true);

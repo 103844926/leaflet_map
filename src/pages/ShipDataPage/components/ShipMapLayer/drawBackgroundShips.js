@@ -10,9 +10,9 @@ const BASE_SECONDS_AHEAD = 25;
 const MAX_SECONDS_AHEAD = 180;
 
 /* ----------------------------------
- * Cheap forward projection
+ * Forward projection
  * ---------------------------------- */
-const R = 6378137;
+const R = 6378137;          // Earth radius in meters
 function projectForward(lat, lng, bearingDeg, meters) {
     const b = bearingDeg * Math.PI / 180;
     const lat1 = lat * Math.PI / 180;
@@ -34,7 +34,7 @@ function projectForward(lat, lng, bearingDeg, meters) {
 /* ----------------------------------
  * Main draw
  * ---------------------------------- */
-export function drawBackground({
+export function drawBackgroundShips({
     container,
     project,
     scale,
@@ -52,10 +52,16 @@ export function drawBackground({
     const pool = resources.bgSpritePool;
     resetPool(pool);
 
+    if (!resources.bgProjectionGraphics) {
+        resources.bgProjectionGraphics = new PIXI.Graphics();
+    }
+    const projectionGraphics = resources.bgProjectionGraphics;
+    projectionGraphics.clear();
+
     const showProjection = scale >= PROJECTION_MIN_SCALE;
     const useSimple = scale < 0.3;
 
-    for (const ship of backgroundShips) {
+    for (const ship of backgroundShips) {       // Extract objects from array
         const latlng = resolveLatLng(ship);
         if (!latlng || !isInViewport(latlng[0], latlng[1], bounds)) continue;
 
@@ -71,6 +77,8 @@ export function drawBackground({
         const course = ship.course ?? ship.position?.course ?? 0;
 
         const baseSize = (useSimple ? 0.4 : 0.6) / scale;
+
+        // Selected boost
         const selectedBoost = isSelected ? 1.35 : 1.0;
 
         sprite.x = pt.x;
@@ -85,6 +93,7 @@ export function drawBackground({
         sprite.removeAllListeners();
         sprite.on("pointertap", (event) => onBackgroundShipClick?.(ship, event));
 
+        // Selected border
         if (isSelected) {
             const border = getSprite(pool, texture);
             if (border) {
@@ -101,27 +110,18 @@ export function drawBackground({
         container.addChild(sprite);
 
         /* ---------- Forward projection ---------- */
-        if (
-            (showProjection || isSelected) &&
-            ship.speed > 0
-        ) {
+        if (showProjection || isSelected) {
             const speedMps = ship.speed * 0.514444;
-            if (speedMps < 0.5) continue;
 
-            const seconds =
-                isSelected
-                    ? MAX_SECONDS_AHEAD
-                    : Math.min(
-                        MAX_SECONDS_AHEAD,
-                        BASE_SECONDS_AHEAD + scale * 80
-                    );
+            // Early exit with BASE_SECONDS_AHEAD check
+            const minMeters = speedMps * BASE_SECONDS_AHEAD;
+            if (minMeters < 8) continue;
 
-            const meters = Math.min(
-                MAX_PROJECTION_METERS,
-                speedMps * seconds
-            );
+            const seconds = isSelected
+                ? MAX_SECONDS_AHEAD
+                : Math.min(MAX_SECONDS_AHEAD, BASE_SECONDS_AHEAD + scale * 80);
 
-            if (meters < 8) continue;
+            const meters = Math.min(MAX_PROJECTION_METERS, speedMps * seconds);
 
             const [fLat, fLng] = projectForward(
                 latlng[0],
@@ -133,16 +133,17 @@ export function drawBackground({
             const p2 = project([fLat, fLng]);
             if (!p2) continue;
 
-            const g = new PIXI.Graphics();
-            g.lineStyle(
+            projectionGraphics.lineStyle(
                 1 / scale,
                 backgroundShipColor,
                 isSelected ? 0.6 : 0.25
             );
-            g.moveTo(pt.x, pt.y);
-            g.lineTo(p2.x, p2.y);
-
-            container.addChild(g);
+            projectionGraphics.moveTo(pt.x, pt.y);
+            projectionGraphics.lineTo(p2.x, p2.y);
         }
+    }
+
+    if (projectionGraphics.geometry.graphicsData.length > 0) {
+        container.addChild(projectionGraphics);
     }
 }

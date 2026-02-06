@@ -34,10 +34,7 @@ export function ShipFilterControl({ open, filters, filterOptions, onApply, onClo
                     Cancel
                 </Button>
 
-                <Button
-                    variant="contained"
-                    onClick={() => onApply(draft)}
-                >
+                <Button variant="contained" onClick={() => onApply(draft)}>
                     Apply
                 </Button>
             </DialogActions>

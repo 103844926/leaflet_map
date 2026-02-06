@@ -6,9 +6,6 @@ import { WindParticleExportLayer } from './WindParticleExportLayer';
 export function WeatherLayer({ windData, selectedTime, minTime, maxTime, isAnimating, isRecordingActive, isMobile }) {
     if (!windData) return null;
 
-    // Hide particles during animation/recording
-    const showParticles = !isAnimating && !isRecordingActive;
-
     return (
         <>
             <WindInfoBox
@@ -17,7 +14,7 @@ export function WeatherLayer({ windData, selectedTime, minTime, maxTime, isAnima
                 minTime={minTime}
                 maxTime={maxTime}
                 isMobile={isMobile}
-                visible={showParticles}
+                visible={!isRecordingActive && !isAnimating}
             />
 
             {/* Color overlay - always visible */}
@@ -28,23 +25,26 @@ export function WeatherLayer({ windData, selectedTime, minTime, maxTime, isAnima
                 maxTime={maxTime}
             />
 
-            {/* Particle animation - hidden during animation/recording */}
-            <WindParticleLayer
-                windData={windData}
-                selectedTime={selectedTime}
-                minTime={minTime}
-                maxTime={maxTime}
-                visible={showParticles}
-            />
+            {/* Live particles (NEVER during recording) */}
+            {!isRecordingActive && !isAnimating && (
+                <WindParticleLayer
+                    windData={windData}
+                    selectedTime={selectedTime}
+                    minTime={minTime}
+                    maxTime={maxTime}
+                />
+            )}
 
-            {/* Particle export layer - only during recording */}
-            <WindParticleExportLayer
-                windData={windData}
-                selectedTime={selectedTime}
-                minTime={minTime}
-                maxTime={maxTime}
-                enabled={isRecordingActive}
-            />
+            {/* Export particles (ONLY during recording) */}
+            {isRecordingActive && (
+                <WindParticleExportLayer
+                    windData={windData}
+                    selectedTime={selectedTime}
+                    minTime={minTime}
+                    maxTime={maxTime}
+                    enabled
+                />
+            )}
         </>
     );
 }

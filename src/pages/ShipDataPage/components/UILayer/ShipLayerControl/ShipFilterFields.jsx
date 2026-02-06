@@ -83,7 +83,7 @@ export function ShipFilterFields({ filters, onChange, filterOptions }) {
                     MenuProps={{
                         PaperProps: {
                             style: {
-                                maxHeight: 250,   // 👈 LIMIT HEIGHT
+                                maxHeight: 250,   // LIMIT HEIGHT
                             },
                         },
                         anchorOrigin: {

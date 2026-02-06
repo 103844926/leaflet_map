@@ -6,12 +6,12 @@ import L from "leaflet";
 import "leaflet-pixi-overlay";
 import { drawPaths } from "./drawPaths";
 import { drawMarkers } from "./drawMarkers";
-import { drawBackground } from "./drawBackground";
-import { detectShipMovementStartsDetailed } from "@/utils";
+import { drawBackgroundShips } from "./drawBackgroundShips";
+import { detectShipMovementStarts } from "@/utils";
 
 export function UnifiedShipLayer({
-    ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
-    onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
+    shipsToRender, visibleShips, shipPositions,
+    onMarkerClick, recordingShipIndex, isRecording, currentTime,
     backgroundShips = [], backgroundShipColor = 0x888888,
     onBackgroundShipClick, selectedShipId
 }) {
@@ -23,6 +23,7 @@ export function UnifiedShipLayer({
         spritePool: { sprites: [], labels: [], inUse: 0, labelInUse: 0 },
         bgSpritePool: { sprites: [], inUse: 0 },
         pathGraphics: null,
+        bgProjectionGraphics: null,
         shipTexture: null,
         shipTextureNoBorder: null,
         circleTexture: null,
@@ -30,18 +31,39 @@ export function UnifiedShipLayer({
 
     useEffect(() => {
         movementStartMapRef.current =
-            detectShipMovementStartsDetailed(ships, 50);
-    }, [ships]);
+            detectShipMovementStarts(shipsToRender, 50);
+    }, [shipsToRender]);
 
-    // Update propsRef when dependancy changes
+    // Store all props in propsRef (update this useEffect when dependency changes)
     useEffect(() => {
+        console.groupCollapsed("🛳️ UnifiedShipLayer props");
+        console.log("shipsToRender:", {
+            type: Array.isArray(shipsToRender),
+            length: shipsToRender?.length,
+            sample: shipsToRender,
+        });
+
+        console.log("ShipPositions:", {
+            type: Array.isArray(shipPositions),
+            length: shipPositions?.length,
+            sample: shipPositions,
+            time: shipPositions?.[0]?.time,
+        });
+
+        console.log("backgroundShips:", {
+            type: Array.isArray(backgroundShips),
+            length: backgroundShips?.length,
+            sample: backgroundShips,
+        });
+        console.groupEnd();
+
         propsRef.current = {
-            ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
-            onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
+            shipsToRender, visibleShips, shipPositions,
+            onMarkerClick, recordingShipIndex, isRecording, currentTime,
             backgroundShips, backgroundShipColor, onBackgroundShipClick, selectedShipId
         };
-    }, [ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
-        onMarkerClick, showPaths, recordingShipIndex, isRecording, currentTime,
+    }, [shipsToRender, visibleShips, shipPositions,
+        onMarkerClick, recordingShipIndex, isRecording, currentTime,
         backgroundShips, backgroundShipColor, onBackgroundShipClick, selectedShipId]);
 
     useEffect(() => {
@@ -71,7 +93,7 @@ export function UnifiedShipLayer({
             // Use resourcesRef.current here since we need the latest value
             const currentResources = resourcesRef.current;
 
-            drawBackground({
+            drawBackgroundShips({
                 container, project: latLngToLayerPoint, scale, bounds, renderer,
                 backgroundShips: props.backgroundShips,
                 backgroundShipColor: props.backgroundShipColor,
@@ -82,18 +104,15 @@ export function UnifiedShipLayer({
 
             drawPaths({
                 container, project: latLngToLayerPoint, scale, bounds,
-                ships: props.ships,
                 shipsToRender: props.shipsToRender,
                 visibleShips: props.visibleShips,
                 shipPositions: props.shipPositions,
-                showPaths: props.showPaths,
                 resources: currentResources
             });
 
             drawMarkers({
                 container, project: latLngToLayerPoint, scale, bounds, renderer,
                 shipsToRender: props.shipsToRender,
-                timeFilteredShips: props.timeFilteredShips,
                 visibleShips: props.visibleShips,
                 shipPositions: props.shipPositions,
                 onMarkerClick: props.onMarkerClick,
@@ -136,8 +155,8 @@ export function UnifiedShipLayer({
 
     useEffect(() => {
         pixiOverlayRef.current?.redraw();
-    }, [ships, timeFilteredShips, shipsToRender, visibleShips, shipPositions,
-        showPaths, recordingShipIndex, isRecording,
+    }, [shipsToRender, visibleShips, shipPositions,
+        recordingShipIndex, isRecording,
         backgroundShips, backgroundShipColor, selectedShipId]);
 
     return null;
