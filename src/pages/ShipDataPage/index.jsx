@@ -70,12 +70,6 @@ export default function ShipDataPage() {
     updateTime,
   } = useShipTime(ships, handleTimeChange);
 
-  const selectedTimeRef = useRef(selectedTime);
-
-  useEffect(() => {
-    selectedTimeRef.current = selectedTime;
-  }, [selectedTime]);
-
   // ---- Recording / Time playback window (GLOBAL) ----
   const [windowStart, setWindowStart] = useState(null);
   const [windowEnd, setWindowEnd] = useState(null);
@@ -167,7 +161,6 @@ export default function ShipDataPage() {
     minTime,
     maxTime,
     selectedTime,
-    selectedTimeRef,
     recordingShipStartTime,
     trackShip,
     setTrackShip,

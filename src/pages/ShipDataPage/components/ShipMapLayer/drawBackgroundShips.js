@@ -110,27 +110,18 @@ export function drawBackgroundShips({
         container.addChild(sprite);
 
         /* ---------- Forward projection ---------- */
-        if (
-            (showProjection || isSelected) &&
-            ship.speed > 0
-        ) {
+        if (showProjection || isSelected) {
             const speedMps = ship.speed * 0.514444;
-            if (speedMps < 0.5) continue;       // Skip calculation 
 
-            const seconds =
-                isSelected
-                    ? MAX_SECONDS_AHEAD
-                    : Math.min(
-                        MAX_SECONDS_AHEAD,
-                        BASE_SECONDS_AHEAD + scale * 80
-                    );
+            // Early exit with BASE_SECONDS_AHEAD check
+            const minMeters = speedMps * BASE_SECONDS_AHEAD;
+            if (minMeters < 8) continue;
 
-            const meters = Math.min(
-                MAX_PROJECTION_METERS,
-                speedMps * seconds
-            );
+            const seconds = isSelected
+                ? MAX_SECONDS_AHEAD
+                : Math.min(MAX_SECONDS_AHEAD, BASE_SECONDS_AHEAD + scale * 80);
 
-            if (meters < 8) continue;           // Skip rendering
+            const meters = Math.min(MAX_PROJECTION_METERS, speedMps * seconds);
 
             const [fLat, fLng] = projectForward(
                 latlng[0],

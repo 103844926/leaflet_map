@@ -22,12 +22,12 @@ export const createShipTexture = (renderer, resources, shape = 'triangle', withB
         ? 'circleTexture'
         : (withBorder ? 'shipTexture' : 'shipTextureNoBorder');
 
-    // Reuse existing texture if cached and valid
+    // Reuse cache if it is exist and reusable
     if (resources[cacheKey] && resources[cacheKey].valid) {
         return resources[cacheKey];
     }
 
-    // Destroy invalid cached texture
+    // Destroy corrupted cached texture then recreate it
     if (resources[cacheKey]) {
         try { resources[cacheKey].destroy(true); } catch (e) { }
         resources[cacheKey] = null;
@@ -35,7 +35,6 @@ export const createShipTexture = (renderer, resources, shape = 'triangle', withB
 
     const g = new PIXI.Graphics();
 
-    // Fill white so tint will work; add a thin black border for visibility
     g.beginFill(0xFFFFFF);
 
     if (shape === 'circle') {
@@ -56,11 +55,13 @@ export const createShipTexture = (renderer, resources, shape = 'triangle', withB
     g.endFill();
 
     try {
+        // Convert Graphic to Texture
         const texture = renderer.generateTexture(g, {
             resolution: 2,
             scaleMode: PIXI.SCALE_MODES.LINEAR
         });
 
+        // Cache it to reuse
         resources[cacheKey] = texture;
         return texture;
     } catch (error) {
@@ -103,6 +104,7 @@ export const resetPool = (pool) => {
     }
 };
 
+// Check whether ship is inside the window view
 export const isInViewport = (lat, lng, bounds) => {
     return lat >= bounds.getSouth() &&
         lat <= bounds.getNorth() &&
@@ -110,6 +112,7 @@ export const isInViewport = (lat, lng, bounds) => {
         lng <= bounds.getEast();
 };
 
+// Normalize ship coordinates: extract [lat, lng] from various ship data formats
 export const resolveLatLng = (ship) => {
     if (!ship) return null;
 

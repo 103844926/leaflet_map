@@ -20,7 +20,7 @@ export function useRecordingTimeWindow({ minTime, maxTime, initialStartTime, sho
     setStagingEnd(maxTime);
   }, [minTime, maxTime]);
 
-  // Apply initialStartTime when dialog opens and we have a value
+  // Apply initialStartTime when a ship with initialStartTime is applied
   useEffect(() => {
     if (showDialog && initialStartTime != null && !appliedInitialStartRef.current) {
       console.log(" Setting recording start time to:", new Date(initialStartTime).toLocaleString());

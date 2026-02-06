@@ -2,12 +2,7 @@ import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet-velocity";
-import {
-    isValidWindData,
-    calculateTimeIndex,
-    isValidTimeRange,
-    velocityOptionsForZoom,
-} from "@/utils";
+import { isValidWindData, calculateTimeIndex, isValidTimeRange, velocityOptionsForZoom, } from "@/utils";
 
 function getVelocityLayerConfig(zoom) {
     return {
@@ -70,7 +65,7 @@ export function WindParticleLayer({
     }
 
     /* ------------------------------------
-     * Create layer ONCE
+     * Create Velocity Layer
      * ------------------------------------ */
     useEffect(() => {
         if (!map || layerRef.current) return;

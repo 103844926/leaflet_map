@@ -14,7 +14,7 @@ export function WeatherLayer({ windData, selectedTime, minTime, maxTime, isAnima
                 minTime={minTime}
                 maxTime={maxTime}
                 isMobile={isMobile}
-                visible={!isRecordingActive}
+                visible={!isRecordingActive && !isAnimating}
             />
 
             {/* Color overlay - always visible */}
@@ -26,7 +26,7 @@ export function WeatherLayer({ windData, selectedTime, minTime, maxTime, isAnima
             />
 
             {/* Live particles (NEVER during recording) */}
-            {!isRecordingActive && (
+            {!isRecordingActive && !isAnimating && (
                 <WindParticleLayer
                     windData={windData}
                     selectedTime={selectedTime}

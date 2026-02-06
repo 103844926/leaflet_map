@@ -18,7 +18,7 @@ function interpolatePosition(pos1, pos2, progress) {
   return {
     lat: pos1.lat + (pos2.lat - pos1.lat) * progress,
     long: pos1.long + (pos2.long - pos1.long) * progress,
-    course: pos2.course, // Use the target course
+    course: pos2.course,
   };
 }
 
@@ -98,19 +98,20 @@ export function useShipAnimation(ships, selectedTime) {
     });
   }, [ships]);
 
-  const animateShips = useCallback((currentTime, startAnimate, endAnimate, onTimeApply) => {
-    // Start from current time, but clamp to startAnimate if it is at endAnimate
-    console.log("Animation started from", currentTime, "to", endAnimate);
-    let startTime = currentTime;
-    if (startTime < startAnimate) startTime = startAnimate;
-    if (startTime >= endAnimate) startTime = startAnimate;
-    console.log("Already at", endAnimate, "restarting to", startAnimate);
+  const animateShips = useCallback((startAnimateTime, startWindowTime, endAnimateTime, onTimeApply) => {
+    // Start from startAnimateTime, but clamp to startWindowTime if it is at endAnimateTime
+    console.log("Animation started from", startAnimateTime, "to", endAnimateTime);
+    let startTime = startAnimateTime;
+    if (startTime < startWindowTime || startTime >= endAnimateTime) {
+      startTime = startWindowTime;
+      console.log("Already at", endAnimateTime, "restarting to", startWindowTime);
+    }
 
     animate(
       startTime,
-      endAnimate,
+      endAnimateTime,
       (t) => {
-        const clamped = Math.min(Math.max(t, startAnimate), endAnimate);
+        const clamped = Math.min(Math.max(t, startWindowTime), endAnimateTime);
         // External callback to apply current time
         onTimeApply(clamped);
       },
