@@ -37,5 +37,68 @@
   }
 }
 
+.leaflet-container {
+  width: 100%;
+  height: 100vh;
+}
 
-.leaflet-container {   width: 100%;   height: 100vh; }
+.leaflet-map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  pointer-events: none; /* so map still pans */
+}
+
+.leaflet-map-overlay > * {
+  pointer-events: auto; /* re-enable interaction JUST for the controls */
+}
+
+/* Custom styling for background ship clusters */
+.background-ship-cluster {
+  background-color: rgba(128, 128, 128, 0.6);
+  border-radius: 50%;
+  text-align: center;
+  font-weight: bold;
+  color: white;
+}
+
+.background-ship-cluster div {
+  width: 40px;
+  height: 40px;
+  margin-left: 5px;
+  margin-top: 5px;
+  text-align: center;
+  border-radius: 50%;
+  background-color: rgba(128, 128, 128, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-cluster-small {
+  background-color: rgba(128, 128, 128, 0.6);
+}
+
+.marker-cluster-small div {
+  background-color: rgba(128, 128, 128, 0.8);
+}
+
+.marker-cluster-medium {
+  background-color: rgba(100, 100, 100, 0.6);
+}
+
+.marker-cluster-medium div {
+  background-color: rgba(100, 100, 100, 0.8);
+}
+
+.marker-cluster-large {
+  background-color: rgba(80, 80, 80, 0.6);
+}
+
+.marker-cluster-large div {
+  background-color: rgba(80, 80, 80, 0.8);
+  font-size: 14px;
+}

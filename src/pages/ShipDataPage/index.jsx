@@ -1,76 +1,310 @@
-import React from 'react';
-import "leaflet/dist/leaflet.css"
-import { MapContainer, TileLayer } from 'react-leaflet';
-import { useState, useEffect } from 'react';
-import * as Landing from './components';
-import { getShipData } from '@/datas';
-import { Box } from '@mui/material';
-import L from "leaflet";
+import { React, useState, useCallback, useRef, useEffect } from "react";
+import "leaflet/dist/leaflet.css";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { Box } from "@mui/material";
+import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipInfoTable, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
 
-const customDivIcon = L.divIcon({
-    html: `<div style="
-    width: 10px;
-    height: 10px;
-    background: #1976d2;
-    border-radius: 50%;
-    border: 2px solid white;
-  "></div>`,
-});
-
-L.Marker.prototype.options.icon = customDivIcon;
+import { RecordingControl } from "@/components";
+import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions, useLayerControl } from "@/hooks";
+import { defaultShipFilters } from "@/utils";
 
 export default function ShipDataPage() {
-    const [ships, setShips] = useState([]);
-    const [initialCenter, setInitialCenter] = useState(null);
+
+  // --------------------
+  // Basic state
+  // --------------------
+  const mapRef = useRef(null);
+
+  const paperControl = useLeafletControl();
+  const boxControl = useLeafletControl();
+  const layerControl = useLeafletControl();
+  const { showWeather, showUI, layerConfigs } = useLayerControl();
+
+  // Click position state
+  const [selectedShip, setSelectedShip] = useState(null);
+  const [shipLatLng, setShipLatLng] = useState(null);
+  const [showShipTable, setShowShipTable] = useState(false);
+
+  // Recording state
+  const [isRecordingActive, setIsRecordingActive] = useState(false);
+  const [showRecordingDialog, setShowRecordingDialog] = useState(false);
+  const [shouldStopRecording, setShouldStopRecording] = useState(false);
+  const [recordingShipIndex, setRecordingShipIndex] = useState(null);
+  const [recordingShipStartTime, setRecordingShipStartTime] = useState(null);
+  const [trackShip, setTrackShip] = useState(false);
+
+
+  // Ship filters
+  const [shipFilters, setShipFilters] = useState(defaultShipFilters);
+
+  // --------------------------
+  // Load ships data and filter
+  // --------------------------
+  const {
+    ships,
+    currentShips,
+    initialCenter,
+    timeRange,
+    setTimeRange,
+    visibleShips,
+    handleShipToggle,
+    movementMarks,
+    windData,
+    virtualMinTime,
+    virtualMaxTime,
+    isMobile,
+  } = useShipDataPageLogic();
+
+  const filterOptions = useShipFilterOptions(currentShips);
+
+  // --------------------
+  // Time management (no animation)
+  // --------------------
+  const handleTimeChange = useCallback((range) => setTimeRange(range), [setTimeRange]);
+
+  const {
+    availableTimes,
+    selectedTime,
+    minTime,
+    maxTime,
+    updateTime,
+  } = useShipTime(ships, handleTimeChange);
+
+  // ---- Recording / Time playback window (GLOBAL) ----
+  const [windowStart, setWindowStart] = useState(null);
+  const [windowEnd, setWindowEnd] = useState(null);
+
+  // keep window in sync with data range
+  useEffect(() => {
+    setWindowStart(minTime);
+    setWindowEnd(maxTime);
+  }, [minTime, maxTime]);
+
+  // --------------------
+  // Animation + Ship positions
+  // --------------------
+  const {
+    shipPositions,
+    isAnimating,
+    animate,
+    stopAnimation,
+    playbackSpeed,
+    setPlaybackSpeed,
+  } = useShipAnimation(ships, selectedTime);
+
+  // Wrapper to handle ship selection with click position
+  const handleShipSelect = useCallback((ship, event) => {
+    setSelectedShip(ship);
+    setShipLatLng(event.latlng);
+  }, [setSelectedShip]);
+
+  // Wrapper to update time (stops animation if user touches slider)
+  const handleManualTimeUpdate = useCallback(
+    (newTime) => {
+      if (isAnimating) {
+        stopAnimation();
+      }
+      updateTime(newTime);
+    },
+    [isAnimating, stopAnimation, updateTime],
+  );
+
+  // Safety effect to make sure shouldStopRecording is cleared
+  useEffect(() => {
+    if (!isRecordingActive) {
+      setShouldStopRecording(false);
+    }
+  }, [isRecordingActive]);
+
+
+  // Track selected ship on map during recording
+  useShipTracking({
+    mapRef,
+    isRecordingActive,
+    trackShip,
+    recordingShipIndex,
+    shipPositions
+  });
+
+  // ------------------------
+  // Props grouping via custom hook
+  // ------------------------
+  const {
+    recordingProps,
+    timeControlProps,
+    shipLayerControlProps,
+    infoPanelProps,
+    shipTableProps,
+  } = useShipDataPageProps({
+    isMobile,
+    ships,
+    visibleShips,
+    shipPositions,
+
+    shipFilters,
+    setShipFilters,
+    filterOptions,
+
+    timeRange,
+    windowStart,
+    windowEnd,
+    setWindowStart,
+    setWindowEnd,
+    mapRef,
+    paperControl,
+    boxControl,
+
+    shouldStopRecording,
+    isRecordingActive,
+    showRecordingDialog,
+    recordingShipIndex,
+    minTime,
+    maxTime,
+    selectedTime,
+    recordingShipStartTime,
+    trackShip,
+    setTrackShip,
+
+    setRecordingShipIndex,
+    setIsRecordingActive,
+    setShowRecordingDialog,
+    handleShipToggle,
+    handleManualTimeUpdate,
+    setShouldStopRecording,
+    setRecordingShipStartTime,
+
+    isAnimating,
+    animate,
+    stopAnimation,
+    playbackSpeed,
+    setPlaybackSpeed,
+
+    availableTimes,
+    updateTime,
+    movementMarks,
+    showShipTable,
+    setShowShipTable,
+    setSelectedShip,
+    selectedShip,
+    shipLatLng,
+    setShipLatLng,
+  });
+
+  function MapInstanceCapture({ mapRef }) {
+    const map = useMap();
 
     useEffect(() => {
-        const load = async () => {
-            const data = await getShipData();
-            setShips(data);
+      if (map && mapRef) {
+        mapRef.current = map;
+      }
+    }, [map, mapRef]);
 
-            // Compute global center from ALL ships
-            const allLats = data.flatMap(s => s.locations.map(l => l.lat));
-            const allLongs = data.flatMap(s => s.locations.map(l => l.long));
+    return null;
+  }
 
-            const centerLat = allLats.reduce((a, b) => a + b, 0) / allLats.length;
-            const centerLong = allLongs.reduce((a, b) => a + b, 0) / allLongs.length;
+  if (!initialCenter) return <div>Loading map...</div>;
 
-            setInitialCenter([centerLat, centerLong]);
-        };
-        load();
-    }, []);
+  // --------------------
+  // Render
+  // --------------------
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        height: "100vh",
+        width: "100%",
+        backgroundColor: "#999",
+        padding: { xs: "10px", md: "20px" },
+        boxSizing: "border-box",
+      }}
+    >
+      <MapContainer
+        ref={mapRef}
+        center={initialCenter}
+        zoom={10}
+        scrollWheelZoom
+        preferCanvas={true}
+        style={{ height: "100%", width: "100%" }}
+        zoomControl={false}
+      >
+        {/* Component allowing video capture */}
+        <MapInstanceCapture mapRef={mapRef} />
 
-    // Wait until ship data is loaded
-    if (!initialCenter) {
-        return <div>Loading map...</div>;
-    }
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          subdomains="abc"
+          crossOrigin="anonymous"
+          maxZoom={19}
+          tileSize={512}
+          zoomOffset={-1}
+        />
 
-    return (
-        <Box sx={{ position: "relative", height: "100vh", width: "100%", backgroundColor: "#999", padding: "50px", boxSizing: "border-box" }}>
-            {/* Main Map */}
+        {/* WIND LAYER */}
+        {windData && selectedTime && minTime && maxTime && showWeather && (
+          <WeatherLayer
+            windData={windData}
+            selectedTime={selectedTime}
+            minTime={virtualMinTime}
+            maxTime={virtualMaxTime}
+            isAnimating={isAnimating}
+            isRecordingActive={isRecordingActive}
+            isMobile={isMobile}
+          />
+        )}
 
-            <MapContainer
-                center={initialCenter}
-                zoom={9}
-                scrollWheelZoom
-                style={{ height: "100%", width: "100%" }}
-            >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    maxZoom={19}
-                    tileSize={512}
-                    zoomOffset={-1}
-                />
+        {showUI && selectedShip && (
+          <ShipInfoPanel {...infoPanelProps} />
+        )}
 
-                <Landing.LayerController ships={ships} />
+        <ShipMapLayer
+          ships={ships}
+          currentShips={currentShips}
+          shipFilters={shipFilters}
+          visibleShips={visibleShips}
+          shipPositions={shipPositions}
+          onShipSelect={handleShipSelect}
+          recordingShipIndex={isRecordingActive ? recordingShipIndex : null}
+          isRecording={isRecordingActive}
+          selectedTime={selectedTime}
+          selectedShipId={selectedShip?.ship_uid ?? null}
+          map={mapRef.current}
+        />
+      </MapContainer>
 
-                <Landing.ShipMap ships={ships} />
+      {isRecordingActive && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 999,
+            backgroundColor: "rgba(0,0,0,0)",
+            pointerEvents: "auto",
+          }}
+        />
+      )}
 
-                {/* MiniMap */}
-                <Landing.MiniMapControl position={initialCenter} zoom={5} />
-            </MapContainer>
-        </Box>
+      {!isRecordingActive && (
+        <LayerControl layers={layerConfigs} control={layerControl} />
+      )}
 
-    )
+      <RecordingControl {...recordingProps} />
+
+      {showUI && (
+        <>
+          {!isRecordingActive && (
+            <ShipLayerControl {...shipLayerControlProps} />
+          )}
+          <ShipTimeControl {...timeControlProps} />
+        </>
+      )}
+
+      {showShipTable && (
+        <ShipInfoTable {...shipTableProps} />
+      )}
+    </Box>
+  );
 }
