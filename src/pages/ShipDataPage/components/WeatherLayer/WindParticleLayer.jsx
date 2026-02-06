@@ -89,7 +89,7 @@ export function WindParticleLayer({
 
             layerRef.current = null;
         };
-    }, [map, visible]);
+    }, [map]);
 
     /* ------------------------------------
      * Update wind data (debounced)
