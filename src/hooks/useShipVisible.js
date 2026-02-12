@@ -9,7 +9,9 @@ export function useShipVisible(ships) {
 
   // Index-aligned array for rendering
   const visibleShips = useMemo(() => {
-    console.log('Recomputing visibleShips for the', visibleVersion, 'time');
+    if (visibleVersion) {
+      console.log('Recomputing visibleShips for the', visibleVersion, 'time');
+    }
     return ships.map(ship =>
       visibleByUidRef.current.get(ship.ship_uid) ?? true
     );

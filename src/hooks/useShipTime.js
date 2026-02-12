@@ -61,13 +61,10 @@ export function useShipTime(ships, onTimeChange) {
   const updateTime = useCallback(
     (timestamp) => {
       if (!availableTimes.length || timestamp == null) return;
-
       const clamped = Math.max(minTime, Math.min(maxTime, timestamp));
 
       setSelectedTime(clamped);       // Update Selected Time
-
       onTimeChange([minTime, clamped]);
-      console.log("Time updated to:", clamped);
     },
     [availableTimes.length, minTime, maxTime, onTimeChange],
   );
@@ -83,7 +80,6 @@ export function useShipTime(ships, onTimeChange) {
   return {
     availableTimes,
     selectedTime,
-    setSelectedTime,
     minTime,
     maxTime,
     updateTime,

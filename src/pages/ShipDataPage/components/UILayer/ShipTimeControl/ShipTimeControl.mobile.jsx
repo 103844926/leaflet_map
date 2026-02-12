@@ -90,7 +90,7 @@ export function ShipTimeControlMobile({
                         <IconButton
                             size="small"
                             onClick={() =>
-                                onAnimate(selectedTime, windowStart, windowEnd, onTimeChange)   // Start from selectedTime to windowEnd
+                                onAnimate(selectedTime, windowStart, windowEnd)   // Start from selectedTime to windowEnd
                             }
                             sx={{
                                 color: "white",

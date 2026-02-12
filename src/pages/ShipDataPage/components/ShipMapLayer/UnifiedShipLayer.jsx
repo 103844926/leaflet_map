@@ -36,27 +36,6 @@ export function UnifiedShipLayer({
 
     // Store all props in propsRef (update this useEffect when dependency changes)
     useEffect(() => {
-        console.groupCollapsed("🛳️ UnifiedShipLayer props");
-        console.log("shipsToRender:", {
-            type: Array.isArray(shipsToRender),
-            length: shipsToRender?.length,
-            sample: shipsToRender,
-        });
-
-        console.log("ShipPositions:", {
-            type: Array.isArray(shipPositions),
-            length: shipPositions?.length,
-            sample: shipPositions,
-            time: shipPositions?.[0]?.time,
-        });
-
-        console.log("backgroundShips:", {
-            type: Array.isArray(backgroundShips),
-            length: backgroundShips?.length,
-            sample: backgroundShips,
-        });
-        console.groupEnd();
-
         propsRef.current = {
             shipsToRender, visibleShips, shipPositions,
             onMarkerClick, recordingShipIndex, isRecording, currentTime,

@@ -1,3 +1,4 @@
+// WindColorOverlay.jsx - Draw wind heatmap using pixi.js
 import { useEffect, useRef, useCallback } from "react";
 import { useMap } from "react-leaflet";
 import * as PIXI from "pixi.js";

@@ -239,7 +239,8 @@ export function useShipDataPageProps({
             isAnimating,
             playbackSpeed,
             onTimeChange: handleManualTimeUpdate,
-            onAnimate: animate,
+            onAnimate: (selectedTime, windowStart, windowEnd) =>
+                animate(selectedTime, windowStart, windowEnd, updateTime),
             onStop: stopAnimation,
             onPlaybackSpeedChange: setPlaybackSpeed,
             mapRef,
@@ -268,6 +269,7 @@ export function useShipDataPageProps({
             playbackSpeed,
             handleManualTimeUpdate,
             animate,
+            updateTime,
             stopAnimation,
             setPlaybackSpeed,
             mapRef,
