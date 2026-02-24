@@ -1,15 +1,6 @@
 import L from "leaflet";
 import { useCallback } from "react";
-import {
-    createMarker,
-    createMeasurementLabel,
-    createRangeRings,
-    createFillCircle,
-    clearCircleElements,
-    clearTempElements,
-    COLORS,
-    CONFIG
-} from "@/utils";
+import { RULER_COLORS, RULER_CONFIG, createMarker, createMeasurementLabel, createRangeRings, createFillCircle, clearCircleElements, clearTempElements } from "@/utils";
 
 function clearRingLayers(refs, map) {
     if (refs.ringLayer.current) map.removeLayer(refs.ringLayer.current);
@@ -20,6 +11,10 @@ function clearRingLayers(refs, map) {
 
 export function useDrawingHandlers(map, refs, ui) {
 
+    /* -----------------------------
+     * Helpers
+     * ----------------------------- */
+    // Clear all preview drawing elements
     const clearPreview = useCallback(() => {
         clearTempElements(refs.tempLine.current, refs.tempLabel.current, map);
         clearCircleElements(
@@ -36,6 +31,7 @@ export function useDrawingHandlers(map, refs, ui) {
         refs.ringLabels.current = null;
     }, [map, refs]);
 
+    // Check whether a marker is created
     const canPreview = useCallback(() => {
         return (
             refs.isActive.current &&
@@ -44,6 +40,83 @@ export function useDrawingHandlers(map, refs, ui) {
             refs.points.current.length - 1 >= refs.chainStartIndex.current
         );
     }, [refs]);
+
+    // Update marker interactivity
+    const updateMarkerInteractivity = useCallback((start) => {
+        const last = refs.points.current.length - 1;
+
+        refs.points.current.forEach((p, index) => {
+            const el = p.marker.getElement();
+            if (!el) return;
+
+            if (index === start || index === last) {
+                el.style.pointerEvents = "auto";
+                el.style.cursor = "pointer";
+            } else {
+                el.style.pointerEvents = "none";
+                el.style.cursor = "default";
+            }
+        });
+    }, [refs]);
+
+    // Close polygon when clicked on the start marker
+    const closePolygon = useCallback((start, lastIndex) => {
+        if (lastIndex - start + 1 >= 3) {
+            const chainPoints = refs.points.current
+                .slice(start, lastIndex + 1)
+                .map(p => p.latlng);
+
+            const area = {
+                id: Date.now().toString(),
+                name: "",
+                points: chainPoints.map(p => ({ lat: p.lat, lng: p.lng })),
+            };
+
+            ui?.addCompletedAreaUI(area);
+        }
+
+        clearPreview();
+
+        refs.points.current.forEach(p => {
+            if (p.marker) map.removeLayer(p.marker);
+        });
+
+        refs.lines.current.forEach(l => map.removeLayer(l));
+        refs.labels.current.forEach(l => map.removeLayer(l));
+
+        refs.points.current = [];
+        refs.lines.current = [];
+        refs.labels.current = [];
+
+        refs.hasAnchor.current = false;
+        refs.chainStartIndex.current = null;
+
+        ui?.setHasAnchorUI(false);
+        updateMarkerInteractivity(null);
+    }, [map, refs, ui, clearPreview, updateMarkerInteractivity]);
+
+    // Undo last marker added
+    const undoLastPoint = useCallback(() => {
+        if (refs.points.current.length === 0) return;
+
+        const lastPoint = refs.points.current.pop();
+
+        if (lastPoint.marker) map.removeLayer(lastPoint.marker);
+
+        const lastLine = refs.lines.current.pop();
+        if (lastLine) map.removeLayer(lastLine);
+
+        const lastLabel = refs.labels.current.pop();
+        if (lastLabel) map.removeLayer(lastLabel);
+
+        // Reset state if anchor removed
+        if (refs.points.current.length === 0) {
+            refs.hasAnchor.current = false;
+            refs.chainStartIndex.current = null;
+            ui?.setHasAnchorUI(false);
+            clearPreview();
+        }
+    }, [map, refs, ui, clearPreview]);
 
     /* -----------------------------
      * Map Click
@@ -60,48 +133,26 @@ export function useDrawingHandlers(map, refs, ui) {
             refs.hasAnchor.current = true;
             refs.chainStartIndex.current = refs.points.current.length;
             ui?.setHasAnchorUI(true);
-
-            marker.on("click", () => {
-                const start = refs.chainStartIndex.current;
-                const end = refs.points.current.length - 1;
-
-                if (end - start + 1 >= 3) {
-                    const chainPoints = refs.points.current
-                        .slice(start, end + 1)
-                        .map(p => p.latlng);
-
-                    // Emit completed area to parent
-                    const area = {
-                        id: Date.now().toString(),
-                        name: "",
-                        points: chainPoints.map(p => ({ lat: p.lat, lng: p.lng })),
-                    };
-
-                    ui?.addCompletedAreaUI(area);
-                }
-
-                // Clear preview elements
-                clearPreview();
-
-                // Clear drawing geometry
-                refs.points.current.forEach(p => {
-                    if (p.marker) map.removeLayer(p.marker);
-                });
-
-                refs.lines.current.forEach(l => map.removeLayer(l));
-                refs.labels.current.forEach(l => map.removeLayer(l));
-
-                // Reset drawing refs
-                refs.points.current = [];
-                refs.lines.current = [];
-                refs.labels.current = [];
-
-                // Reset anchor state for next polygon
-                refs.hasAnchor.current = false;
-                refs.chainStartIndex.current = null;
-                ui?.setHasAnchorUI(false);
-            });
         }
+
+        marker.on("click", () => {
+            const startMarker = refs.chainStartIndex.current;
+            const lastMarker = refs.points.current.length - 1;
+            const createdMarker = refs.points.current.findIndex(p => p.marker === marker);
+
+            // Start marker → close polygon
+            if (createdMarker === startMarker) {
+                closePolygon(startMarker, lastMarker);
+                return;
+            }
+
+            // Last marker → undo
+            if (createdMarker === lastMarker) {
+                undoLastPoint();
+                updateMarkerInteractivity(startMarker);
+                return;
+            }
+        });
 
         if (
             refs.hasAnchor.current &&
@@ -112,7 +163,7 @@ export function useDrawingHandlers(map, refs, ui) {
 
             refs.lines.current.push(
                 L.polyline([prev.latlng, e.latlng], {
-                    color: COLORS.line,
+                    color: RULER_COLORS.line,
                     weight: 3,
                     opacity: 0.7,
                     pane: 'drawingPane',
@@ -126,7 +177,9 @@ export function useDrawingHandlers(map, refs, ui) {
         }
 
         refs.points.current.push({ latlng: e.latlng, marker });
-    }, [map, refs, clearPreview, ui]);
+
+        updateMarkerInteractivity(refs.chainStartIndex.current);
+    }, [map, refs, ui, updateMarkerInteractivity, closePolygon, undoLastPoint]);
 
     /* -----------------------------
      * Mouse Move
@@ -143,7 +196,7 @@ export function useDrawingHandlers(map, refs, ui) {
         refs.tempLine.current = L.polyline(
             [last.latlng, e.latlng],
             {
-                color: COLORS.line,
+                color: RULER_COLORS.line,
                 weight: 2,
                 opacity: 0.4,
                 dashArray: "5,5",
@@ -161,7 +214,7 @@ export function useDrawingHandlers(map, refs, ui) {
         );
 
         const km = last.latlng.distanceTo(e.latlng) / 1000;
-        const maxKm = Math.max(CONFIG.minRingDistance, km);
+        const maxKm = Math.max(RULER_CONFIG.minRingDistance, km);
 
         if (!refs.fillCircle.current) {
             refs.fillCircle.current = createFillCircle(last.latlng, maxKm, map, "drawingPane");

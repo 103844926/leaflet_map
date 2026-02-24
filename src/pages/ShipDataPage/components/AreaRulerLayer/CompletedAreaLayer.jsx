@@ -3,7 +3,7 @@ import { useMap } from "react-leaflet";
 import * as PIXI from "pixi.js";
 import L from "leaflet";
 import "leaflet-pixi-overlay";
-import { COLORS, CONFIG } from "@/utils/rulerUtils";
+import { RULER_COLORS, RULER_CONFIG, calculateBearing, formatDistance } from "@/utils/rulerUtils";
 
 /**
  * CompletedAreaLayer
@@ -42,13 +42,13 @@ export const CompletedAreaLayer = forwardRef(function CompletedAreaLayer(
 
             // Draw polygon fill and stroke
             graphics.beginFill(
-                parseInt(COLORS.polygonFill.replace('#', ''), 16),
-                CONFIG.polygonFillOpacity
+                parseInt(RULER_COLORS.polygonFill.replace('#', ''), 16),
+                RULER_CONFIG.polygonFillOpacity
             );
             graphics.lineStyle(
-                CONFIG.polygonStrokeWeight,
-                parseInt(COLORS.polygonStroke.replace('#', ''), 16),
-                CONFIG.polygonStrokeOpacity
+                RULER_CONFIG.polygonStrokeWeight,
+                parseInt(RULER_COLORS.polygonStroke.replace('#', ''), 16),
+                RULER_CONFIG.polygonStrokeOpacity
             );
 
             const points = area.points.map(p => latLngToLayerPoint([p.lat, p.lng]));
@@ -133,7 +133,7 @@ export const CompletedAreaLayer = forwardRef(function CompletedAreaLayer(
         const overlay = L.pixiOverlay((utils) => {
             drawAllAreas(utils);
         }, pixiContainer, {
-            // Optional: set padding for rendering outside viewport
+            // Set padding for rendering outside viewport
             padding: 0.1,
             // Set pane for z-index control
             pane: paneName
@@ -230,27 +230,3 @@ export const CompletedAreaLayer = forwardRef(function CompletedAreaLayer(
 
     return null;
 });
-
-// Helper functions
-function calculateBearing(latlng1, latlng2) {
-    const lat1 = latlng1.lat * Math.PI / 180;
-    const lat2 = latlng2.lat * Math.PI / 180;
-    const dLng = (latlng2.lng - latlng1.lng) * Math.PI / 180;
-
-    const y = Math.sin(dLng) * Math.cos(lat2);
-    const x = Math.cos(lat1) * Math.sin(lat2) -
-        Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
-
-    let bearing = Math.atan2(y, x) * 180 / Math.PI;
-    bearing = (bearing + 360) % 360;
-
-    return bearing.toFixed(2);
-}
-
-function formatDistance(meters) {
-    if (meters < 1000) {
-        return meters.toFixed(2) + " m";
-    } else {
-        return (meters / 1000).toFixed(2) + " km";
-    }
-}

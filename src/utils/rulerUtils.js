@@ -3,7 +3,7 @@ import L from "leaflet";
 /* -----------------------------
  * Constants
  * ----------------------------- */
-export const COLORS = {
+export const RULER_COLORS = {
     firstMarker: '#ff4444',
     marker: '#4444ff',
     line: '#4444ff',
@@ -19,7 +19,7 @@ export const COLORS = {
     polygonStroke: '#4444ff'
 };
 
-export const CONFIG = {
+export const RULER_CONFIG = {
     ringInterval: 5,
     minRingDistance: 5,
     markerSize: 12,
@@ -62,35 +62,28 @@ export function createMarker(latlng, isFirst, map, paneName) {
     const markerIcon = L.divIcon({
         className: "ruler-marker",
         html: `<div style="
-            width: ${CONFIG.markerSize}px;
-            height: ${CONFIG.markerSize}px;
-            background: ${isFirst ? COLORS.firstMarker : COLORS.marker};
+            width: ${RULER_CONFIG.markerSize}px;
+            height: ${RULER_CONFIG.markerSize}px;
+            background: ${isFirst ? RULER_COLORS.firstMarker : RULER_COLORS.marker};
             border: 2px solid white;
             border-radius: 50%;
             box-shadow: 0 0 4px rgba(0,0,0,0.5);
-            cursor: ${isFirst ? 'pointer' : 'default'};
-            pointer-events: ${isFirst ? 'auto' : 'none'};
+            cursor: default;
         "></div>`,
-        iconSize: [CONFIG.markerSize, CONFIG.markerSize],
-        iconAnchor: [CONFIG.markerSize / 2, CONFIG.markerSize / 2]
+        iconSize: [RULER_CONFIG.markerSize, RULER_CONFIG.markerSize],
+        iconAnchor: [RULER_CONFIG.markerSize / 2, RULER_CONFIG.markerSize / 2]
     });
 
     const marker = L.marker(latlng, {
         icon: markerIcon,
         pane: paneName,
-        interactive: isFirst
+        interactive: true
     }).addTo(map);
-
-    if (isFirst) {
-        const element = marker.getElement();
-        if (element) {
-            element.style.pointerEvents = 'auto';
-        }
-    }
 
     marker._isFirst = isFirst;
     return marker;
 }
+
 
 export function createMeasurementLabel(latlng1, latlng2, isTemp, map, paneName) {
     const distance = latlng1.distanceTo(latlng2);
@@ -127,10 +120,11 @@ export function createRangeRings(centerPoint, maxKm, map, paneName) {
     const rings = L.layerGroup();
     const labels = L.layerGroup();
 
-    for (let km = CONFIG.ringInterval; km <= maxKm; km += CONFIG.ringInterval) {
+    for (let km = RULER_CONFIG.ringInterval; km <= maxKm; km += RULER_CONFIG.ringInterval) {
+        // Create range ring
         L.circle(centerPoint, {
             radius: km * 1000,
-            color: COLORS.ringStroke,
+            color: RULER_COLORS.ringStroke,
             weight: 1,
             dashArray: "4,4",
             fill: false,
@@ -138,23 +132,41 @@ export function createRangeRings(centerPoint, maxKm, map, paneName) {
             interactive: false,
         }).addTo(rings);
 
-        const lngOffset =
-            (km * 1000) /
-            (111320 * Math.cos(centerPoint.lat * Math.PI / 180));
+        // Create ring labels (two markers anchored to ring)
+        if (km + RULER_CONFIG.ringInterval > maxKm) {
+            const lngOffset =
+                (km * 1000) /
+                (111320 * Math.cos(centerPoint.lat * Math.PI / 180));
 
-        L.marker(
-            [centerPoint.lat, centerPoint.lng + lngOffset],
-            {
-                pane: paneName,
-                interactive: false,
-                icon: L.divIcon({
-                    className: "range-ring-label",
-                    html: `${km} km`,
-                    iconSize: [30, 15],
-                    iconAnchor: [0, 10],
-                }),
-            }
-        ).addTo(labels);
+            const icon = L.divIcon({
+                className: "range-ring-label",
+                html: `${km} km`,
+                iconSize: [30, 15],
+                iconAnchor: [15, 8], // center the label nicely
+            });
+
+            // EAST label
+            L.marker(
+                [centerPoint.lat, centerPoint.lng + lngOffset],
+                {
+                    pane: paneName,
+                    interactive: false,
+                    icon,
+                }
+            ).addTo(labels);
+
+            // WEST label
+            L.marker(
+                [centerPoint.lat, centerPoint.lng - lngOffset],
+                {
+                    pane: paneName,
+                    interactive: false,
+                    icon,
+                }
+            ).addTo(labels);
+        }
+
+
     }
 
     rings.addTo(map);
@@ -166,9 +178,9 @@ export function createRangeRings(centerPoint, maxKm, map, paneName) {
 export function createFillCircle(centerPoint, radiusKm, map, paneName) {
     return L.circle(centerPoint, {
         radius: radiusKm * 1000,
-        color: COLORS.circleBorder,
+        color: RULER_COLORS.circleBorder,
         weight: 0,
-        fillColor: COLORS.ringFill,
+        fillColor: RULER_COLORS.ringFill,
         fillOpacity: 0.15,
         pane: paneName,
         interactive: false,
@@ -176,36 +188,8 @@ export function createFillCircle(centerPoint, radiusKm, map, paneName) {
 }
 
 /* -----------------------------
- * Polygon Creation
- * ----------------------------- */
-export function createPolygon(latlngs, map, paneName) {
-    return L.polygon(latlngs, {
-        color: COLORS.polygonStroke,
-        weight: CONFIG.polygonStrokeWeight,
-        opacity: CONFIG.polygonStrokeOpacity,
-        fillColor: COLORS.polygonFill,
-        fillOpacity: CONFIG.polygonFillOpacity,
-        pane: paneName,
-        interactive: false
-    }).addTo(map);
-}
-
-/* -----------------------------
  * Cleanup Functions
  * ----------------------------- */
-export function clearLineElements(points, lines, labels, map) {
-    points.forEach(point => {
-        if (point.marker) map.removeLayer(point.marker);
-    });
-    points.length = 0;
-
-    lines.forEach(line => map.removeLayer(line));
-    lines.length = 0;
-
-    labels.forEach(label => map.removeLayer(label));
-    labels.length = 0;
-}
-
 export function clearCircleElements(fillCircle, rings, ringLabels, map) {
     if (fillCircle) {
         map.removeLayer(fillCircle);
