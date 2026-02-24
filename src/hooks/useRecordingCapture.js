@@ -7,9 +7,10 @@ import { useRef, useCallback, useEffect } from "react";
 import {
     useRecordingMapTiles,
     useRecordingPixi,
-    useRecordingTimestamp,
     useRecordingWindParticles,
     useRecordingWindPixi,
+    useRecordingCompletedAreas,
+    useRecordingTimestamp,
 } from "./recordings";
 
 export function useRecordingCapture() {
@@ -25,6 +26,7 @@ export function useRecordingCapture() {
     const { capture: capturePixi } = useRecordingPixi();
     const { capture: captureWindPixi } = useRecordingWindPixi();
     const { capture: captureWindParticles } = useRecordingWindParticles();
+    const { capture: captureCompletedAreas } = useRecordingCompletedAreas();
     const { drawTimestamp } = useRecordingTimestamp();
 
     // -------------------------------------------------------------------------
@@ -71,13 +73,13 @@ export function useRecordingCapture() {
             desynchronized: true,
         });
 
-        // init background
+        // Init background
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, outW, outH);
 
         chunksRef.current = [];
 
-        // FIX: store stream reference for later cleanup
+        // Store stream reference for later cleanup
         const stream = compositeCanvas.captureStream(fps);
         streamRef.current = stream;
 
@@ -110,8 +112,9 @@ export function useRecordingCapture() {
 
             lastTs = ts;    // Update timestamp
 
-            await captureTiles(mapInstance, ctx, outW, outH, scale);             // Draw Map Tiles: Always render first!
+            await captureTiles(mapInstance, ctx, outW, outH, scale);             // Draw Map Tiles: Must be render first!
             await capturePixi(mapInstance, ctx, outW, outH, scale);              // Draw Entire Ship Map Layer
+            await captureCompletedAreas(mapInstance, ctx, outW, outH, scale);    // Draw Completed Areas Layer
             await captureWindPixi(mapInstance, ctx, outW, outH, scale);          // Draw Wind heatmap
             await captureWindParticles(mapInstance, ctx, outW, outH, scale);     // Draw Wind particles
 
@@ -129,6 +132,7 @@ export function useRecordingCapture() {
         capturePixi,
         captureWindPixi,
         captureWindParticles,
+        captureCompletedAreas,
         drawTimestamp,
     ]);
 

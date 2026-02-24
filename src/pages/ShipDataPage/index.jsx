@@ -2,7 +2,7 @@ import { React, useState, useCallback, useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { Box } from "@mui/material";
-import { ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipInfoTable, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
+import { AreaRulerLayer, ShipMapLayer, WeatherLayer, ShipInfoPanel, ShipInfoTable, ShipLayerControl, ShipTimeControl, LayerControl } from "./components";
 
 import { RecordingControl } from "@/components";
 import { useLeafletControl, useShipAnimation, useShipTime, useShipTracking, useShipDataPageLogic, useShipDataPageProps, useShipFilterOptions, useLayerControl } from "@/hooks";
@@ -18,7 +18,7 @@ export default function ShipDataPage() {
   const paperControl = useLeafletControl();
   const boxControl = useLeafletControl();
   const layerControl = useLeafletControl();
-  const { showWeather, showUI, layerConfigs } = useLayerControl();
+  const { showWeather, showRuler, showUI, layerConfigs } = useLayerControl();
 
   // Click position state
   const [selectedShip, setSelectedShip] = useState(null);
@@ -32,7 +32,6 @@ export default function ShipDataPage() {
   const [recordingShipIndex, setRecordingShipIndex] = useState(null);
   const [recordingShipStartTime, setRecordingShipStartTime] = useState(null);
   const [trackShip, setTrackShip] = useState(false);
-
 
   // Ship filters
   const [shipFilters, setShipFilters] = useState(defaultShipFilters);
@@ -58,7 +57,7 @@ export default function ShipDataPage() {
   const filterOptions = useShipFilterOptions(currentShips);
 
   // --------------------
-  // Time management (no animation)
+  // Time management 
   // --------------------
   const handleTimeChange = useCallback((range) => setTimeRange(range), [setTimeRange]);
 
@@ -239,6 +238,9 @@ export default function ShipDataPage() {
           tileSize={512}
           zoomOffset={-1}
         />
+
+        {/* RULER LAYER */}
+        <AreaRulerLayer active={showRuler && !isRecordingActive && !isAnimating} />
 
         {/* WIND LAYER */}
         {windData && selectedTime && minTime && maxTime && showWeather && (

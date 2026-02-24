@@ -4,6 +4,7 @@ import { Box, LinearProgress, Typography } from "@mui/material";
 /**
  * Mobile-only transcode progress overlay
  * Uses SSE to wait for FFmpeg to fully finish
+ * Work in progress!!!!!!
  */
 export function TranscodeProgress({ jobId, onDone }) {
     const [progress, setProgress] = useState(0);

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { Box, Typography } from "@mui/material";
 import L from "leaflet";
 import { formatCoordinates, getResponsiveVariant } from "@/utils";

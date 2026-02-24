@@ -34,7 +34,7 @@ export function ShipTimeControl(props) {
     useEffect(() => {
         setStagingStart(minTime);
         setStagingEnd(maxTime);
-    }, [minTime, maxTime]);
+    }, [minTime, maxTime, setWindowStart, setWindowEnd]);
 
     // ---- auto close range picker ----
     useEffect(() => {

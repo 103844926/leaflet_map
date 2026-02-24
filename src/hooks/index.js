@@ -15,5 +15,8 @@ export * from "./useRecordingTimeWindow";
 export * from "./useRecordingCapture";
 export * from "./useShipTracking";
 
+// For DrawingLayer
+export * from "./useDrawingHandlers";
+
 // For ShipInfoTable
 export * from "./useShipTableFilter";
